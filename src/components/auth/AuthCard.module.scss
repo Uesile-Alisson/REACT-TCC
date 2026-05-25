@@ -1,0 +1,19 @@
+.card {
+  width: min(100%, 480px);
+  padding: clamp(24px, 4vw, 38px);
+  border: 1px solid rgba(122, 185, 244, 0.2);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(13, 30, 49, 0.94), rgba(7, 15, 27, 0.96)),
+    #0a1422;
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.44),
+    0 0 0 1px rgba(255, 255, 255, 0.035) inset,
+    0 0 42px rgba(0, 132, 255, 0.1);
+}
+
+@media (max-width: 520px) {
+  .card {
+    padding: 22px;
+  }
+}

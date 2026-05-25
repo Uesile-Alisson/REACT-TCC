@@ -1,0 +1,28 @@
+.header {
+  margin-bottom: 28px;
+}
+
+.header span {
+  display: block;
+  margin-bottom: 12px;
+  color: #5bc8ff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.header h2 {
+  margin: 0;
+  color: #f6fbff;
+  font-size: clamp(1.65rem, 3vw, 2.15rem);
+  font-weight: 740;
+  line-height: 1.05;
+}
+
+.header p {
+  margin: 12px 0 0;
+  color: #9cb4cf;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}

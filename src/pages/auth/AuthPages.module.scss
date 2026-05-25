@@ -1,0 +1,52 @@
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.actions {
+  display: grid;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.linkRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.textLink {
+  color: #66c8ff;
+  font-size: 0.88rem;
+  font-weight: 760;
+  text-decoration: none;
+  transition:
+    color 160ms ease,
+    text-shadow 160ms ease;
+}
+
+.textLink:hover,
+.textLink:focus-visible {
+  color: #b7e9ff;
+  outline: 0;
+  text-shadow: 0 0 18px rgba(78, 196, 255, 0.45);
+}
+
+.infoBox {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid rgba(85, 185, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(6, 26, 45, 0.68);
+  color: #a8bfd8;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.infoBox svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #5bc8ff;
+}
