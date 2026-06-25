@@ -1,0 +1,1 @@
+export { BombaStatusBadge } from './BombaStatusBadge';

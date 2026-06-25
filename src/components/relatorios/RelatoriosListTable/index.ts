@@ -1,0 +1,1 @@
+export { RelatoriosListTable } from './RelatoriosListTable';

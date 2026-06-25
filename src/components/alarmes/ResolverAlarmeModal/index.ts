@@ -1,0 +1,1 @@
+export { ResolverAlarmeModal } from './ResolverAlarmeModal';

@@ -1,0 +1,1 @@
+export { RelatoriosSummaryCards } from './RelatoriosSummaryCards';

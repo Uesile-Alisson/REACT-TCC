@@ -1,0 +1,1 @@
+export { AlarmeListTable } from './AlarmeListTable';

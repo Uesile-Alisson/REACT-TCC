@@ -1,0 +1,139 @@
+import { api } from '../api/axios';
+import type {
+  CreateProcessoRequest,
+  FinalizarProcessoRequest,
+  InterromperProcessoRequest,
+  ListProcessosQuery,
+  ParadaEmergenciaProcessoRequest,
+  ProcessoDashboardResponse,
+  ProcessoEventResponse,
+  ProcessoListResponse,
+  ProcessoReadingQuery,
+  ProcessoReadingResponse,
+  ProcessoResponse,
+  UpdateProcessoConfigRequest,
+} from '../types/processos.types';
+
+export async function createProcesso(payload: CreateProcessoRequest): Promise<ProcessoResponse> {
+  const { data } = await api.post<ProcessoResponse>('/processos', payload);
+
+  return data;
+}
+
+export async function listProcessos(query?: ListProcessosQuery): Promise<ProcessoListResponse> {
+  const { data } = await api.get<ProcessoListResponse>('/processos', { params: query });
+
+  return data;
+}
+
+export async function getActiveProcesso(): Promise<ProcessoResponse | null> {
+  const { data } = await api.get<ProcessoResponse | null>('/processos/ativo');
+
+  return data;
+}
+
+export async function getProcessoById(id: number): Promise<ProcessoResponse> {
+  const { data } = await api.get<ProcessoResponse>(`/processos/${id}`);
+
+  return data;
+}
+
+export async function getProcessoDashboard(id: number): Promise<ProcessoDashboardResponse> {
+  const { data } = await api.get<ProcessoDashboardResponse>(`/processos/${id}/dashboard`);
+
+  return data;
+}
+
+export async function updateProcessoConfig(
+  id: number,
+  payload: UpdateProcessoConfigRequest,
+): Promise<ProcessoResponse> {
+  const { data } = await api.patch<ProcessoResponse>(`/processos/${id}/config`, payload);
+
+  return data;
+}
+
+export async function startProcesso(id: number): Promise<ProcessoResponse> {
+  const { data } = await api.post<ProcessoResponse>(`/processos/${id}/iniciar`);
+
+  return data;
+}
+
+export async function pauseProcesso(id: number): Promise<ProcessoResponse> {
+  const { data } = await api.post<ProcessoResponse>(`/processos/${id}/pausar`);
+
+  return data;
+}
+
+export async function resumeProcesso(id: number): Promise<ProcessoResponse> {
+  const { data } = await api.post<ProcessoResponse>(`/processos/${id}/retomar`);
+
+  return data;
+}
+
+export async function finishProcesso(
+  id: number,
+  payload: FinalizarProcessoRequest,
+): Promise<ProcessoResponse> {
+  const { data } = await api.post<ProcessoResponse>(`/processos/${id}/finalizar`, payload);
+
+  return data;
+}
+
+export async function interruptProcesso(
+  id: number,
+  payload: InterromperProcessoRequest,
+): Promise<ProcessoResponse> {
+  const { data } = await api.post<ProcessoResponse>(`/processos/${id}/interromper`, payload);
+
+  return data;
+}
+
+export async function emergencyStopProcesso(
+  id: number,
+  payload: ParadaEmergenciaProcessoRequest,
+): Promise<ProcessoResponse> {
+  const { data } = await api.post<ProcessoResponse>(
+    `/processos/${id}/parada-emergencia`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function getProcessoReadings(
+  idProcesso: number,
+  query?: ProcessoReadingQuery,
+): Promise<ProcessoReadingResponse[]> {
+  const { data } = await api.get<ProcessoReadingResponse[]>(
+    `/leituras-eventos/processos/${idProcesso}/leituras`,
+    { params: query },
+  );
+
+  return data;
+}
+
+export async function getProcessoEvents(idProcesso: number): Promise<ProcessoEventResponse[]> {
+  const { data } = await api.get<ProcessoEventResponse[]>(
+    `/leituras-eventos/processos/${idProcesso}/eventos`,
+  );
+
+  return data;
+}
+
+export const processosService = {
+  createProcesso,
+  listProcessos,
+  getActiveProcesso,
+  getProcessoById,
+  getProcessoDashboard,
+  updateProcessoConfig,
+  startProcesso,
+  pauseProcesso,
+  resumeProcesso,
+  finishProcesso,
+  interruptProcesso,
+  emergencyStopProcesso,
+  getProcessoReadings,
+  getProcessoEvents,
+};

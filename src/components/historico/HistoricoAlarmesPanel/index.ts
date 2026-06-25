@@ -1,0 +1,1 @@
+export { HistoricoAlarmesPanel } from './HistoricoAlarmesPanel';

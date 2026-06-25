@@ -1,0 +1,1 @@
+export { ConfiguracoesSistemaSecurityCard } from './ConfiguracoesSistemaSecurityCard';

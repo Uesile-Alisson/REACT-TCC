@@ -1,0 +1,1 @@
+export { UsuarioDetailPanel } from './UsuarioDetailPanel';

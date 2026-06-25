@@ -9,7 +9,7 @@ export function getAuthErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return 'Não foi possível concluir a operação. Tente novamente.';
+  return 'Nao foi possivel concluir a operacao. Tente novamente.';
 }
 
 function isApiError(error: unknown): error is ApiError {

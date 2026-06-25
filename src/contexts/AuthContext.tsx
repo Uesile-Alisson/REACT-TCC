@@ -1,39 +1,13 @@
-import {
-  createContext,
-  useCallback,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { getAccessToken, removeAccessToken, setAccessToken } from '../api/axios';
+import { AUTH_UNAUTHORIZED_EVENT } from '../api/auth-events';
+import { AuthContext, type AuthContextData, type SignInResult } from './AuthContextValue';
 import { authService } from '../services/auth.service';
 import type { AuthUser, SignInRequest } from '../types/auth.types';
-
-type SignInResult = {
-  user: AuthUser;
-  accessToken: string;
-  isFirstAccess: boolean;
-  suggestedRedirectPath: '/first-access' | '/dashboard';
-};
 
 type AuthProviderProps = {
   children: ReactNode;
 };
-
-export type AuthContextData = {
-  user: AuthUser | null;
-  accessToken: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  isFirstAccess: boolean;
-  signin: (credentials: SignInRequest) => Promise<SignInResult>;
-  completeFirstAccess: () => void;
-  logout: () => void;
-};
-
-// AuthContext is exported so the dedicated useAuth hook can consume the provider state.
-// eslint-disable-next-line react-refresh/only-export-components
-export const AuthContext = createContext<AuthContextData | undefined>(undefined);
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -62,6 +36,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
     setToken(null);
   }, []);
+
+  useEffect(() => {
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, logout);
+
+    return () => window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, logout);
+  }, [logout]);
 
   const completeFirstAccess = useCallback((): void => {
     setUser((currentUser) =>

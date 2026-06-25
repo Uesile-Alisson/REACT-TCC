@@ -1,0 +1,40 @@
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.actions button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid rgba(122, 185, 244, 0.22);
+  border-radius: 7px;
+  background: rgba(13, 30, 49, 0.92);
+  color: #dcecff;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 820;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.actions button:hover,
+.actions button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(29, 155, 255, 0.16);
+  outline: 0;
+}
+
+.actions button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.danger {
+  border-color: rgba(255, 139, 152, 0.36) !important;
+  background: rgba(255, 78, 101, 0.1) !important;
+  color: #ffadb8 !important;
+}

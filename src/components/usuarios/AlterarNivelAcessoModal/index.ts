@@ -1,0 +1,1 @@
+export { AlterarNivelAcessoModal } from './AlterarNivelAcessoModal';

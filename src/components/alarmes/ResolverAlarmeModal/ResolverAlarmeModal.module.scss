@@ -1,0 +1,94 @@
+.overlay {
+  position: fixed;
+  z-index: 32;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(1, 5, 10, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.modal {
+  display: grid;
+  gap: 14px;
+  width: min(100%, 520px);
+  padding: 22px;
+  border: 1px solid rgba(122, 185, 244, 0.22);
+  border-radius: 8px;
+  background: #07111d;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.48);
+}
+
+.modal header p {
+  margin: 0 0 6px;
+  color: #5bc8ff;
+  font-size: 0.7rem;
+  font-weight: 820;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.modal h2,
+.modal p {
+  margin: 0;
+}
+
+.modal h2 {
+  color: #f5f9ff;
+}
+
+.modal p,
+.modal label {
+  color: #9cb4cf;
+  line-height: 1.5;
+}
+
+.modal label {
+  display: grid;
+  gap: 7px;
+  font-size: 0.78rem;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.modal textarea {
+  min-height: 88px;
+  padding: 10px 11px;
+  border: 1px solid rgba(122, 185, 244, 0.18);
+  border-radius: 7px;
+  background: rgba(5, 14, 25, 0.8);
+  color: #f5f9ff;
+  resize: vertical;
+}
+
+.modal footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(122, 185, 244, 0.22);
+  border-radius: 7px;
+  background: rgba(13, 30, 49, 0.92);
+  color: #dcecff;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 820;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.modal footer button:last-child {
+  background: linear-gradient(180deg, rgba(83, 197, 255, 0.98), rgba(22, 119, 230, 0.98));
+  color: #03111e;
+}
+
+.modal button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}

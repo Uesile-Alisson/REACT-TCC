@@ -1,0 +1,1 @@
+export { AlarmeSeverityBadge } from './AlarmeSeverityBadge';

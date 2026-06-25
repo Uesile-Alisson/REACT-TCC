@@ -1,0 +1,1 @@
+export { HistoricoListTable } from './HistoricoListTable';

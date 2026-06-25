@@ -1,0 +1,1 @@
+export { RelatorioDetailPanel } from './RelatorioDetailPanel';

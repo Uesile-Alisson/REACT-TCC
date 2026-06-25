@@ -37,3 +37,10 @@
 .button:active {
   transform: translateY(0);
 }
+
+.button:disabled {
+  cursor: wait;
+  filter: grayscale(0.28);
+  opacity: 0.68;
+  transform: none;
+}

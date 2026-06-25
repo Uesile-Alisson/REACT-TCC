@@ -1,0 +1,10 @@
+@use '../NovoUsuarioModal/NovoUsuarioModal.module.scss' as *;
+
+.danger {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid rgba(255, 139, 152, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 78, 101, 0.08);
+  color: #ffadb8;
+}

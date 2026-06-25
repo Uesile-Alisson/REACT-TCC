@@ -1,0 +1,1 @@
+export { RelatorioPreviewModal } from './RelatorioPreviewModal';

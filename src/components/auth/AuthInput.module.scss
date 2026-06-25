@@ -62,3 +62,8 @@
   box-shadow: 0 0 0 1000px #081625 inset;
   -webkit-text-fill-color: #eff7ff;
 }
+
+.control input:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}

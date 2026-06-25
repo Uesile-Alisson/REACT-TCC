@@ -1,0 +1,1 @@
+export { GerarRelatorioHistoricoModal } from './GerarRelatorioHistoricoModal';

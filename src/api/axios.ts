@@ -1,26 +1,27 @@
-import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
+import { normalizeApiError } from './api-error';
+import { notifyUnauthorizedSession } from './auth-events';
+import { createQueryString } from './query-string';
+import { getAccessToken } from './token-storage';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
-const ACCESS_TOKEN_KEY = 'access_token';
+const FALLBACK_API_BASE_URL = 'http://localhost:3000/api';
 
-export function getAccessToken(): string | null {
-  return localStorage.getItem(ACCESS_TOKEN_KEY);
-}
+function resolveApiBaseUrl(): string {
+  const envBaseUrl =
+    import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL ?? FALLBACK_API_BASE_URL;
 
-export function setAccessToken(token: string): void {
-  localStorage.setItem(ACCESS_TOKEN_KEY, token);
-}
-
-export function removeAccessToken(): void {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  return String(envBaseUrl).replace(/\/+$/, '');
 }
 
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: resolveApiBaseUrl(),
   timeout: 15000,
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',
+  },
+  paramsSerializer: {
+    serialize: createQueryString,
   },
 });
 
@@ -36,11 +37,15 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      // Reserved for future refresh token and automatic logout flows.
+  (error: unknown) => {
+    const apiError = normalizeApiError(error);
+
+    if (apiError.statusCode === 401) {
+      notifyUnauthorizedSession();
     }
 
-    return Promise.reject(error);
+    return Promise.reject(apiError);
   },
 );
+
+export { clearAccessToken, getAccessToken, removeAccessToken, setAccessToken } from './token-storage';

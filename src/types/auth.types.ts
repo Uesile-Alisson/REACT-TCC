@@ -1,4 +1,6 @@
-export type AccessLevel = 'OPERADOR' | 'TECNICO' | 'ADMINISTRADOR';
+import type { ApiErrorPayload, ApiMessageResponse, NivelAcesso } from './common.types';
+
+export type AccessLevel = NivelAcesso;
 
 export type AuthUser = {
   id: number;
@@ -20,7 +22,7 @@ export type SignInResponse = {
 };
 
 export type FirstAccessRequest = {
-  senhaTemporaria: string;
+  senhaTemporaria?: string;
   senhaNova: string;
   confirmarSenha: string;
 };
@@ -35,31 +37,21 @@ export type ResetPasswordRequest = {
   confirmarSenha: string;
 };
 
-export type AuthMessageResponse = {
-  message: string;
-};
-
-export type ApiValidationError = {
-  field?: string;
-  message: string;
-};
+export type AuthMessageResponse = ApiMessageResponse;
 
 export type ApiError = {
   message: string;
   statusCode?: number;
-  validationErrors?: ApiValidationError[];
+  validationErrors?: ApiErrorPayload['errors'];
 };
 
-export type ApiErrorResponse = {
-  message?: string | string[];
-  statusCode?: number;
-  error?: string;
-  errors?: ApiValidationError[];
-};
+export type ApiErrorResponse = ApiErrorPayload;
 
-export type ApiAccessLevel = AccessLevel | {
-  nome: AccessLevel;
-};
+export type ApiAccessLevel =
+  | AccessLevel
+  | {
+      nome: AccessLevel;
+    };
 
 export type ApiAuthUser = {
   id?: number;

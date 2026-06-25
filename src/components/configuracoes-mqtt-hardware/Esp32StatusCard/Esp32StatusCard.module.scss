@@ -1,0 +1,102 @@
+.card {
+  display: grid;
+  gap: 15px;
+  padding: 18px;
+  border: 1px solid rgba(122, 185, 244, 0.16);
+  border-radius: 8px;
+  background: rgba(7, 16, 28, 0.9);
+}
+
+.card header,
+.card footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card header p {
+  margin: 0 0 6px;
+  color: #5bc8ff;
+  font-size: 0.68rem;
+  font-weight: 820;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.card h2 {
+  margin: 0;
+  color: #f5f9ff;
+  font-size: 1.05rem;
+}
+
+.online,
+.offline {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 840;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.online {
+  background: rgba(44, 189, 128, 0.12);
+  color: #8bf2c4;
+}
+
+.offline {
+  background: rgba(122, 185, 244, 0.12);
+  color: #dcecff;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.grid div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(122, 185, 244, 0.12);
+  border-radius: 8px;
+  background: rgba(3, 10, 18, 0.5);
+}
+
+.grid dt {
+  margin-bottom: 6px;
+  color: #7e9ab8;
+  font-size: 0.66rem;
+  font-weight: 820;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.grid dd {
+  margin: 0;
+  color: #f5f9ff;
+  overflow-wrap: anywhere;
+}
+
+.card footer {
+  justify-content: flex-start;
+  color: #9cb4cf;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.card footer svg {
+  color: #5bc8ff;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 640px) {
+  .card header,
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}

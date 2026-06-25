@@ -1,59 +1,135 @@
-import { useAuth } from '../../hooks/useAuth';
-
-const pageStyle = {
-  display: 'grid',
-  minHeight: '100vh',
-  placeItems: 'center',
-  padding: '24px',
-  background: '#050a12',
-  color: '#f5f9ff',
-} satisfies React.CSSProperties;
-
-const panelStyle = {
-  width: 'min(100%, 520px)',
-  padding: '32px',
-  border: '1px solid rgba(122, 185, 244, 0.2)',
-  borderRadius: '8px',
-  background: 'linear-gradient(180deg, rgba(13, 30, 49, 0.94), rgba(7, 15, 27, 0.96))',
-  boxShadow: '0 24px 70px rgba(0, 0, 0, 0.44)',
-  textAlign: 'center',
-} satisfies React.CSSProperties;
-
-const titleStyle = {
-  margin: 0,
-  fontSize: '2rem',
-  lineHeight: 1.1,
-} satisfies React.CSSProperties;
-
-const textStyle = {
-  margin: '14px 0 26px',
-  color: '#9cb4cf',
-  lineHeight: 1.6,
-} satisfies React.CSSProperties;
-
-const buttonStyle = {
-  minHeight: '44px',
-  padding: '0 22px',
-  borderRadius: '7px',
-  background: 'linear-gradient(180deg, rgba(83, 197, 255, 0.98), rgba(22, 119, 230, 0.98))',
-  color: '#03111e',
-  cursor: 'pointer',
-  fontWeight: 800,
-  letterSpacing: '0.05em',
-  textTransform: 'uppercase',
-} satisfies React.CSSProperties;
+import { RefreshCw } from 'lucide-react';
+import { ActiveProcessCard } from '../../components/dashboard/ActiveProcessCard';
+import { LastProcessCard } from '../../components/dashboard/LastProcessCard';
+import { RecentAlarmsPanel } from '../../components/dashboard/RecentAlarmsPanel';
+import { SystemOverviewCards } from '../../components/dashboard/SystemOverviewCards';
+import { SystemStatusPanel } from '../../components/dashboard/SystemStatusPanel';
+import { useAcoplamentoRealtime } from '../../hooks/useAcoplamentoRealtime';
+import { useAlarmesRealtime } from '../../hooks/useAlarmesRealtime';
+import { useDashboardData } from '../../hooks/useDashboardData';
+import { useMqttHardwareRealtime } from '../../hooks/useMqttHardwareRealtime';
+import { useSensorReadingsRealtime } from '../../hooks/useSensorReadingsRealtime';
+import styles from './DashboardPage.module.scss';
 
 export function DashboardPage() {
-  const { logout } = useAuth();
+  const { data, error, isLoading, partialErrors, refresh } = useDashboardData();
+  const {
+    isConnected: isRealtimeConnected,
+    isConnecting: isRealtimeConnecting,
+    lastError: realtimeError,
+    mqttConnectionStatus,
+    esp32Online,
+    lastHeartbeat,
+    eventsCount,
+  } = useMqttHardwareRealtime();
+  const { lastSensorReading } = useSensorReadingsRealtime();
+  const { lastAlarm } = useAlarmesRealtime();
+  const { lastAcoplamento } = useAcoplamentoRealtime();
 
   return (
-    <main style={pageStyle}>
-      <section style={panelStyle}>
-        <h1 style={titleStyle}>Dashboard TSEA</h1>
-        <p style={textStyle}>Redirecionamento autenticado funcionando</p>
-        <button style={buttonStyle} type="button" onClick={logout}>
-          Sair
+    <main className={styles.page}>
+      <header className={styles.header}>
+        <div>
+          <p className={styles.overline}>TSEA / Tela inicial autenticada</p>
+          <h1>Dashboard TSEA</h1>
+          <p>
+            Visao geral do sistema de vacuo com estado inicial via API e atualizacoes em tempo real
+            quando disponiveis.
+          </p>
+        </div>
+
+        <button
+          className={styles.refreshButton}
+          type="button"
+          onClick={() => void refresh()}
+          disabled={isLoading}
+        >
+          <RefreshCw size={16} aria-hidden="true" />
+          {isLoading ? 'Atualizando' : 'Atualizar'}
         </button>
+      </header>
+
+      {error ? (
+        <section className={styles.errorState} role="alert">
+          <strong>Nao foi possivel carregar o Dashboard TSEA.</strong>
+          <span>{error}</span>
+        </section>
+      ) : null}
+
+      {isLoading ? (
+        <section className={styles.loadingGrid} aria-label="Carregando dashboard">
+          <span />
+          <span />
+          <span />
+          <span />
+        </section>
+      ) : null}
+
+      <SystemOverviewCards
+        data={data}
+        realtimeConnected={isRealtimeConnected}
+        realtimeConnecting={isRealtimeConnecting}
+      />
+
+      <section className={styles.primaryGrid}>
+        {data.activeProcess ? (
+          <ActiveProcessCard
+            process={data.activeProcess}
+            activeAlarms={data.alarmsSummary?.ativos ?? null}
+            lastSensorReading={lastSensorReading}
+            partialError={partialErrors.activeProcess}
+          />
+        ) : (
+          <LastProcessCard process={data.lastProcess} partialError={partialErrors.lastProcess} />
+        )}
+
+        <SystemStatusPanel
+          hardwareStatus={data.hardwareStatus}
+          mqttRealtimeStatus={mqttConnectionStatus}
+          isRealtimeConnected={isRealtimeConnected}
+          isRealtimeConnecting={isRealtimeConnecting}
+          esp32Online={esp32Online}
+          lastHeartbeat={lastHeartbeat}
+          lastSensorReading={lastSensorReading}
+          lastAcoplamento={lastAcoplamento}
+          eventsCount={eventsCount}
+          partialError={partialErrors.hardware}
+          realtimeError={realtimeError}
+        />
+      </section>
+
+      <section className={styles.secondaryGrid}>
+        <RecentAlarmsPanel
+          summary={data.alarmsSummary}
+          recentAlarms={data.recentAlarms}
+          lastRealtimeAlarm={lastAlarm}
+          partialError={partialErrors.alarms}
+        />
+
+        <article className={styles.contextPanel}>
+          <p className={styles.overline}>Resumo historico</p>
+          <h2>Indicadores disponiveis</h2>
+          <dl>
+            <div>
+              <dt>Processos recentes</dt>
+              <dd>{data.historySummary?.processos ? 'Disponivel' : 'Pendente'}</dd>
+            </div>
+            <div>
+              <dt>Alarmes historicos</dt>
+              <dd>{data.historySummary?.alarmes ? 'Disponivel' : 'Pendente'}</dd>
+            </div>
+            <div>
+              <dt>Relatorios catalogados</dt>
+              <dd>{data.reportsCount ?? 'Pendente'}</dd>
+            </div>
+            <div>
+              <dt>Ultima atualizacao</dt>
+              <dd>{data.updatedAt ? new Date(data.updatedAt).toLocaleString('pt-BR') : 'Pendente'}</dd>
+            </div>
+          </dl>
+          {partialErrors.history ? <p className={styles.partialError}>{partialErrors.history}</p> : null}
+          {partialErrors.reports ? <p className={styles.partialError}>{partialErrors.reports}</p> : null}
+        </article>
       </section>
     </main>
   );

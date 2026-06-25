@@ -1,0 +1,1 @@
+export { TanqueStatusBadge } from './TanqueStatusBadge';

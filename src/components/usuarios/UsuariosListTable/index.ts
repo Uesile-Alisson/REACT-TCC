@@ -1,0 +1,1 @@
+export { UsuariosListTable } from './UsuariosListTable';

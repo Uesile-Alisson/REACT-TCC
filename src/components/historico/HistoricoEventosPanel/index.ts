@@ -1,0 +1,1 @@
+export { HistoricoEventosPanel } from './HistoricoEventosPanel';

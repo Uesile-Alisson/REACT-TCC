@@ -1,0 +1,1 @@
+export { CredenciaisTemporariasModal } from './CredenciaisTemporariasModal';

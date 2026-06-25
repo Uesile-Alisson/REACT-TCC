@@ -1,0 +1,1 @@
+export { HistoricoStatusBadge } from './HistoricoStatusBadge';

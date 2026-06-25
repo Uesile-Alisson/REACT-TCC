@@ -77,7 +77,7 @@ export function ResetPasswordPage() {
       });
 
       setError('root', { type: 'success', message: response.message });
-      window.setTimeout(() => navigate('/login', { replace: true }), 1000);
+      navigate('/login', { replace: true });
     } catch (error: unknown) {
       setError('root', {
         message: getAuthErrorMessage(error),

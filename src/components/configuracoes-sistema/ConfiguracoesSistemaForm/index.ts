@@ -1,0 +1,1 @@
+export { ConfiguracoesSistemaForm } from './ConfiguracoesSistemaForm';

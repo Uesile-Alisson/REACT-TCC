@@ -1,0 +1,127 @@
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: grid;
+  width: 292px;
+  height: 100vh;
+  grid-template-rows: auto 1fr auto;
+  border-right: 1px solid rgba(122, 185, 244, 0.16);
+  background:
+    linear-gradient(180deg, rgba(9, 21, 36, 0.98), rgba(4, 10, 18, 0.98)),
+    #07111d;
+  box-shadow: 18px 0 60px rgba(0, 0, 0, 0.28);
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid rgba(122, 185, 244, 0.12);
+}
+
+.brand img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 22px rgba(0, 125, 255, 0.22));
+}
+
+.brand strong,
+.brand span {
+  display: block;
+}
+
+.brand strong {
+  color: #f5f9ff;
+  font-size: 1rem;
+  letter-spacing: 0.14em;
+}
+
+.brand span,
+.footer {
+  color: #7894ae;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.nav {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-height: 0;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+
+.navItem {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 11px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #9cb4cf;
+  font-size: 0.88rem;
+  font-weight: 760;
+  text-decoration: none;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.navItem span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navItem:hover,
+.navItem:focus-visible {
+  border-color: rgba(122, 185, 244, 0.18);
+  background: rgba(58, 153, 255, 0.08);
+  color: #eff7ff;
+  outline: 0;
+  transform: translateX(2px);
+}
+
+.active {
+  border-color: rgba(83, 197, 255, 0.32);
+  background: linear-gradient(90deg, rgba(29, 155, 255, 0.2), rgba(29, 155, 255, 0.06));
+  color: #f5f9ff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.035) inset;
+}
+
+.footer {
+  padding: 16px 20px 20px;
+  border-top: 1px solid rgba(122, 185, 244, 0.12);
+  line-height: 1.45;
+}
+
+@media (max-width: 940px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+  }
+
+  .nav {
+    display: flex;
+    padding-bottom: 14px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .navItem {
+    flex: 0 0 auto;
+  }
+
+  .footer {
+    display: none;
+  }
+}

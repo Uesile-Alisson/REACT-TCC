@@ -1,0 +1,1 @@
+export { ProcessosPage } from './ProcessosPage';

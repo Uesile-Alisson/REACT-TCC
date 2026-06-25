@@ -1,0 +1,1 @@
+export { NovoUsuarioModal } from './NovoUsuarioModal';

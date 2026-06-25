@@ -1,0 +1,1 @@
+export { LastProcessCard } from './LastProcessCard';

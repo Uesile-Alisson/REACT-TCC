@@ -1,0 +1,1 @@
+export { BombaDetailPanel } from './BombaDetailPanel';

@@ -1,0 +1,102 @@
+.topbar {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 78px;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(122, 185, 244, 0.14);
+  background: rgba(5, 13, 24, 0.76);
+  backdrop-filter: blur(14px);
+}
+
+.topbar h1,
+.overline {
+  margin: 0;
+}
+
+.topbar h1 {
+  color: #f5f9ff;
+  font-size: 1.2rem;
+  line-height: 1.15;
+}
+
+.overline {
+  margin-bottom: 5px;
+  color: #5bc8ff;
+  font-size: 0.68rem;
+  font-weight: 820;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  justify-content: flex-end;
+}
+
+.statusBadge,
+.userBadge,
+.logoutButton {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 7px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.statusBadge,
+.userBadge {
+  max-width: min(100%, 360px);
+  padding: 0 11px;
+  overflow: hidden;
+  border: 1px solid rgba(122, 185, 244, 0.18);
+  background: rgba(13, 30, 49, 0.72);
+  color: #dcecff;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logoutButton {
+  padding: 0 14px;
+  border: 1px solid rgba(122, 185, 244, 0.28);
+  background: linear-gradient(180deg, rgba(83, 197, 255, 0.98), rgba(22, 119, 230, 0.98));
+  color: #03111e;
+  cursor: pointer;
+  transition:
+    box-shadow 160ms ease,
+    filter 160ms ease,
+    transform 160ms ease;
+}
+
+.logoutButton:hover,
+.logoutButton:focus-visible {
+  box-shadow: 0 0 0 3px rgba(29, 155, 255, 0.16);
+  filter: saturate(1.06);
+  outline: 0;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    display: grid;
+    padding: 16px;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .statusBadge,
+  .userBadge,
+  .logoutButton {
+    flex: 1 1 160px;
+  }
+}

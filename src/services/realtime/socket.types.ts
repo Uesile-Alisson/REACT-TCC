@@ -1,0 +1,104 @@
+import type { DateString, Id, SeveridadeAlarme, StatusAlarme, StatusProcesso } from '../../types';
+
+export type RealtimeConnectionState = {
+  isConnected: boolean;
+  isConnecting: boolean;
+  lastError: string | null;
+};
+
+export type RealtimeNamespace = 'mqtt-hardware' | 'processos' | 'alarmes';
+
+export type RealtimeListener<TPayload> = (payload: TPayload) => void;
+
+export type SocketConnectedPayload = {
+  message?: string;
+  socketId?: string;
+  conectado_em?: DateString;
+};
+
+export type MqttConnectionStatusPayload = {
+  status_conexao?: string;
+  error?: string | null;
+  enviado_em?: DateString;
+};
+
+export type MqttErrorPayload = {
+  error?: string;
+  enviado_em?: DateString;
+};
+
+export type HardwareStatePayload = {
+  enviado_em?: DateString;
+  [key: string]: unknown;
+};
+
+export type SensorReadingPayload = {
+  id_leitura_sensor?: Id;
+  id_processo?: Id;
+  id_tanque?: Id;
+  id_sensor?: Id;
+  valor_vacuo?: number;
+  registrado_em?: DateString;
+  enviado_em?: DateString;
+  [key: string]: unknown;
+};
+
+export type HardwareStatusPayload = {
+  esp32_online?: boolean;
+  bombas?: Record<string, unknown>;
+  valvulas?: Record<string, unknown>;
+  processo?: Record<string, unknown>;
+  status?: string;
+  mensagem?: string;
+  enviado_em?: DateString;
+};
+
+export type HeartbeatPayload = {
+  esp32_online?: boolean;
+  uptime?: number;
+  firmware?: string;
+  id_processo?: Id;
+  enviado_em?: DateString;
+  [key: string]: unknown;
+};
+
+export type AlarmCreatedPayload = {
+  id_alarme?: Id;
+  id_processo?: Id;
+  severidade?: SeveridadeAlarme;
+  status_alarme?: StatusAlarme;
+  tipo_alarme?: string;
+  mensagem?: string;
+  criado_em?: DateString;
+  [key: string]: unknown;
+};
+
+export type SensorAcoplamentoPayload = {
+  id_sensor?: Id;
+  id_tanque?: Id;
+  id_processo?: Id;
+  status_acoplamento?: string;
+  enviado_em?: DateString;
+  [key: string]: unknown;
+};
+
+export type ProcessLifecyclePayload = {
+  id_processo?: Id;
+  status_processo?: StatusProcesso;
+  message?: string;
+  motivo?: string;
+  emitted_at?: DateString;
+  metrics?: Record<string, unknown>;
+  dashboard?: Record<string, unknown>;
+};
+
+export type AlarmRealtimePayload = {
+  id_alarme?: Id;
+  id_processo?: Id;
+  severidade?: SeveridadeAlarme;
+  status_alarme?: StatusAlarme;
+  message?: string;
+  emitted_at?: DateString;
+  dashboard?: Record<string, unknown>;
+  notification?: Record<string, unknown>;
+};

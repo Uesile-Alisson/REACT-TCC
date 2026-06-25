@@ -1,0 +1,1 @@
+export { AlarmeStatusBadge } from './AlarmeStatusBadge';

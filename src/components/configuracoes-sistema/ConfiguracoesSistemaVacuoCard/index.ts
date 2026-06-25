@@ -1,0 +1,1 @@
+export { ConfiguracoesSistemaVacuoCard } from './ConfiguracoesSistemaVacuoCard';

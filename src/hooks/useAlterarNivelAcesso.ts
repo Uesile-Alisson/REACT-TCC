@@ -1,0 +1,1 @@
+export { getNivelAcessoId } from './useUsuariosPage';

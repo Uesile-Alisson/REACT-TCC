@@ -1,0 +1,1 @@
+export { ConfiguracoesSistemaStatusCard } from './ConfiguracoesSistemaStatusCard';

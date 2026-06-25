@@ -1,0 +1,1 @@
+export { TanquesListTable } from './TanquesListTable';

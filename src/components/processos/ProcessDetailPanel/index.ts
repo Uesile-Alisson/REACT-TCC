@@ -1,0 +1,1 @@
+export { ProcessDetailPanel } from './ProcessDetailPanel';

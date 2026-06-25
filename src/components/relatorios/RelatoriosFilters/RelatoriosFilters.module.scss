@@ -1,0 +1,102 @@
+.filters {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(122, 185, 244, 0.16);
+  border-radius: 8px;
+  background: rgba(7, 16, 28, 0.88);
+}
+
+.filters header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.filters header div,
+.filters button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filters header div {
+  color: #dcecff;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.filters svg {
+  color: #5bc8ff;
+}
+
+.filters button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid rgba(122, 185, 244, 0.2);
+  border-radius: 7px;
+  background: rgba(13, 30, 49, 0.86);
+  color: #dcecff;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 820;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid label {
+  display: grid;
+  gap: 7px;
+  color: #8ba7c4;
+  font-size: 0.7rem;
+  font-weight: 820;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.grid input,
+.grid select {
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid rgba(122, 185, 244, 0.18);
+  border-radius: 7px;
+  background: rgba(3, 10, 18, 0.8);
+  color: #f5f9ff;
+  outline: none;
+}
+
+.grid input:focus,
+.grid select:focus {
+  border-color: rgba(91, 200, 255, 0.72);
+  box-shadow: 0 0 0 3px rgba(91, 200, 255, 0.12);
+}
+
+@media (max-width: 1180px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .filters header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .filters button {
+    justify-content: center;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

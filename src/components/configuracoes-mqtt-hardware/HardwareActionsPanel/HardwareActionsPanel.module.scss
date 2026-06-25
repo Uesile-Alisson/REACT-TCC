@@ -1,0 +1,87 @@
+.panel {
+  display: grid;
+  gap: 15px;
+  padding: 18px;
+  border: 1px solid rgba(122, 185, 244, 0.16);
+  border-radius: 8px;
+  background: rgba(7, 16, 28, 0.9);
+}
+
+.panel header p {
+  margin: 0 0 6px;
+  color: #5bc8ff;
+  font-size: 0.68rem;
+  font-weight: 820;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.panel h2 {
+  margin: 0;
+  color: #f5f9ff;
+  font-size: 1.05rem;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.actions button,
+.errorState button,
+.successState button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid rgba(122, 185, 244, 0.24);
+  border-radius: 7px;
+  background: rgba(13, 30, 49, 0.92);
+  color: #dcecff;
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 820;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.errorState,
+.successState {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  line-height: 1.45;
+}
+
+.errorState {
+  border: 1px solid rgba(255, 139, 152, 0.28);
+  background: rgba(255, 78, 101, 0.08);
+  color: #ffadb8;
+}
+
+.successState {
+  border: 1px solid rgba(64, 220, 153, 0.28);
+  background: rgba(44, 189, 128, 0.08);
+  color: #8bf2c4;
+}
+
+.errorState button,
+.successState button {
+  justify-self: flex-start;
+  min-height: 34px;
+}
+
+@media (max-width: 680px) {
+  .actions {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,1 @@
+export { GerarRelatorioModal } from './GerarRelatorioModal';

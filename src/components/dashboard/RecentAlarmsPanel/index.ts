@@ -1,0 +1,1 @@
+export { RecentAlarmsPanel } from './RecentAlarmsPanel';

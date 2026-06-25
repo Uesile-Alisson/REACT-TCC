@@ -71,7 +71,7 @@ export function FirstAccessPage() {
 
       completeFirstAccess();
       setError('root', { type: 'success', message: response.message });
-      window.setTimeout(() => navigate('/dashboard', { replace: true }), 800);
+      navigate('/dashboard', { replace: true });
     } catch (error: unknown) {
       setError('root', {
         message: getAuthErrorMessage(error),

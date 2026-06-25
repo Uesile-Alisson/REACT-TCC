@@ -1,0 +1,55 @@
+.toast {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 139, 152, 0.32);
+  border-radius: 8px;
+  background: rgba(255, 78, 101, 0.09);
+  color: #dcecff;
+}
+
+.toast p,
+.toast strong,
+.toast span {
+  display: block;
+  margin: 0;
+}
+
+.toast p {
+  color: #ffadb8;
+  font-size: 0.68rem;
+  font-weight: 820;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.toast strong {
+  margin-top: 5px;
+  color: #f5f9ff;
+}
+
+.toast span {
+  margin-top: 4px;
+  color: #9cb4cf;
+  font-size: 0.8rem;
+}
+
+.toast button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(122, 185, 244, 0.18);
+  border-radius: 7px;
+  background: rgba(13, 30, 49, 0.72);
+  color: #dcecff;
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .toast {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,1 @@
+export { HistoricoMetricsCards } from './HistoricoMetricsCards';
