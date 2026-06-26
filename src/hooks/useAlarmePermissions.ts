@@ -12,6 +12,7 @@ export function useAlarmePermissions(): AlarmesPermissions {
       canViewAlarmes: Boolean(role),
       canViewAlarmeDetails: Boolean(role),
       canResolveAlarme: (status: StatusAlarme) => canResolve && status === 'ATIVO',
+      canGenerateAlarmeReport: canResolve,
     }),
     [canResolve, role],
   );

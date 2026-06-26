@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { Clock, Gauge, RadioTower, Workflow } from 'lucide-react';
 import type { ProcessoReadingResponse, ProcessoResponse, SensorAcoplamentoPayload } from '../../../types';
 import {
@@ -25,37 +26,41 @@ export function ProcessMetricsCards({
   const sensorCount = process ? countRelation(process, 'sensores') : null;
   const averageVacuum = process ? getUnknownNumber(process, 'vacuo_medio') : null;
   const finalVacuum = process ? getUnknownNumber(process, 'vacuo_final') : null;
+  const cards = [
+    { icon: Clock, label: 'Inicio', value: formatProcessDate(process?.iniciado_em ?? process?.criado_em) },
+    {
+      icon: Gauge,
+      label: 'Vacuo alvo / atual',
+      value: `${formatProcessNumber(process?.vacuo_alvo, 'mbar')} / ${formatProcessNumber(lastReading?.valor_vacuo ?? finalVacuum ?? averageVacuum, 'mbar')}`,
+    },
+    { icon: Workflow, label: 'Tanques / sensores', value: `${tankCount ?? 'n/i'} / ${sensorCount ?? 'n/i'}` },
+    {
+      icon: RadioTower,
+      label: 'Hardware',
+      value: `ESP32 ${esp32Online === true ? 'online' : 'pendente'} / ${lastAcoplamento?.status_acoplamento ?? 'acoplamento pendente'}`,
+    },
+  ];
 
   return (
     <section className={styles.grid} aria-label="Metricas do processo">
-      <article>
-        <Clock size={18} aria-hidden="true" />
-        <span>Inicio</span>
-        <strong>{formatProcessDate(process?.iniciado_em ?? process?.criado_em)}</strong>
-      </article>
-      <article>
-        <Gauge size={18} aria-hidden="true" />
-        <span>Vacuo alvo / atual</span>
-        <strong>
-          {formatProcessNumber(process?.vacuo_alvo, 'mbar')} /{' '}
-          {formatProcessNumber(lastReading?.valor_vacuo ?? finalVacuum ?? averageVacuum, 'mbar')}
-        </strong>
-      </article>
-      <article>
-        <Workflow size={18} aria-hidden="true" />
-        <span>Tanques / sensores</span>
-        <strong>
-          {tankCount ?? 'n/i'} / {sensorCount ?? 'n/i'}
-        </strong>
-      </article>
-      <article>
-        <RadioTower size={18} aria-hidden="true" />
-        <span>Hardware</span>
-        <strong>
-          ESP32 {esp32Online === true ? 'online' : 'pendente'} /{' '}
-          {lastAcoplamento?.status_acoplamento ?? 'acoplamento pendente'}
-        </strong>
-      </article>
+      {cards.map((card, index) => {
+        const Icon = card.icon;
+
+        return (
+          <motion.article
+            key={card.label}
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            whileHover={{ y: -4, scale: 1.015 }}
+            transition={{ delay: index * 0.035, duration: 0.22 }}
+          >
+            <Icon size={18} aria-hidden="true" />
+            <span>{card.label}</span>
+            <strong>{card.value}</strong>
+          </motion.article>
+        );
+      })}
     </section>
   );
 }

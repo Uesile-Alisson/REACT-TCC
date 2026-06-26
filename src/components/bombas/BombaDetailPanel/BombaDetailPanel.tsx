@@ -4,23 +4,30 @@ import styles from './BombaDetailPanel.module.scss';
 
 type BombaDetailPanelProps = {
   bomba: BombaConfigResponse | null;
-  endpointMissing: boolean;
+  canEdit: boolean;
+  canToggleActive: boolean;
+  isSubmitting: boolean;
+  onEdit: (bomba: BombaConfigResponse) => void;
+  onToggleActive: (bomba: BombaConfigResponse) => void;
 };
 
-export function BombaDetailPanel({ bomba, endpointMissing }: BombaDetailPanelProps) {
+export function BombaDetailPanel({
+  bomba,
+  canEdit,
+  canToggleActive,
+  isSubmitting,
+  onEdit,
+  onToggleActive,
+}: BombaDetailPanelProps) {
   if (!bomba) {
     return (
       <aside className={styles.panel} aria-label="Detalhes da bomba">
         <span className={styles.overline}>Detalhe tecnico</span>
         <h2>Sem bomba selecionada</h2>
-        <p>
-          {endpointMissing
-            ? 'Os detalhes serao preenchidos quando o backend disponibilizar consulta HTTP de bombas.'
-            : 'Selecione uma bomba na lista para visualizar os parametros.'}
-        </p>
+        <p>Selecione uma bomba na lista para visualizar os parametros.</p>
         <div className={styles.schemaBox}>
-          <strong>Campos confirmados no schema</strong>
-          <span>nome, tipo_bomba, status_padrao, entrada_por_pressao e entrada_por_tempo.</span>
+          <strong>Campos integrados</strong>
+          <span>nome, tipo_bomba, status_padrao, entrada_por_pressao, entrada_por_tempo.</span>
         </div>
       </aside>
     );
@@ -56,6 +63,19 @@ export function BombaDetailPanel({ bomba, endpointMissing }: BombaDetailPanelPro
           <dd>{new Date(bomba.atualizado_em).toLocaleString('pt-BR')}</dd>
         </div>
       </dl>
+
+      <div className={styles.actions}>
+        <button type="button" onClick={() => onEdit(bomba)} disabled={!canEdit || isSubmitting}>
+          Editar
+        </button>
+        <button
+          type="button"
+          onClick={() => onToggleActive(bomba)}
+          disabled={!canToggleActive || isSubmitting}
+        >
+          {bomba.status_padrao === 'ATIVA' ? 'Desativar' : 'Ativar'}
+        </button>
+      </div>
     </aside>
   );
 }

@@ -6,10 +6,10 @@ import type {
   ListProcessosQuery,
   ParadaEmergenciaProcessoRequest,
   ProcessoDashboardResponse,
-  ProcessoEventResponse,
+  ProcessoEventListResponse,
   ProcessoListResponse,
+  ProcessoReadingListResponse,
   ProcessoReadingQuery,
-  ProcessoReadingResponse,
   ProcessoResponse,
   UpdateProcessoConfigRequest,
 } from '../types/processos.types';
@@ -104,8 +104,8 @@ export async function emergencyStopProcesso(
 export async function getProcessoReadings(
   idProcesso: number,
   query?: ProcessoReadingQuery,
-): Promise<ProcessoReadingResponse[]> {
-  const { data } = await api.get<ProcessoReadingResponse[]>(
+): Promise<ProcessoReadingListResponse> {
+  const { data } = await api.get<ProcessoReadingListResponse>(
     `/leituras-eventos/processos/${idProcesso}/leituras`,
     { params: query },
   );
@@ -113,8 +113,10 @@ export async function getProcessoReadings(
   return data;
 }
 
-export async function getProcessoEvents(idProcesso: number): Promise<ProcessoEventResponse[]> {
-  const { data } = await api.get<ProcessoEventResponse[]>(
+export async function getProcessoEvents(
+  idProcesso: number,
+): Promise<ProcessoEventListResponse> {
+  const { data } = await api.get<ProcessoEventListResponse>(
     `/leituras-eventos/processos/${idProcesso}/eventos`,
   );
 

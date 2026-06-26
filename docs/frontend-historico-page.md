@@ -139,7 +139,7 @@ Motivo:
 | TECNICO | Listar, visualizar detalhes e gerar relatorio. |
 | ADMINISTRADOR | Listar, visualizar detalhes e gerar relatorio. |
 
-Exclusao ficou oculta para todos por endpoint ausente.
+Exclusao ficou oculta para todos por ausencia de contrato HTTP dedicado.
 
 ## 13. O que NAO foi implementado nesta fase
 
@@ -160,7 +160,7 @@ Exclusao ficou oculta para todos por endpoint ausente.
 - Listagem completa.
 - Filtros.
 - Geracao de relatorio de processo/alarme.
-- Preview PDF.
+- Preview PDF/XLSX na pagina de Relatorios.
 - Download PDF/XLSX.
 - Permissoes por perfil.
 - Remover qualquer acao indevida como CSV, regenerar, editar ou excluir.

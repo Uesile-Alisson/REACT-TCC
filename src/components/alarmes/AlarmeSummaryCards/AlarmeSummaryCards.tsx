@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { AlertTriangle, Bell, CheckCircle2, Info } from 'lucide-react';
 import type { AlarmeDashboardResponse, AlarmeResponse } from '../../../types';
 import styles from './AlarmeSummaryCards.module.scss';
@@ -19,35 +20,35 @@ export function AlarmeSummaryCards({ summary, alarmes }: AlarmeSummaryCardsProps
   const infos = summary?.por_severidade?.INFO ?? countByList(alarmes, (alarme) => alarme.severidade === 'INFO');
   const resolvidos = countByList(alarmes, (alarme) => alarme.status_alarme === 'RESOLVIDO');
 
+  const cards = [
+    { icon: Bell, label: 'Total', value: total, className: undefined },
+    { icon: AlertTriangle, label: 'Ativos', value: ativos, className: undefined },
+    { icon: AlertTriangle, label: 'Criticos', value: criticos, className: styles.critical },
+    { icon: Info, label: 'Medio / Info', value: `${medios} / ${infos}`, className: undefined },
+    { icon: CheckCircle2, label: 'Resolvidos', value: resolvidos, className: undefined },
+  ];
+
   return (
     <section className={styles.grid} aria-label="Resumo de alarmes">
-      <article>
-        <Bell size={18} aria-hidden="true" />
-        <span>Total</span>
-        <strong>{total}</strong>
-      </article>
-      <article>
-        <AlertTriangle size={18} aria-hidden="true" />
-        <span>Ativos</span>
-        <strong>{ativos}</strong>
-      </article>
-      <article className={styles.critical}>
-        <AlertTriangle size={18} aria-hidden="true" />
-        <span>Criticos</span>
-        <strong>{criticos}</strong>
-      </article>
-      <article>
-        <Info size={18} aria-hidden="true" />
-        <span>Medio / Info</span>
-        <strong>
-          {medios} / {infos}
-        </strong>
-      </article>
-      <article>
-        <CheckCircle2 size={18} aria-hidden="true" />
-        <span>Resolvidos</span>
-        <strong>{resolvidos}</strong>
-      </article>
+      {cards.map((card, index) => {
+        const Icon = card.icon;
+
+        return (
+          <motion.article
+            key={card.label}
+            className={card.className}
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            whileHover={{ y: -4, scale: 1.015 }}
+            transition={{ delay: index * 0.035, duration: 0.22 }}
+          >
+            <Icon size={18} aria-hidden="true" />
+            <span>{card.label}</span>
+            <strong>{card.value}</strong>
+          </motion.article>
+        );
+      })}
     </section>
   );
 }

@@ -10,7 +10,7 @@ export function useConfiguracoesSistemaPermissions(): ConfiguracoesSistemaPermis
   return useMemo(
     () => ({
       canViewConfiguracoesSistema: canUseTechnicalSettings,
-      canEditConfiguracoesSistema: false,
+      canEditConfiguracoesSistema: canUseTechnicalSettings,
     }),
     [canUseTechnicalSettings],
   );

@@ -15,7 +15,7 @@ de estados sem criar funcionalidades novas.
 | Alarmes | Revisado por codigo: sem criar/editar/excluir alarme; resolver por permissao. | Validado por codigo | Teste com eventos reais. |
 | Historico | Revisado por codigo: sem acoes de processo ativo; relatorio por permissao. | Validado por codigo | Teste com base historica real. |
 | Relatorios | Confirmado uso de Blob/Object URL com revoke; sem CSV/editar/regenerar/excluir. | Validado por codigo | Teste com GridFS/API real. |
-| Configuracoes do Sistema | Revisado modo leitura, estados e separacao de escopo. | Validado por codigo | Endpoint dedicado ainda pendente. |
+| Configuracoes do Sistema | Revisado estados e separacao de escopo. | Validado por codigo | API dedicada integrada. |
 | Configuracoes MQTT/Hardware | Revisado campo de senha MQTT e ausencia de MQTT/ESP32 direto. | Validado por codigo | Teste real com Socket.IO/MQTT. |
 | Tanques | Botao de atualizar desabilitado enquanto endpoint dedicado esta ausente. | Polido | Endpoint HTTP dedicado pendente. |
 | Bombas | Botao de atualizar desabilitado enquanto endpoint dedicado esta ausente. | Polido | Endpoint HTTP dedicado pendente. |
@@ -45,7 +45,7 @@ de estados sem criar funcionalidades novas.
 - Empty states confirmados em tabelas/listagens.
 - Access denied agora existe desde Fase 17.
 - Read-only mantido para endpoints ausentes.
-- Tanques/Bombas nao simulam mais refresh com `Promise.resolve`.
+- Tanques/Bombas usam refresh real via API dedicada.
 
 ## 6. Responsividade
 
@@ -76,9 +76,9 @@ de estados sem criar funcionalidades novas.
 
 | Arquivo | Item encontrado | Acao tomada | Observacao |
 |---|---|---|---|
-| `useTanquesPage.ts` | `Promise.resolve` simulando refresh local. | Removido. | Endpoint dedicado segue pendente. |
-| `useBombasPage.ts` | `Promise.resolve` simulando refresh local. | Removido. | Endpoint dedicado segue pendente. |
-| `useUsuariosPage.ts` | `setTimeout` para carregamento inicial. | Removido. | Carregamento inicial usa request real sem delay artificial. |
+| `useTanquesPage.ts` | Refresh local antigo. | Substituido. | API dedicada integrada. |
+| `useBombasPage.ts` | Refresh local antigo. | Substituido. | API dedicada integrada. |
+| `useUsuariosPage.ts` | Carregamento inicial antigo. | Removido. | Carregamento inicial usa request real. |
 | `PlaceholderPage` | Componente legado compartilhado. | Mantido. | Nao esta mais usado pelas telas dedicadas principais revisadas. |
 
 ## 10. Acoes fora do escopo removidas ou confirmadas ausentes

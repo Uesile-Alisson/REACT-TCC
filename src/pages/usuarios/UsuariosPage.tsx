@@ -1,5 +1,6 @@
 import { Plus, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
 import { AlterarNivelAcessoModal } from '../../components/usuarios/AlterarNivelAcessoModal';
 import { CredenciaisTemporariasModal } from '../../components/usuarios/CredenciaisTemporariasModal';
 import { EditarUsuarioModal } from '../../components/usuarios/EditarUsuarioModal';
@@ -8,7 +9,7 @@ import { NovoUsuarioModal } from '../../components/usuarios/NovoUsuarioModal';
 import { UsuarioDetailPanel } from '../../components/usuarios/UsuarioDetailPanel';
 import { UsuariosListTable } from '../../components/usuarios/UsuariosListTable';
 import { useAuth } from '../../hooks/useAuth';
-import { useUsuariosPage } from '../../hooks/useUsuariosPage';
+import { getUserAccessLevel, useUsuariosPage } from '../../hooks/useUsuariosPage';
 import { useUsuariosPermissions } from '../../hooks/useUsuariosPermissions';
 import type { UserResponse } from '../../types';
 import styles from './UsuariosPage.module.scss';
@@ -37,6 +38,24 @@ export function UsuariosPage() {
   const [editUser, setEditUser] = useState<UserResponse | null>(null);
   const [roleUser, setRoleUser] = useState<UserResponse | null>(null);
   const [deleteUserTarget, setDeleteUserTarget] = useState<UserResponse | null>(null);
+  const accessLevelChartData = useMemo(
+    () => [
+      { name: 'Operadores', value: users.filter((user) => getUserAccessLevel(user) === 'OPERADOR').length },
+      { name: 'Tecnicos', value: users.filter((user) => getUserAccessLevel(user) === 'TECNICO').length },
+      {
+        name: 'Administradores',
+        value: users.filter((user) => getUserAccessLevel(user) === 'ADMINISTRADOR').length,
+      },
+    ],
+    [users],
+  );
+  const firstAccessChartData = useMemo(
+    () => [
+      { name: 'Pendente', value: users.filter((user) => user.primeiro_acesso).length },
+      { name: 'Concluido', value: users.filter((user) => !user.primeiro_acesso).length },
+    ],
+    [users],
+  );
 
   if (!permissions.canViewUsuarios) {
     return (
@@ -102,10 +121,32 @@ export function UsuariosPage() {
           <small>Operacao tecnica</small>
         </article>
         <article>
+          <span>Operadores</span>
+          <strong>{summary.operadores}</strong>
+          <small>Uso operacional</small>
+        </article>
+        <article>
           <span>Primeiro acesso</span>
           <strong>{summary.primeiroAcessoPendente}</strong>
           <small>Pendentes</small>
         </article>
+      </section>
+
+      <section className={styles.chartGrid} aria-label="Graficos de usuarios">
+        <RealDataChartPanel
+          title="Usuarios por nivel"
+          subtitle="Distribuicao calculada com a lista de usuarios carregada no frontend."
+          data={accessLevelChartData}
+          variant="bar"
+          emptyMessage={isLoading ? 'Carregando usuarios para montar o grafico.' : 'Sem usuarios carregados.'}
+        />
+        <RealDataChartPanel
+          title="Primeiro acesso"
+          subtitle="Situacao de primeiro acesso dos usuarios retornados pela API."
+          data={firstAccessChartData}
+          variant="pie"
+          emptyMessage={isLoading ? 'Carregando usuarios para montar o grafico.' : 'Sem dados de primeiro acesso.'}
+        />
       </section>
 
       <section className={styles.contentGrid}>

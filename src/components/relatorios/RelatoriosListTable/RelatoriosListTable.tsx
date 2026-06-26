@@ -1,4 +1,6 @@
 import { Download, Eye, FileSearch } from 'lucide-react';
+import { motion } from 'framer-motion';
+import type { KeyboardEvent, MouseEvent } from 'react';
 import type { RelatorioResponse, RelatoriosPermissions } from '../../../types';
 import { RelatorioFormatoBadge, RelatorioTipoBadge } from '../RelatorioBadges';
 import styles from './RelatoriosListTable.module.scss';
@@ -23,10 +25,16 @@ function formatDate(value?: string): string {
     return 'Sem data';
   }
 
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Data invalida';
+  }
+
   return new Intl.DateTimeFormat('pt-BR', {
     dateStyle: 'short',
     timeStyle: 'short',
-  }).format(new Date(value));
+  }).format(date);
 }
 
 function getOriginLabel(relatorio: RelatorioResponse): string {
@@ -60,6 +68,22 @@ export function RelatoriosListTable({
 }: RelatoriosListTableProps) {
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
+  function handleRowKeyDown(
+    event: KeyboardEvent<HTMLTableRowElement>,
+    idRelatorio: number,
+  ): void {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+
+    event.preventDefault();
+    onSelect(idRelatorio);
+  }
+
+  function stopActionPropagation(event: MouseEvent<HTMLButtonElement>): void {
+    event.stopPropagation();
+  }
+
   return (
     <section className={styles.panel}>
       <header>
@@ -83,16 +107,30 @@ export function RelatoriosListTable({
             </tr>
           </thead>
           <tbody>
-            {relatorios.map((relatorio) => (
-              <tr
+            {relatorios.map((relatorio, index) => (
+              <motion.tr
                 key={relatorio.id_relatorio}
                 className={selectedId === relatorio.id_relatorio ? styles.selected : undefined}
+                role="button"
+                tabIndex={0}
+                onClick={() => onSelect(relatorio.id_relatorio)}
+                onKeyDown={(event) => handleRowKeyDown(event, relatorio.id_relatorio)}
+                aria-label={`Abrir metadados do relatorio ${relatorio.id_relatorio}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.025, duration: 0.18 }}
+                whileHover={{ backgroundColor: 'rgba(83, 197, 255, 0.075)' }}
               >
                 <td>
                   <button
                     type="button"
                     className={styles.fileButton}
-                    onClick={() => onSelect(relatorio.id_relatorio)}
+                    onClick={(event) => {
+                      stopActionPropagation(event);
+                      onSelect(relatorio.id_relatorio);
+                    }}
+                    aria-label={`Ver metadados do relatorio ${relatorio.id_relatorio}`}
+                    title="Ver metadados"
                   >
                     <FileSearch size={16} aria-hidden="true" />
                     <span>{relatorio.nome_arquivo ?? `Relatorio #${relatorio.id_relatorio}`}</span>
@@ -110,23 +148,31 @@ export function RelatoriosListTable({
                   <div className={styles.actions}>
                     <button
                       type="button"
-                      onClick={() => onPreview(relatorio)}
+                      onClick={(event) => {
+                        stopActionPropagation(event);
+                        onPreview(relatorio);
+                      }}
                       disabled={!permissions.canPreviewRelatorio(relatorio)}
+                      aria-label={`Abrir preview do relatorio ${relatorio.id_relatorio}`}
                       title="Abrir preview"
                     >
                       <Eye size={15} aria-hidden="true" />
                     </button>
                     <button
                       type="button"
-                      onClick={() => onDownload(relatorio)}
+                      onClick={(event) => {
+                        stopActionPropagation(event);
+                        onDownload(relatorio);
+                      }}
                       disabled={!permissions.canDownloadRelatorio(relatorio) || downloadingId === relatorio.id_relatorio}
-                      title="Baixar arquivo"
+                      aria-label={`Baixar relatorio ${relatorio.id_relatorio}`}
+                      title={downloadingId === relatorio.id_relatorio ? 'Baixando' : 'Baixar arquivo'}
                     >
                       <Download size={15} aria-hidden="true" />
                     </button>
                   </div>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>

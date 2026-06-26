@@ -5,10 +5,12 @@ import { HistoricoDetailPanel } from '../../components/historico/HistoricoDetail
 import { HistoricoFilters } from '../../components/historico/HistoricoFilters';
 import { HistoricoListTable } from '../../components/historico/HistoricoListTable';
 import { HistoricoMetricsCards } from '../../components/historico/HistoricoMetricsCards';
+import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
 import { useGerarRelatorioHistorico } from '../../hooks/useGerarRelatorioHistorico';
 import { useHistoricoPage } from '../../hooks/useHistoricoPage';
 import { useHistoricoPermissions } from '../../hooks/useHistoricoPermissions';
 import type { HistoricoProcessoResponse } from '../../types';
+import { countBy, formatShortDate } from '../../utils/chartData';
 import styles from './HistoricoPage.module.scss';
 
 export function HistoricoPage() {
@@ -35,9 +37,19 @@ export function HistoricoPage() {
   const [reportTarget, setReportTarget] = useState<HistoricoProcessoResponse | null>(null);
 
   async function handleGenerateReport(idProcesso: number, observacao: string): Promise<void> {
-    await gerarRelatorio(idProcesso, observacao);
-    setReportTarget(null);
+    const success = await gerarRelatorio(idProcesso, observacao);
+
+    if (success) {
+      setReportTarget(null);
+      await refresh();
+      await selectProcesso(idProcesso);
+    }
   }
+
+  const processosPorStatus = countBy(data.processos, (processo) => processo.status_processo);
+  const processosPorData = countBy(data.processos, (processo) =>
+    formatShortDate(processo.finalizado_em ?? processo.iniciado_em),
+  );
 
   return (
     <main className={styles.page}>
@@ -90,6 +102,21 @@ export function HistoricoPage() {
         total={data.total}
         summary={data.summary}
       />
+
+      <section className={styles.chartGrid} aria-label="Graficos do historico">
+        <RealDataChartPanel
+          title="Processos por status"
+          subtitle="Distribuicao calculada sobre a pagina atual retornada pela API."
+          data={processosPorStatus}
+          variant="pie"
+        />
+        <RealDataChartPanel
+          title="Encerramentos recentes"
+          subtitle="Volume por data usando finalizado_em ou iniciado_em dos processos carregados."
+          data={processosPorData}
+          variant="bar"
+        />
+      </section>
 
       <HistoricoFilters filters={filters} onChange={setFilters} />
 

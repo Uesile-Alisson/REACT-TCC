@@ -3,11 +3,24 @@
   gap: 18px;
   align-items: center;
   justify-content: space-between;
+  min-width: 0;
   min-height: 78px;
+  max-width: 100%;
   padding: 18px 24px;
   border-bottom: 1px solid rgba(122, 185, 244, 0.14);
   background: rgba(5, 13, 24, 0.76);
   backdrop-filter: blur(14px);
+}
+
+.titleGroup {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.titleGroup > div {
+  min-width: 0;
 }
 
 .topbar h1,
@@ -16,9 +29,32 @@
 }
 
 .topbar h1 {
+  overflow: hidden;
   color: #f5f9ff;
   font-size: 1.2rem;
   line-height: 1.15;
+  text-overflow: ellipsis;
+}
+
+.menuButton {
+  display: none;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(122, 185, 244, 0.26);
+  border-radius: 7px;
+  background: rgba(13, 30, 49, 0.82);
+  color: #dcecff;
+  cursor: pointer;
+}
+
+.menuButton:hover,
+.menuButton:focus-visible {
+  border-color: rgba(83, 197, 255, 0.48);
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(29, 155, 255, 0.18);
 }
 
 .overline {
@@ -35,6 +71,7 @@
   flex-wrap: wrap;
   gap: 9px;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .statusBadge,
@@ -86,17 +123,38 @@
 
 @media (max-width: 760px) {
   .topbar {
-    display: grid;
+    display: flex;
+    align-items: flex-start;
     padding: 16px;
   }
 
+  .menuButton {
+    display: inline-flex;
+  }
+
+  .titleGroup {
+    flex: 1 1 auto;
+  }
+
   .actions {
+    flex: 0 1 auto;
     justify-content: stretch;
   }
 
   .statusBadge,
   .userBadge,
   .logoutButton {
-    flex: 1 1 160px;
+    flex: 1 1 145px;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .actions {
+    width: 100%;
   }
 }

@@ -12,8 +12,7 @@ type AuthProviderProps = {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [accessToken, setToken] = useState<string | null>(() => getAccessToken());
-  const [isLoading] = useState<boolean>(false);
-  // Future improvement: validate the stored JWT and hydrate the user via a /me endpoint.
+  const [isLoading, setIsLoading] = useState<boolean>(() => Boolean(getAccessToken()));
 
   const signin = useCallback(async (credentials: SignInRequest): Promise<SignInResult> => {
     const auth = await authService.signIn(credentials);
@@ -22,6 +21,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setAccessToken(auth.access_token);
     setToken(auth.access_token);
     setUser(auth.user);
+    setIsLoading(false);
 
     return {
       user: auth.user,
@@ -31,11 +31,56 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, []);
 
-  const logout = useCallback((): void => {
+  const clearSession = useCallback((): void => {
     removeAccessToken();
     setUser(null);
     setToken(null);
   }, []);
+
+  const logout = useCallback((): void => {
+    clearSession();
+    setIsLoading(false);
+  }, [clearSession]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const storedToken = getAccessToken();
+
+    if (!storedToken) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    async function hydrateAuthenticatedUser(): Promise<void> {
+      try {
+        const currentUser = await authService.me();
+
+        if (!isMounted) {
+          return;
+        }
+
+        setToken(storedToken);
+        setUser(currentUser);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        clearSession();
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void hydrateAuthenticatedUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [clearSession]);
 
   useEffect(() => {
     window.addEventListener(AUTH_UNAUTHORIZED_EVENT, logout);

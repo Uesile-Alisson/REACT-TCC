@@ -1,4 +1,5 @@
 import { RefreshCw, RotateCcw, Save } from 'lucide-react';
+import { BackupQuickActions } from '../../components/backups/BackupQuickActions';
 import { Esp32StatusCard } from '../../components/configuracoes-mqtt-hardware/Esp32StatusCard';
 import { HardwareActionsPanel } from '../../components/configuracoes-mqtt-hardware/HardwareActionsPanel';
 import { HardwareReadingsCard } from '../../components/configuracoes-mqtt-hardware/HardwareReadingsCard';
@@ -6,6 +7,7 @@ import { MqttConfigForm } from '../../components/configuracoes-mqtt-hardware/Mqt
 import { MqttStatusCard } from '../../components/configuracoes-mqtt-hardware/MqttStatusCard';
 import { MqttTopicsPanel } from '../../components/configuracoes-mqtt-hardware/MqttTopicsPanel';
 import { useAcoplamentoRealtime } from '../../hooks/useAcoplamentoRealtime';
+import { useAuth } from '../../hooks/useAuth';
 import { useConfiguracoesMqttHardware } from '../../hooks/useConfiguracoesMqttHardware';
 import { useHardwareActions } from '../../hooks/useHardwareActions';
 import { useMqttConfigForm } from '../../hooks/useMqttConfigForm';
@@ -15,6 +17,7 @@ import { useSensorReadingsRealtime } from '../../hooks/useSensorReadingsRealtime
 import styles from './ConfiguracoesMqttHardwarePage.module.scss';
 
 export function ConfiguracoesMqttHardwarePage() {
+  const { user } = useAuth();
   const {
     config,
     status,
@@ -51,8 +54,48 @@ export function ConfiguracoesMqttHardwarePage() {
     handleSyncHardware,
   } = useHardwareActions();
   const canSave = permissions.canEditMqttHardwareConfig && isDirty && !isSaving;
+  const canUseBackups = user?.nivel_acesso === 'ADMINISTRADOR';
   const effectiveHeartbeat =
     esp32Online === null ? lastHeartbeat : { ...(lastHeartbeat ?? {}), esp32_online: esp32Online };
+  const mqttStatus = mqttConnectionStatus?.status_conexao ?? status?.mqtt?.status_conexao ?? config?.status_conexao;
+  const esp32StatusKnown = effectiveHeartbeat?.esp32_online ?? status?.esp32_online ?? null;
+  const diagnosticItems = [
+    {
+      label: 'API',
+      value: configError || statusError ? 'Backend com falha ou resposta parcial' : 'Consultas HTTP respondendo',
+      tone: configError || statusError ? 'warning' : 'success',
+    },
+    {
+      label: 'Configuracao MQTT',
+      value: config ? 'Configuracao carregada' : 'Configuracao MQTT nao encontrada ou indisponivel',
+      tone: config ? 'success' : 'warning',
+    },
+    {
+      label: 'Broker MQTT',
+      value:
+        mqttStatus === 'CONNECTED'
+          ? 'Broker conectado'
+          : mqttStatus === 'CONNECTING'
+            ? 'Broker conectando'
+            : 'Broker MQTT desconectado ou sem status recente',
+      tone: mqttStatus === 'CONNECTED' ? 'success' : mqttStatus === 'CONNECTING' ? 'warning' : 'danger',
+    },
+    {
+      label: 'ESP32',
+      value:
+        esp32StatusKnown === true
+          ? 'ESP32 online'
+          : esp32StatusKnown === false
+            ? 'ESP32 offline'
+            : 'Aguardando heartbeat do ESP32',
+      tone: esp32StatusKnown === true ? 'success' : esp32StatusKnown === false ? 'danger' : 'warning',
+    },
+    {
+      label: 'Socket.IO',
+      value: isConnected ? 'Realtime conectado' : isConnecting ? 'Realtime conectando' : 'Socket indisponivel',
+      tone: isConnected ? 'success' : isConnecting ? 'warning' : 'danger',
+    },
+  ];
 
   async function handleSave(): Promise<void> {
     const result = validate();
@@ -134,6 +177,38 @@ export function ConfiguracoesMqttHardwarePage() {
           <span>O endpoint de alteracao MQTT e restrito a ADMINISTRADOR no backend.</span>
         </section>
       ) : null}
+
+      <section className={styles.diagnosticPanel} aria-label="Diagnostico MQTT e hardware">
+        <header>
+          <div>
+            <p>Diagnostico</p>
+            <h2>Por que pode aparecer indisponivel?</h2>
+          </div>
+          <span>Fonte: API + Socket.IO</span>
+        </header>
+        <div className={styles.diagnosticGrid}>
+          {diagnosticItems.map((item) => (
+            <article key={item.label} className={styles[item.tone]}>
+              <strong>{item.label}</strong>
+              <span>{item.value}</span>
+            </article>
+          ))}
+        </div>
+        <p>
+          Para os dados aparecerem, mantenha a API rodando, uma configuracao MQTT ativa no banco,
+          Mosquitto conectado e o ESP32 ou simulador publicando heartbeat/status.
+        </p>
+      </section>
+
+      <BackupQuickActions
+        title="Backups MQTT/Hardware"
+        description="Gere ou restaure snapshots da configuracao MQTT. Backups completos tambem podem restaurar esta camada."
+        generateType="MQTT"
+        restoreTypes={['MQTT', 'COMPLETO']}
+        canUseBackups={canUseBackups}
+        restoreTitle="Restaurar backup MQTT/Hardware"
+        postRestoreMessage="Configuracao MQTT restaurada. Teste a conexao ou reinicie a comunicacao para aplicar o estado operacional."
+      />
 
       <section className={styles.statusGrid}>
         <MqttStatusCard

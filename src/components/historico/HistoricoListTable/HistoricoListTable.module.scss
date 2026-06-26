@@ -39,24 +39,48 @@
 }
 
 .tableWrap {
+  min-width: 0;
   overflow-x: auto;
+  scrollbar-color: rgba(91, 200, 255, 0.55) rgba(7, 16, 28, 0.92);
+  scrollbar-width: thin;
 }
 
-table {
+.tableWrap::-webkit-scrollbar {
+  height: 10px;
+}
+
+.tableWrap::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(7, 16, 28, 0.92);
+}
+
+.tableWrap::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(7, 16, 28, 0.92);
+  border-radius: 999px;
+  background: rgba(91, 200, 255, 0.62);
+}
+
+.tableWrap::-webkit-scrollbar-thumb:hover {
+  background: rgba(122, 185, 244, 0.82);
+}
+
+.tableWrap table {
   width: 100%;
   min-width: 860px;
+  table-layout: fixed;
   border-collapse: collapse;
 }
 
-th,
-td {
+.tableWrap th,
+.tableWrap td {
+  box-sizing: border-box;
   padding: 12px 10px;
   border-bottom: 1px solid rgba(122, 185, 244, 0.1);
   text-align: left;
   vertical-align: middle;
 }
 
-th {
+.tableWrap th {
   color: #5bc8ff;
   font-size: 0.68rem;
   font-weight: 820;
@@ -64,17 +88,39 @@ th {
   text-transform: uppercase;
 }
 
-td {
+.tableWrap td {
   color: #dcecff;
   font-size: 0.86rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-td strong,
-td span {
+.tableWrap th:first-child {
+  width: 24%;
+}
+
+.tableWrap th:nth-child(2) {
+  width: 15%;
+}
+
+.tableWrap th:last-child,
+.tableWrap td:last-child {
+  width: 94px;
+  padding-right: 6px;
+  padding-left: 6px;
+  overflow: visible;
+  text-align: right;
+}
+
+.tableWrap td strong,
+.tableWrap td span {
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-td span {
+.tableWrap td span {
   margin-top: 4px;
   color: #7894ae;
   font-size: 0.76rem;
@@ -86,6 +132,13 @@ td span {
   flex-wrap: wrap;
   gap: 9px;
   align-items: center;
+}
+
+.actions {
+  width: 100%;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .actions button,
@@ -105,6 +158,12 @@ td span {
   font-weight: 820;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.actions button {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
 }
 
 .pagination {

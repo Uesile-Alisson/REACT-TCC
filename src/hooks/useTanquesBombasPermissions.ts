@@ -12,13 +12,15 @@ export function useTanquesBombasPermissions(): TanquesBombasPermissions {
   return useMemo(
     () => ({
       canViewTanques: canUseTechnicalSettings,
-      canCreateTanques: false,
-      canEditTanques: false,
-      canDeleteTanques: false,
+      canCreateTanques: canUseTechnicalSettings,
+      canEditTanques: canUseTechnicalSettings,
+      canActivateTanques: canUseTechnicalSettings,
+      canDeactivateTanques: canUseTechnicalSettings,
       canViewBombas: canUseTechnicalSettings,
-      canCreateBombas: false,
-      canEditBombas: false,
-      canDeleteBombas: false,
+      canCreateBombas: canUseTechnicalSettings,
+      canEditBombas: canUseTechnicalSettings,
+      canActivateBombas: canUseTechnicalSettings,
+      canDeactivateBombas: canUseTechnicalSettings,
     }),
     [canUseTechnicalSettings],
   );

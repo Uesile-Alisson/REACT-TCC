@@ -7,6 +7,7 @@ export type AuthUser = {
   nome: string;
   login: string;
   email: string;
+  id_nivel_acesso?: number;
   nivel_acesso: AccessLevel;
   primeiro_acesso: boolean;
 };
@@ -58,7 +59,8 @@ export type ApiAuthUser = {
   id_usuario?: number;
   nome: string;
   login: string;
-  email: string;
+  email?: string | null;
+  id_nivel_acesso?: number;
   nivel_acesso: ApiAccessLevel;
   primeiro_acesso: boolean;
 };
@@ -67,4 +69,14 @@ export type ApiSignInResponse = {
   access_token: string;
   user?: ApiAuthUser;
   usuario?: ApiAuthUser;
+};
+
+export type AuthMeResponse = {
+  id_usuario: number;
+  nome: string;
+  login: string;
+  email?: string | null;
+  id_nivel_acesso: number;
+  nivel_acesso: AccessLevel;
+  primeiro_acesso: boolean;
 };

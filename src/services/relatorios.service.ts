@@ -12,6 +12,48 @@ import type {
   RelatorioResponse,
   SingleRelatorioGenerationResult,
 } from '../types/relatorios.types';
+import type { FormatoRelatorio, TipoRelatorio } from '../types/common.types';
+
+type RawRelatorioResponse = {
+  [key: string]: unknown;
+  id_relatorio: number;
+  formato_relatorio?: FormatoRelatorio;
+  tipo_relatorio?: TipoRelatorio;
+  formato?: FormatoRelatorio;
+  tipo?: TipoRelatorio;
+  nome_arquivo?: string;
+  content_type?: string;
+  gerado_em?: string;
+  criado_em?: string;
+};
+
+function normalizeRelatorioResponse(relatorio: RawRelatorioResponse): RelatorioResponse {
+  const formato = relatorio.formato ?? relatorio.formato_relatorio ?? 'PDF';
+  const tipo = relatorio.tipo ?? relatorio.tipo_relatorio ?? 'PROCESSO';
+  const criadoEm = relatorio.criado_em ?? relatorio.gerado_em;
+
+  return {
+    ...relatorio,
+    id_relatorio: relatorio.id_relatorio,
+    formato_relatorio: formato,
+    formato,
+    tipo_relatorio: tipo,
+    tipo,
+    criado_em: criadoEm,
+    gerado_em: relatorio.gerado_em ?? criadoEm,
+  };
+}
+
+function normalizeRelatoriosResponse(response: RelatorioListResponse): RelatorioListResponse {
+  if (Array.isArray(response)) {
+    return response.map(normalizeRelatorioResponse);
+  }
+
+  return {
+    ...response,
+    data: response.data.map(normalizeRelatorioResponse),
+  };
+}
 
 function getHeader(headers: Record<string, unknown>, key: string): string | undefined {
   const value = headers[key];
@@ -92,7 +134,7 @@ async function getRelatorioFile(path: string): Promise<ApiFileResponse> {
 export async function listRelatorios(query?: ListRelatoriosQuery): Promise<RelatorioListResponse> {
   const { data } = await api.get<RelatorioListResponse>('/relatorios', { params: query });
 
-  return data;
+  return normalizeRelatoriosResponse(data);
 }
 
 export async function generateProcessReport(
@@ -130,7 +172,7 @@ export async function downloadRelatorio(idRelatorio: number): Promise<ApiFileRes
 export async function getRelatorioById(idRelatorio: number): Promise<RelatorioResponse> {
   const { data } = await api.get<RelatorioResponse>(`/relatorios/${idRelatorio}`);
 
-  return data;
+  return normalizeRelatorioResponse(data);
 }
 
 export const relatoriosService = {

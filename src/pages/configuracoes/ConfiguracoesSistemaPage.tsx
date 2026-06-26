@@ -1,19 +1,23 @@
 import { RefreshCw, RotateCcw, Save } from 'lucide-react';
+import { BackupQuickActions } from '../../components/backups/BackupQuickActions';
+import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
 import { ConfiguracoesSistemaForm } from '../../components/configuracoes-sistema/ConfiguracoesSistemaForm';
 import { useConfiguracoesSistema } from '../../hooks/useConfiguracoesSistema';
 import { useConfiguracoesSistemaForm } from '../../hooks/useConfiguracoesSistemaForm';
 import { useConfiguracoesSistemaPermissions } from '../../hooks/useConfiguracoesSistemaPermissions';
+import { useAuth } from '../../hooks/useAuth';
 import styles from './ConfiguracoesSistemaPage.module.scss';
 
 export function ConfiguracoesSistemaPage() {
+  const { user } = useAuth();
   const {
     configuracao,
-    endpointState,
     isLoading,
     isSaving,
     error,
     success,
     refresh,
+    saveConfiguracao,
     clearFeedback,
   } = useConfiguracoesSistema();
   const permissions = useConfiguracoesSistemaPermissions();
@@ -26,9 +30,16 @@ export function ConfiguracoesSistemaPage() {
     validate,
   } = useConfiguracoesSistemaForm(configuracao);
 
-  const endpointMissing = endpointState === 'missing';
-  const readOnly = !permissions.canEditConfiguracoesSistema || endpointMissing;
-  const canSave = permissions.canEditConfiguracoesSistema && isDirty && !isSaving && !endpointMissing;
+  const readOnly = !permissions.canEditConfiguracoesSistema || isLoading || isSaving || !configuracao;
+  const canSave = permissions.canEditConfiguracoesSistema && isDirty && !isSaving && Boolean(configuracao);
+  const canUseBackups = user?.nivel_acesso === 'ADMINISTRADOR';
+  const parametrosVacuo = configuracao
+    ? [
+        { name: 'Vacuo padrao', value: configuracao.vacuo_padrao },
+        { name: 'Limite seguranca', value: configuracao.limite_seguranca_vacuo },
+        { name: 'Tolerancia %', value: configuracao.tolerancia_vacuo_percentual },
+      ]
+    : [];
 
   function handleSave(): void {
     const payload = validate();
@@ -38,6 +49,7 @@ export function ConfiguracoesSistemaPage() {
     }
 
     clearFeedback();
+    void saveConfiguracao(payload);
   }
 
   if (!permissions.canViewConfiguracoesSistema) {
@@ -78,7 +90,7 @@ export function ConfiguracoesSistemaPage() {
 
       {error ? (
         <section className={styles.warningState} role="status">
-          <strong>Configuracoes em modo leitura.</strong>
+          <strong>Nao foi possivel sincronizar.</strong>
           <span>{error}</span>
         </section>
       ) : null}
@@ -92,26 +104,47 @@ export function ConfiguracoesSistemaPage() {
         </section>
       ) : null}
 
-      {readOnly ? (
+      {!permissions.canEditConfiguracoesSistema ? (
         <section className={styles.readOnlyState} role="status">
           <strong>Edicao indisponivel.</strong>
-          <span>
-            O front nao enviara alteracoes enquanto nao houver endpoint HTTP documentado para
-            Configuracoes do Sistema.
-          </span>
+          <span>Seu perfil nao possui permissao para alterar configuracoes do sistema.</span>
         </section>
       ) : null}
+
+      <BackupQuickActions
+        title="Backups das configuracoes do sistema"
+        description="Gere ou restaure snapshots de parametros globais. Backups completos tambem podem restaurar esta camada."
+        generateType="SISTEMA"
+        restoreTypes={['SISTEMA', 'COMPLETO']}
+        canUseBackups={canUseBackups}
+        restoreTitle="Restaurar backup do sistema"
+      />
 
       <ConfiguracoesSistemaForm
         configuracao={configuracao}
         formState={formState}
         errors={errors}
         readOnly={readOnly}
-        endpointMissing={endpointMissing}
         onChange={updateField}
       />
 
-      {!configuracao ? (
+      <section className={styles.chartGrid} aria-label="Grafico de configuracoes do sistema">
+        <RealDataChartPanel
+          title="Parametros globais de vacuo"
+          subtitle="Valores atualmente sincronizados com a API de configuracoes."
+          data={parametrosVacuo}
+          variant="bar"
+        />
+      </section>
+
+      {isLoading ? (
+        <section className={styles.emptyState} role="status">
+          <strong>Carregando configuracoes.</strong>
+          <span>Aguarde enquanto os parametros atuais sao lidos da API.</span>
+        </section>
+      ) : null}
+
+      {!isLoading && !configuracao ? (
         <section className={styles.emptyState} role="status">
           <strong>Nenhuma configuracao carregada pela API.</strong>
           <span>

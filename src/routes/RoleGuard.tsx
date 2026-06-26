@@ -9,7 +9,11 @@ type RoleGuardProps = {
 };
 
 export function RoleGuard({ roles, children }: RoleGuardProps) {
-  const { user } = useAuth();
+  const { isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return <div>Carregando...</div>;
+  }
 
   if (!user || !roles.includes(user.nivel_acesso)) {
     return <Navigate to="/access-denied" replace />;

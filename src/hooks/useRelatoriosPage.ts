@@ -67,7 +67,7 @@ function buildQuery(
     page,
     limit,
     tipo_relatorio: filters.tipo_relatorio || undefined,
-    formato: filters.formato || undefined,
+    formato_relatorio: filters.formato || undefined,
     id_processo: parsePositiveNumber(filters.id_processo),
     id_alarme: parsePositiveNumber(filters.id_alarme),
     data_inicio: filters.data_inicio || undefined,
@@ -153,11 +153,9 @@ export function useRelatoriosPage(): UseRelatoriosPageResult {
   }, []);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
+    queueMicrotask(() => {
       void loadRelatorios();
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    });
   }, [loadRelatorios]);
 
   return {

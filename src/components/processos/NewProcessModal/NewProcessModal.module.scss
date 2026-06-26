@@ -60,6 +60,7 @@
 }
 
 .modal input,
+.modal select,
 .modal textarea {
   width: 100%;
   border: 1px solid rgba(122, 185, 244, 0.18);
@@ -70,7 +71,8 @@
   text-transform: none;
 }
 
-.modal input {
+.modal input,
+.modal select {
   min-height: 40px;
   padding: 0 11px;
 }

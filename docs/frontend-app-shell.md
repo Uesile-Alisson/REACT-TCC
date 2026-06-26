@@ -16,6 +16,7 @@ O App Shell possui:
 
 - sidebar fixa em desktop;
 - topo com rota ativa, usuario, logout e status realtime;
+- menu hamburguer em telas estreitas;
 - area principal rolavel;
 - responsividade para desktop, notebook, tablet e celular;
 - identidade visual escura, tecnologica e compativel com uso futuro em Electron.
@@ -29,10 +30,10 @@ O App Shell possui:
 | `/alarmes` | autenticado | placeholder |
 | `/historico` | autenticado | placeholder |
 | `/relatorios` | autenticado | placeholder |
-| `/configuracoes/sistema` | tecnico/admin | placeholder |
+| `/configuracoes/sistema` | tecnico/admin | integrado |
 | `/configuracoes/mqtt-hardware` | tecnico/admin | placeholder |
-| `/configuracoes/tanques` | tecnico/admin | placeholder |
-| `/configuracoes/bombas` | tecnico/admin | placeholder |
+| `/configuracoes/tanques` | tecnico/admin | integrado |
+| `/configuracoes/bombas` | tecnico/admin | integrado |
 | `/usuarios` | admin | placeholder |
 
 As rotas publicas de autenticacao foram mantidas fora do App Shell.
@@ -53,6 +54,12 @@ Itens criados:
 - Tanques;
 - Bombas;
 - Usuarios.
+
+Em desktop, a navegacao permanece na sidebar lateral.
+
+Em mobile/tablet estreito, a sidebar lateral e ocultada e o topo exibe um botao hamburguer com `aria-label="Abrir menu"` e `aria-expanded`. Ao abrir, um overlay centralizado renderiza os mesmos itens autorizados para o perfil do usuario. O overlay fecha ao clicar fora, no botao de fechar, ao pressionar `Escape` ou ao navegar para outra rota.
+
+A navegacao horizontal interna que existia na sidebar mobile foi removida para evitar rolagem lateral no topo/menu.
 
 ## 5. Protecao de rotas
 
@@ -110,3 +117,18 @@ As telas de autenticacao nao foram alteradas visualmente nesta fase.
 - Implementar conteudo real das telas operacionais conforme contrato da API.
 - Integrar permissoes com validacao backend quando houver endpoint apropriado.
 - Evoluir dashboard e modulos dedicados sem duplicar regras de comunicacao.
+
+## 11. Execucao local padrao
+
+Frontend padrao validado:
+
+- `http://127.0.0.1:5173`
+- `http://localhost:5173`
+
+Use:
+
+```bash
+npm run dev -- --host 127.0.0.1 --port 5173
+```
+
+A porta `5174` nao e tratada como alvo principal do projeto. Se o Vite subir em outra porta por conflito local, a validacao oficial do frontend deve priorizar `5173`.

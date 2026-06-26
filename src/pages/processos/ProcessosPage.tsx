@@ -1,6 +1,8 @@
+import { motion } from 'framer-motion';
 import { Plus, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { ActiveProcessPanel } from '../../components/processos/ActiveProcessPanel';
+import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
 import { ConfirmProcessActionModal } from '../../components/processos/ConfirmProcessActionModal';
 import { NewProcessModal } from '../../components/processos/NewProcessModal';
 import { ProcessDetailPanel } from '../../components/processos/ProcessDetailPanel';
@@ -13,6 +15,7 @@ import { useProcessPermissions } from '../../hooks/useProcessPermissions';
 import { useProcessosPage } from '../../hooks/useProcessosPage';
 import { useSensorReadingsRealtime } from '../../hooks/useSensorReadingsRealtime';
 import type { ProcessoAction, ProcessoActionState, ProcessoFormState } from '../../types';
+import { countBy, formatShortDate, toNumber } from '../../utils/chartData';
 import styles from './ProcessosPage.module.scss';
 
 export function ProcessosPage() {
@@ -42,6 +45,13 @@ export function ProcessosPage() {
   } = useProcessActions(refresh);
   const [isNewProcessOpen, setIsNewProcessOpen] = useState<boolean>(false);
   const [actionState, setActionState] = useState<ProcessoActionState | null>(null);
+  const processosPorStatus = countBy(data.processes, (processo) => processo.status_processo);
+  const leiturasVacuo = data.selectedReadings
+    .map((reading) => ({
+      name: formatShortDate(reading.registrado_em ?? reading.criado_em),
+      value: toNumber(reading.valor_vacuo) ?? 0,
+    }))
+    .reverse();
 
   async function handleCreateProcess(form: ProcessoFormState): Promise<void> {
     await createConfiguredProcess(form);
@@ -140,16 +150,38 @@ export function ProcessosPage() {
         onCreate={() => setIsNewProcessOpen(true)}
       />
 
-      <section className={styles.filters}>
-        <label>
+      <section className={styles.chartGrid} aria-label="Graficos de processos">
+        <RealDataChartPanel
+          title="Processos por status"
+          subtitle="Distribuicao da listagem atual retornada pela API."
+          data={processosPorStatus}
+          variant="pie"
+        />
+        <RealDataChartPanel
+          title="Leituras do processo selecionado"
+          subtitle="Serie de valor_vacuo das leituras carregadas para o detalhe."
+          data={leiturasVacuo}
+          variant="line"
+          emptyMessage="Selecione um processo com leituras para visualizar a serie."
+        />
+      </section>
+
+      <motion.section
+        className={styles.filters}
+        initial={{ opacity: 0, y: 12, filter: 'blur(5px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, y: -8, filter: 'blur(4px)' }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <motion.label initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.02, duration: 0.2 }}>
           Busca
           <input
             value={filters.busca}
             onChange={(event) => setFilters({ ...filters, busca: event.target.value })}
             placeholder="Nome ou identificacao"
           />
-        </label>
-        <label>
+        </motion.label>
+        <motion.label initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04, duration: 0.2 }}>
           Status
           <select
             value={filters.status}
@@ -163,8 +195,8 @@ export function ProcessosPage() {
               </option>
             ))}
           </select>
-        </label>
-      </section>
+        </motion.label>
+      </motion.section>
 
       <section className={styles.contentGrid}>
         <ProcessListTable
@@ -188,6 +220,7 @@ export function ProcessosPage() {
       </section>
 
       <NewProcessModal
+        key={isNewProcessOpen ? 'new-process-open' : 'new-process-closed'}
         isOpen={isNewProcessOpen}
         isSubmitting={actionLoading === 'create'}
         onClose={() => setIsNewProcessOpen(false)}

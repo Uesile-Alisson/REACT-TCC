@@ -20,7 +20,20 @@ A tela usa services HTTP reais e consome o hook realtime existente para exibir a
 | Resumo | `getAlarmesDashboard` | `GET /alarmes/dashboard` | Se falhar, cards usam a lista atual como fallback parcial. |
 | Detalhe | `getAlarmeById` | `GET /alarmes/:id` | Carregado ao selecionar alarme. |
 | Resolver | `resolveAlarme` | `PATCH /alarmes/:id/resolver` | Envia `observacao` opcional. |
+| Relatorio | `generateAlarmReport` | `POST /relatorios/alarmes/:id_alarme` | Gera relatorio PDF do alarme selecionado. |
 | Realtime | `useAlarmesRealtime` | `alarm:created` | Exibe toast simples de novo alarme. |
+
+Ordenacao padrao da listagem e do resumo:
+
+- `order_by=ocorrido_em`;
+- `order_direction=desc`.
+
+Campos aceitos para ordenacao de alarmes:
+
+- `ocorrido_em`;
+- `severidade`;
+- `status_alarme`;
+- `tipo_alarme`.
 
 ## 4. Componentes criados
 
@@ -75,7 +88,7 @@ Listagem exibe:
 - origem;
 - processo relacionado quando retornado;
 - data de criacao;
-- acoes de detalhe e resolver.
+- acoes de detalhe, resolver e gerar relatorio.
 
 Detalhe exibe:
 
@@ -92,7 +105,7 @@ Detalhe exibe:
 
 Nao exibe payload bruto ou stack trace.
 
-## 8. Resolver alarme
+## 8. Resolver alarme e relatorio
 
 Implementado via `resolveAlarme`.
 
@@ -104,6 +117,8 @@ Implementado via `resolveAlarme`.
 - Atualiza listagem/resumo/detalhe apos sucesso.
 
 O botao so aparece para `TECNICO` e `ADMINISTRADOR` quando o alarme esta `ATIVO`, conforme matriz documentada. Se o backend permitir regra diferente, ele continua sendo a fonte final.
+
+A acao de gerar relatorio aparece para `TECNICO` e `ADMINISTRADOR` e chama o endpoint real de relatorios de alarme. O arquivo gerado fica disponivel na pagina `/relatorios` para preview/download conforme permissao.
 
 ## 9. Realtime
 
@@ -148,8 +163,8 @@ Pendencia:
 | Perfil | Acoes visiveis |
 |---|---|
 | OPERADOR | Listar, filtrar e visualizar detalhe. |
-| TECNICO | Listar, filtrar, visualizar detalhe e resolver alarmes ativos. |
-| ADMINISTRADOR | Listar, filtrar, visualizar detalhe e resolver alarmes ativos. |
+| TECNICO | Listar, filtrar, visualizar detalhe, resolver alarmes ativos e gerar relatorio de alarme. |
+| ADMINISTRADOR | Listar, filtrar, visualizar detalhe, resolver alarmes ativos e gerar relatorio de alarme. |
 
 ## 12. O que NAO foi implementado nesta fase
 
@@ -159,7 +174,6 @@ Pendencia:
 - Alterar severidade.
 - Reabrir alarme.
 - Silenciar alarme.
-- Relatorio de alarme.
 - CSV.
 - Popup avancado de criticidade.
 - Evento wildcard `alarm:*`.

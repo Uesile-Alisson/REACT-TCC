@@ -1,122 +1,97 @@
 # Tela de Configuracoes do Sistema - TSEA Frontend
 
-## 1. Resumo da fase
+## 1. Resumo
 
-A Fase Front 13 substituiu o placeholder de `/configuracoes/sistema` por uma tela dedicada para configuracoes gerais do sistema. A tela respeita o contrato real encontrado: ha tabela interna `configuracoessistema` no backend, mas nao existe controller HTTP exposto para leitura ou atualizacao dessas configuracoes gerais.
+A tela `/configuracoes/sistema` consome a API real de Configuracoes do Sistema.
+Ela carrega a configuracao atual com `GET /api/configuracoes/sistema` e salva
+alteracoes com `PATCH /api/configuracoes/sistema`.
 
-Por isso, a tela foi implementada em modo leitura/pendencia de endpoint, sem criar service falso e sem enviar payload para rota inexistente.
+Nao ha dados simulados, sucesso local artificial ou bloqueio visual por ausencia
+de endpoint.
 
 ## 2. Rota
 
 - `/configuracoes/sistema`
-- Perfis permitidos: `TECNICO`, `ADMINISTRADOR`
-- `OPERADOR` nao acessa pelo menu e e bloqueado pelo `RoleGuard` se tentar acessar diretamente.
+- Perfis permitidos no front: `TECNICO`, `ADMINISTRADOR`
+- `OPERADOR` nao acessa pelo menu e e bloqueado pelo `RoleGuard` ao tentar abrir a rota diretamente.
 
 ## 3. Dados consumidos
 
-| Bloco | Service | Endpoint | Observacoes |
-|---|---|---|---|
-| Parametros de vacuo | Nao disponivel | Nao disponivel | Backend possui campos internos, mas nao possui controller HTTP dedicado. |
-| Seguranca | Nao disponivel | Nao disponivel | Sem leitura/update por API nesta fase. |
-| Status geral | Nao disponivel | Nao disponivel | `status_geral_sistema` existe internamente e e atualizado por fluxos do backend/hardware. |
+| Bloco | Service | Endpoint |
+|---|---|---|
+| Parametros de vacuo | `getConfiguracoesSistema` | `GET /configuracoes/sistema` |
+| Seguranca | `getConfiguracoesSistema` | `GET /configuracoes/sistema` |
+| Status geral | `getConfiguracoesSistema` | `GET /configuracoes/sistema` |
+| Salvamento | `updateConfiguracoesSistema` | `PATCH /configuracoes/sistema` |
 
-## 4. Componentes criados
+O `api` do Axios ja possui `baseURL` com `/api`, entao o service nao adiciona o
+prefixo manualmente.
 
-| Componente | Responsabilidade |
-|---|---|
-| `ConfiguracoesSistemaForm` | Organiza os blocos da tela e repassa estado de formulario. |
-| `ConfiguracoesSistemaStatusCard` | Exibe status geral, ultima atualizacao e responsavel quando houver dados. |
-| `ConfiguracoesSistemaVacuoCard` | Exibe campos de vacuo geral em modo leitura. |
-| `ConfiguracoesSistemaSecurityCard` | Exibe limite de seguranca de vacuo e nota operacional. |
+## 4. Campos
 
-## 5. Campos exibidos
+| Campo | Editavel | Validacao no front |
+|---|---|---|
+| `vacuo_padrao` | Sim | Numero valido, sem impor sinal |
+| `limite_seguranca_vacuo` | Sim | Numero valido, sem impor sinal |
+| `tolerancia_vacuo_percentual` | Sim | Numero entre 0 e 100 |
+| `status_geral_sistema` | Sim | Enum real do backend |
+| `id_configuracao_sistema` | Nao | Nao enviado |
+| `id_usuario_alteracao` | Nao | Nao enviado |
+| `criado_em` | Nao | Nao enviado |
+| `atualizado_em` | Nao | Nao enviado |
 
-| Campo | Editavel | Validacao | Observacoes |
-|---|---|---|---|
-| `vacuo_padrao` | Nao nesta fase | Numero valido, nao negativo quando update existir | Campo confirmado no schema da API. Nao enviado por ausencia de endpoint. |
-| `limite_seguranca_vacuo` | Nao nesta fase | Numero valido, nao negativo quando update existir | Campo confirmado no schema da API. Nao enviado por ausencia de endpoint. |
-| `tolerancia_vacuo_percentual` | Nao nesta fase | Numero entre 0 e 100 quando update existir | Campo confirmado no schema da API. Nao enviado por ausencia de endpoint. |
-| `status_geral_sistema` | Somente leitura | Backend define estado final | Campo confirmado no schema da API. |
-| `atualizado_em` | Somente leitura | Nao aplicavel | Campo confirmado no schema da API. |
-| `id_usuario_alteracao` | Somente leitura | Nao aplicavel | Campo confirmado no schema da API. |
+## 5. Formulario
 
-## 6. Formulario
+- Inicia com os dados reais carregados pela API.
+- Mantem `dirty state`.
+- Monta payload apenas com campos alterados.
+- Nao envia id, datas ou usuario de alteracao.
+- Botao Salvar chama PATCH real.
+- Botao Restaurar volta ao ultimo estado carregado.
+- Botao Atualizar refaz GET real.
 
-- Carregamento: nao chama endpoint porque nao ha service/rota real.
-- Edicao: bloqueada visualmente.
-- Estado dirty: preparado no hook `useConfiguracoesSistemaForm`.
-- Salvar: botao existe, mas permanece desabilitado enquanto o endpoint de update nao existir.
-- Cancelar/restaurar: preparado para retornar ao ultimo estado carregado.
-- Modo leitura: ativo nesta fase.
+## 6. Estados
 
-API atual nao expoe update de Configuracoes do Sistema; tela implementada em modo leitura.
+- `loading`: leitura inicial ou atualizacao.
+- `saving`: PATCH em andamento.
+- `success`: PATCH concluido com resposta real.
+- `error`: erro retornado pela API ou falha de comunicacao.
+- `dirty`: formulario diferente do ultimo estado carregado.
+- `forbidden`: mensagem especifica para 403.
+- `not found`: mensagem especifica para 404.
 
-## 7. Validacoes
-
-Frontend preparado:
-
-- valores numericos validos;
-- valores nao negativos para vacuo e limite;
-- tolerancia percentual entre 0 e 100.
-
-Backend:
-
-- continua sendo a fonte final de regra de negocio;
-- deve validar DTOs futuros quando o endpoint existir.
-
-Limitacao:
-
-- validacoes nao bloqueiam envio nesta fase porque nao ha envio para backend.
-
-## 8. Permissoes visuais
+## 7. Permissoes
 
 | Perfil | Visualizar | Editar |
 |---|---|---|
 | `OPERADOR` | Nao | Nao |
-| `TECNICO` | Sim | Nao nesta fase, por ausencia de endpoint |
-| `ADMINISTRADOR` | Sim | Nao nesta fase, por ausencia de endpoint |
+| `TECNICO` | Sim | Sim |
+| `ADMINISTRADOR` | Sim | Sim |
 
-## 9. Tratamento de erro
+O backend continua sendo a fonte final de autorizacao. Se a API retornar 403, a
+tela exibe `Sem permissao para alterar configuracoes.`
 
-- `400`: sera exibido por `ApiError` quando endpoint existir.
+## 8. Tratamento de erro
+
+- `400`: exibe mensagem de payload invalido retornada pela API.
 - `401`: tratado pela camada Axios/Auth.
-- `403`: devera aparecer como sem permissao para alterar configuracoes.
-- `404`: devera indicar configuracao nao encontrada.
-- `409`: reservado para conflito/regra de negocio.
-- `500`: devera indicar falha inesperada ao salvar/carregar.
+- `403`: `Sem permissao para alterar configuracoes.`
+- `404`: `Configuracao do sistema nao cadastrada no backend.`
+- `500`: erro inesperado ao processar configuracoes.
+- API offline: mensagem de comunicacao da camada Axios.
 
-Nesta fase, a tela exibe erro/aviso local informando ausencia de endpoint HTTP.
+## 9. O que nao foi alterado
 
-## 10. O que NAO foi implementado nesta fase
-
-- MQTT/Hardware.
-- Tanques.
-- Bombas.
+- Auth, login e `/auth/me`.
 - Usuarios.
-- Backup.
-- Import/export.
-- CSV.
-- Oleo/vazao/nivel/volume.
-- Endpoint novo.
-- Service falso.
-- Salvamento em rota inexistente.
+- MQTT/Hardware.
+- Processos.
+- Alarmes.
+- Historico.
+- Relatorios.
+- Prisma schema, migrations ou seed.
 
-## 11. Pendencias para Fase Front 14
+## 10. Documento relacionado
 
-- Criar tela dedicada de Configuracoes MQTT/Hardware.
-- Broker MQTT.
-- Status MQTT.
-- Status ESP32.
-- Sensor principal.
-- Ultima leitura.
-- Heartbeat.
-- Reiniciar comunicacao.
-- Sincronizar hardware.
-- Consumo de realtime, se disponivel.
-
-## 12. Bloqueios desta fase
-
-- Endpoint de leitura de Configuracoes do Sistema ausente.
-- Endpoint de update de Configuracoes do Sistema ausente.
-- Service HTTP real ausente porque nao ha rota documentada/exposta.
-- API real nao foi executada; contrato foi verificado por documentos e leitura estatica dos controllers/schema.
+Tanques e Bombas estao documentados em `docs/frontend-tanques-bombas-page.md`.
+O resumo consolidado das rotas de Configuracoes esta em `docs/frontend-configuracoes-api-integration.md`.

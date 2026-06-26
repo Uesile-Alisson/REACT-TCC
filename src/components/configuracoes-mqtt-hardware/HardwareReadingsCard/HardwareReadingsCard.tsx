@@ -9,6 +9,12 @@ type HardwareReadingsCardProps = {
 };
 
 export function HardwareReadingsCard({ reading, acoplamento }: HardwareReadingsCardProps) {
+  const readingMessage =
+    typeof reading?.valor_vacuo === 'number'
+      ? `${reading.valor_vacuo} kPa`
+      : 'Ultima leitura nao disponivel';
+  const readingDate = formatDateTime(reading?.registrado_em ?? reading?.enviado_em);
+
   return (
     <section className={styles.card}>
       <header>
@@ -26,11 +32,11 @@ export function HardwareReadingsCard({ reading, acoplamento }: HardwareReadingsC
         </div>
         <div>
           <dt>Ultima leitura de vacuo</dt>
-          <dd>{typeof reading?.valor_vacuo === 'number' ? `${reading.valor_vacuo} kPa` : 'Indisponivel'}</dd>
+          <dd>{readingMessage}</dd>
         </div>
         <div>
           <dt>Data da leitura</dt>
-          <dd>{formatDateTime(reading?.registrado_em ?? reading?.enviado_em)}</dd>
+          <dd>{readingDate}</dd>
         </div>
         <div>
           <dt>Acoplamento</dt>

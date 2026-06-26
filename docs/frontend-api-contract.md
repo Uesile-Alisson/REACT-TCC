@@ -8,6 +8,7 @@
 - Prefixo global confirmado em `api/src/main.ts`: `/api`.
 - Swagger confirmado em `/docs`.
 - CORS confirmado para `http://localhost:5173` e `http://127.0.0.1:5173`.
+- Frontend padrao validado em desenvolvimento: `http://127.0.0.1:5173` ou `http://localhost:5173`.
 - ValidationPipe global: `whitelist: true`, `forbidNonWhitelisted: true`, `transform: true`.
 
 Regra final de URL:
@@ -380,7 +381,7 @@ Erros comuns:
 | MEDIO | Auth | `/me` | Nao existe rota de perfil atual. | Criar contrato futuro antes de hidratar usuario por token salvo. |
 | BAIXO | MQTT | Socket CORS | Gateways usam `origin: '*'`; HTTP CORS e mais restrito. | Revisar politica antes de producao/Electron. |
 | MEDIO | Socket.IO | Payloads | Alguns eventos usam interfaces, mas o front ainda nao tem types equivalentes. | Criar types na Fase Front 2/4. |
-| BAIXO | Relatorios | Arquivo | Headers existem; front ainda precisa parser de filename. | Criar helper Blob/download. |
+| BAIXO | Relatorios | Arquivos | Headers e parser de filename existem no front. | Manter helper Blob/download em uso nas acoes. |
 | BAIXO | Historico | Rotas de tanques/comparativos | Existem para analise historica, mas MVP front deve manter foco em vacuo. | Consumir apenas quando tela pedir, sem virar fluxo operacional de oleo/nivel. |
 
 ## 14. Ordem recomendada para integracao no React

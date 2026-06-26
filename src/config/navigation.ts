@@ -2,6 +2,7 @@ import {
   Activity,
   Bell,
   ChartNoAxesCombined,
+  DatabaseBackup,
   Gauge,
   HardDrive,
   History,
@@ -100,6 +101,14 @@ export const navigationItems: NavigationItem[] = [
     roles: TECHNICAL_ROLES,
     description: 'Cadastro tecnico de bombas',
     icon: Waves,
+  },
+  {
+    id: 'backups',
+    label: 'Backups',
+    path: '/configuracoes/backups',
+    roles: ADMIN_ROLES,
+    description: 'Snapshots de configuracoes',
+    icon: DatabaseBackup,
   },
   {
     id: 'usuarios',

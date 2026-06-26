@@ -5,14 +5,14 @@ const STATUS_LABEL: Record<StatusTanque, string> = {
   ATIVO: 'Ativo',
   INATIVO: 'Inativo',
   MANUTENCAO: 'Manutencao',
-  BLOQUEADO: 'Bloqueado',
+  FALHA: 'Falha',
 };
 
 const STATUS_TONE: Record<StatusTanque, string> = {
   ATIVO: styles.success,
   INATIVO: styles.neutral,
   MANUTENCAO: styles.warning,
-  BLOQUEADO: styles.danger,
+  FALHA: styles.danger,
 };
 
 type TanqueStatusBadgeProps = {

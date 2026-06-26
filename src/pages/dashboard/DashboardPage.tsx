@@ -4,11 +4,13 @@ import { LastProcessCard } from '../../components/dashboard/LastProcessCard';
 import { RecentAlarmsPanel } from '../../components/dashboard/RecentAlarmsPanel';
 import { SystemOverviewCards } from '../../components/dashboard/SystemOverviewCards';
 import { SystemStatusPanel } from '../../components/dashboard/SystemStatusPanel';
+import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
 import { useAcoplamentoRealtime } from '../../hooks/useAcoplamentoRealtime';
 import { useAlarmesRealtime } from '../../hooks/useAlarmesRealtime';
 import { useDashboardData } from '../../hooks/useDashboardData';
 import { useMqttHardwareRealtime } from '../../hooks/useMqttHardwareRealtime';
 import { useSensorReadingsRealtime } from '../../hooks/useSensorReadingsRealtime';
+import { countBy } from '../../utils/chartData';
 import styles from './DashboardPage.module.scss';
 
 export function DashboardPage() {
@@ -25,6 +27,12 @@ export function DashboardPage() {
   const { lastSensorReading } = useSensorReadingsRealtime();
   const { lastAlarm } = useAlarmesRealtime();
   const { lastAcoplamento } = useAcoplamentoRealtime();
+  const alarmesPorSeveridade = countBy(data.recentAlarms, (alarme) => alarme.severidade);
+  const indicadoresOperacionais = [
+    { name: 'Alarmes ativos', value: data.alarmsSummary?.ativos ?? 0 },
+    { name: 'Alarmes criticos', value: data.alarmsSummary?.criticos ?? 0 },
+    { name: 'Relatorios', value: data.reportsCount ?? 0 },
+  ];
 
   return (
     <main className={styles.page}>
@@ -130,6 +138,21 @@ export function DashboardPage() {
           {partialErrors.history ? <p className={styles.partialError}>{partialErrors.history}</p> : null}
           {partialErrors.reports ? <p className={styles.partialError}>{partialErrors.reports}</p> : null}
         </article>
+      </section>
+
+      <section className={styles.chartGrid} aria-label="Graficos do dashboard">
+        <RealDataChartPanel
+          title="Alarmes por severidade"
+          subtitle="Distribuicao baseada nos alarmes recentes carregados pela API."
+          data={alarmesPorSeveridade}
+          variant="pie"
+        />
+        <RealDataChartPanel
+          title="Indicadores operacionais"
+          subtitle="Totais vindos dos endpoints de alarmes e relatorios."
+          data={indicadoresOperacionais}
+          variant="bar"
+        />
       </section>
     </main>
   );

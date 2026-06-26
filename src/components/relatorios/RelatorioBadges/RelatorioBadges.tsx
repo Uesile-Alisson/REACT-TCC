@@ -17,7 +17,7 @@ export function RelatorioTipoBadge({ tipo }: RelatorioTipoBadgeProps) {
 }
 
 export function RelatorioFormatoBadge({ formato }: RelatorioFormatoBadgeProps) {
-  const label = formato ?? 'Arquivo';
+  const label = formato === 'XLSX' ? 'XLSX' : 'PDF';
   const tone = formato === 'XLSX' ? styles.sheet : styles.pdf;
 
   return <span className={`${styles.badge} ${tone}`}>{label}</span>;

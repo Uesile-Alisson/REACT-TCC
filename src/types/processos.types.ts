@@ -89,6 +89,10 @@ export type ProcessoReadingResponse = {
   [key: string]: unknown;
 };
 
+export type ProcessoReadingListResponse =
+  | PaginatedResponse<ProcessoReadingResponse>
+  | ProcessoReadingResponse[];
+
 export type ProcessoEventResponse = {
   id_evento?: Id;
   id_processo?: Id;
@@ -97,3 +101,7 @@ export type ProcessoEventResponse = {
   registrado_em?: DateString;
   [key: string]: unknown;
 };
+
+export type ProcessoEventListResponse =
+  | PaginatedResponse<ProcessoEventResponse>
+  | ProcessoEventResponse[];

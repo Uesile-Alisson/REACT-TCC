@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { Eye } from 'lucide-react';
 import type { ProcessoResponse, StatusProcesso } from '../../../types';
 import { formatProcessDate, formatProcessNumber } from '../processos.utils';
@@ -63,8 +64,15 @@ export function ProcessListTable({
               </tr>
             </thead>
             <tbody>
-              {processes.map((process) => (
-                <tr key={process.id_processo} className={selectedId === process.id_processo ? styles.activeRow : undefined}>
+              {processes.map((process, index) => (
+                <motion.tr
+                  key={process.id_processo}
+                  className={selectedId === process.id_processo ? styles.activeRow : undefined}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.025, duration: 0.18 }}
+                  whileHover={{ backgroundColor: 'rgba(83, 197, 255, 0.075)' }}
+                >
                   <td>
                     <strong>{process.nome_processo ?? `Processo #${process.id_processo}`}</strong>
                     <span>ID {process.id_processo}</span>
@@ -76,12 +84,16 @@ export function ProcessListTable({
                   <td>{formatProcessDate(process.finalizado_em)}</td>
                   <td>{formatProcessNumber(process.vacuo_alvo, 'mbar')}</td>
                   <td>
-                    <button type="button" onClick={() => onSelect(process.id_processo)}>
+                    <button
+                      type="button"
+                      onClick={() => onSelect(process.id_processo)}
+                      aria-label={`Ver detalhes do processo ${process.id_processo}`}
+                      title="Ver detalhes"
+                    >
                       <Eye size={15} aria-hidden="true" />
-                      Ver detalhes
                     </button>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>

@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { normalizeApiError } from '../api/api-error';
 import {
   getMqttHardwareConfig,
   getMqttHardwareStatus,
@@ -9,7 +10,6 @@ import type {
   MqttHardwareStatusResponse,
   UpdateMqttConfigRequest,
 } from '../types';
-import { getAuthErrorMessage } from '../utils/authErrors';
 
 type UseConfiguracoesMqttHardwareResult = {
   config: MqttHardwareConfigResponse | null;
@@ -23,6 +23,42 @@ type UseConfiguracoesMqttHardwareResult = {
   saveConfig: (payload: UpdateMqttConfigRequest) => Promise<boolean>;
   clearFeedback: () => void;
 };
+
+function getMqttConfigErrorMessage(error: unknown): string {
+  const apiError = normalizeApiError(error);
+
+  if (!apiError.statusCode) {
+    return 'Backend indisponivel. Verifique se a API esta rodando antes de carregar a configuracao MQTT.';
+  }
+
+  if (apiError.statusCode === 404) {
+    return 'Configuracao MQTT nao encontrada. Cadastre ou ative uma configuracao no backend.';
+  }
+
+  if (apiError.statusCode === 401 || apiError.statusCode === 403) {
+    return 'Usuario sem permissao para consultar a configuracao MQTT.';
+  }
+
+  return apiError.message || 'Nao foi possivel carregar a configuracao MQTT.';
+}
+
+function getMqttStatusErrorMessage(error: unknown): string {
+  const apiError = normalizeApiError(error);
+
+  if (!apiError.statusCode) {
+    return 'Backend indisponivel para consulta de status. Confirme a API antes de validar broker ou ESP32.';
+  }
+
+  if (apiError.statusCode === 404) {
+    return 'Endpoint de status MQTT nao retornou dados. Verifique se existe configuracao MQTT ativa.';
+  }
+
+  if (apiError.statusCode >= 500) {
+    return 'Status MQTT indisponivel no backend. Broker, Mosquitto ou servico MQTT podem estar desconectados.';
+  }
+
+  return apiError.message || 'Nao foi possivel carregar o status MQTT/Hardware.';
+}
 
 export function useConfiguracoesMqttHardware(): UseConfiguracoesMqttHardwareResult {
   const [config, setConfig] = useState<MqttHardwareConfigResponse | null>(null);
@@ -47,14 +83,14 @@ export function useConfiguracoesMqttHardware(): UseConfiguracoesMqttHardwareResu
       setConfig(configResult.value);
     } else {
       setConfig(null);
-      setConfigError(getAuthErrorMessage(configResult.reason));
+      setConfigError(getMqttConfigErrorMessage(configResult.reason));
     }
 
     if (statusResult.status === 'fulfilled') {
       setStatus(statusResult.value);
     } else {
       setStatus(null);
-      setStatusError(getAuthErrorMessage(statusResult.reason));
+      setStatusError(getMqttStatusErrorMessage(statusResult.reason));
     }
 
     setIsLoading(false);
@@ -71,7 +107,7 @@ export function useConfiguracoesMqttHardware(): UseConfiguracoesMqttHardwareResu
       setSuccess('Configuracao MQTT atualizada com sucesso.');
       return true;
     } catch (error: unknown) {
-      setConfigError(getAuthErrorMessage(error));
+      setConfigError(getMqttConfigErrorMessage(error));
       return false;
     } finally {
       setIsSaving(false);

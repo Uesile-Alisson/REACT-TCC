@@ -31,7 +31,6 @@
   font-size: 1.05rem;
 }
 
-.pending,
 .ready {
   display: inline-flex;
   min-height: 26px;
@@ -43,12 +42,6 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
-}
-
-.pending {
-  border: 1px solid rgba(255, 188, 96, 0.26);
-  background: rgba(255, 176, 64, 0.08);
-  color: #ffd191;
 }
 
 .ready {
@@ -93,6 +86,37 @@
   color: #f5f9ff;
   font-size: 0.86rem;
   overflow-wrap: anywhere;
+}
+
+.statusField {
+  display: grid;
+  gap: 7px;
+  color: #8ba7c4;
+  font-size: 0.7rem;
+  font-weight: 820;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.statusField select {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid rgba(122, 185, 244, 0.18);
+  border-radius: 7px;
+  background: rgba(3, 10, 18, 0.8);
+  color: #f5f9ff;
+  outline: none;
+}
+
+.statusField select:disabled {
+  color: #7e9ab8;
+}
+
+.statusField strong {
+  color: #ffadb8;
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 @media (max-width: 860px) {

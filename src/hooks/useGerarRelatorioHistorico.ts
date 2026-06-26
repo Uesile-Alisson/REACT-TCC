@@ -7,7 +7,7 @@ type UseGerarRelatorioHistoricoResult = {
   reportError: string | null;
   reportSuccess: string | null;
   clearReportFeedback: () => void;
-  gerarRelatorio: (idProcesso: number, observacao?: string) => Promise<void>;
+  gerarRelatorio: (idProcesso: number, observacao?: string) => Promise<boolean>;
 };
 
 export function useGerarRelatorioHistorico(): UseGerarRelatorioHistoricoResult {
@@ -20,7 +20,7 @@ export function useGerarRelatorioHistorico(): UseGerarRelatorioHistoricoResult {
     setReportSuccess(null);
   }, []);
 
-  const gerarRelatorio = useCallback(async (idProcesso: number, observacao?: string): Promise<void> => {
+  const gerarRelatorio = useCallback(async (idProcesso: number, observacao?: string): Promise<boolean> => {
     setIsGenerating(true);
     setReportError(null);
     setReportSuccess(null);
@@ -31,8 +31,10 @@ export function useGerarRelatorioHistorico(): UseGerarRelatorioHistoricoResult {
         observacao: observacao?.trim() || undefined,
       });
       setReportSuccess('Relatorio solicitado com sucesso. Acompanhe a listagem em Relatorios.');
+      return true;
     } catch (error: unknown) {
       setReportError(getAuthErrorMessage(error));
+      return false;
     } finally {
       setIsGenerating(false);
     }

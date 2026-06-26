@@ -88,7 +88,7 @@ export function useAlarmesPage(): UseAlarmesPageResult {
       data_inicio: filters.data_inicio || undefined,
       data_fim: filters.data_fim || undefined,
       apenas_criticos: filters.apenas_criticos || undefined,
-      order_by: 'criado_em',
+      order_by: 'ocorrido_em',
       order_direction: 'desc',
     } as const;
 

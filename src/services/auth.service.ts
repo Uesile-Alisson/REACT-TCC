@@ -4,6 +4,7 @@ import type {
   ApiAccessLevel,
   ApiAuthUser,
   ApiSignInResponse,
+  AuthMeResponse,
   AuthMessageResponse,
   AuthUser,
   FirstAccessRequest,
@@ -28,7 +29,8 @@ function normalizeAuthUser(apiUser: ApiAuthUser): AuthUser {
     id,
     nome: apiUser.nome,
     login: apiUser.login,
-    email: apiUser.email,
+    email: apiUser.email ?? '',
+    id_nivel_acesso: apiUser.id_nivel_acesso,
     nivel_acesso: normalizeAccessLevel(apiUser.nivel_acesso),
     primeiro_acesso: apiUser.primeiro_acesso,
   };
@@ -56,6 +58,12 @@ export async function signIn(payload: SignInRequest): Promise<SignInResponse> {
   return auth;
 }
 
+export async function me(): Promise<AuthUser> {
+  const { data } = await api.get<AuthMeResponse>('/auth/me');
+
+  return normalizeAuthUser(data);
+}
+
 export async function firstAccess(payload: FirstAccessRequest): Promise<AuthMessageResponse> {
   const { data } = await api.post<AuthMessageResponse>('/auth/first-access', {
     senhaNova: payload.senhaNova,
@@ -81,6 +89,7 @@ export async function resetPassword(payload: ResetPasswordRequest): Promise<Auth
 
 export const authService = {
   signIn,
+  me,
   firstAccess,
   forgotPassword,
   resetPassword,

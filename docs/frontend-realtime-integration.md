@@ -115,8 +115,8 @@ Nao houve busca direta no backend porque ele nao esta dentro do workspace gravav
 
 ## 14. Pendencias para Fase Front 5
 
-- Preview PDF.
-- Download PDF.
+- Preview PDF/XLSX.
+- Download PDF/XLSX.
 - Download XLSX.
 - Blob na UI.
 - `Content-Disposition` na interface.

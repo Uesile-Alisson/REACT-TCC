@@ -30,7 +30,6 @@ export function ConfiguracoesSistemaSecurityCard({
         <div>
           <input
             type="number"
-            min="0"
             step="0.001"
             value={formState.limite_seguranca_vacuo}
             onChange={(event) => onChange('limite_seguranca_vacuo', event.target.value)}

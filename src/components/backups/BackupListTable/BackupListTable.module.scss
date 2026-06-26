@@ -1,0 +1,168 @@
+.panel {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(122, 185, 244, 0.16);
+  border-radius: 8px;
+  background: rgba(7, 16, 28, 0.9);
+}
+
+.panel header,
+.panel footer,
+.actions {
+  display: flex;
+  align-items: center;
+}
+
+.panel header,
+.panel footer {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel header p {
+  margin: 0 0 5px;
+  color: #5bc8ff;
+  font-size: 0.68rem;
+  font-weight: 820;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.panel h2 {
+  margin: 0;
+  color: #f5f9ff;
+  font-size: 1rem;
+}
+
+.panel header > span,
+.panel footer span {
+  color: #8ba7c4;
+  font-size: 0.75rem;
+  font-weight: 760;
+}
+
+.tableWrap {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.tableWrap table {
+  width: 100%;
+  min-width: 1180px;
+  border-collapse: collapse;
+}
+
+.tableWrap th,
+.tableWrap td {
+  padding: 11px 9px;
+  border-bottom: 1px solid rgba(122, 185, 244, 0.1);
+  color: #dcecff;
+  font-size: 0.78rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.tableWrap th {
+  color: #7e9ab8;
+  font-size: 0.66rem;
+  font-weight: 820;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badge {
+  display: inline-flex;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 820;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.success {
+  background: rgba(44, 189, 128, 0.12);
+  color: #8bf2c4;
+}
+
+.warning {
+  background: rgba(255, 176, 64, 0.12);
+  color: #ffd191;
+}
+
+.danger {
+  background: rgba(255, 78, 101, 0.12);
+  color: #ffadb8;
+}
+
+.neutral {
+  background: rgba(122, 185, 244, 0.12);
+  color: #dcecff;
+}
+
+.actions {
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.actions button,
+.panel footer button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(122, 185, 244, 0.2);
+  border-radius: 7px;
+  background: rgba(13, 30, 49, 0.86);
+  color: #dcecff;
+  cursor: pointer;
+}
+
+.actions button {
+  width: 34px;
+  padding: 0;
+}
+
+.panel footer button {
+  padding: 0 12px;
+  font-size: 0.7rem;
+  font-weight: 820;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.panel footer div {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button:disabled,
+.panel footer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.emptyState {
+  display: grid;
+  gap: 5px;
+  padding: 18px;
+  border: 1px dashed rgba(122, 185, 244, 0.2);
+  border-radius: 8px;
+  color: #8ba7c4;
+  text-align: center;
+}
+
+.emptyState strong {
+  color: #dcecff;
+}
+
+@media (max-width: 620px) {
+  .panel header,
+  .panel footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

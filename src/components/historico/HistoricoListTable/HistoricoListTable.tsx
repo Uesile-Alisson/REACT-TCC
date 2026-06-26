@@ -36,7 +36,7 @@ export function HistoricoListTable({
       <header className={styles.header}>
         <div>
           <p className={styles.overline}>Listagem</p>
-          <h2>Processos encerrados</h2>
+          <h2>Processos registrados</h2>
         </div>
         <span>{isLoading ? 'Carregando' : `${total} registro(s)`}</span>
       </header>
@@ -74,14 +74,22 @@ export function HistoricoListTable({
                   <td>{getUnknownNumber(processo, 'eficiencia')}</td>
                   <td>
                     <div className={styles.actions}>
-                      <button type="button" onClick={() => onSelect(processo.id_processo)}>
+                      <button
+                        type="button"
+                        onClick={() => onSelect(processo.id_processo)}
+                        aria-label={`Ver detalhes do processo ${processo.id_processo}`}
+                        title="Ver detalhes"
+                      >
                         <Eye size={15} aria-hidden="true" />
-                        Detalhes
                       </button>
                       {permissions.canGenerateHistoricoReport ? (
-                        <button type="button" onClick={() => onGenerateReport(processo)}>
+                        <button
+                          type="button"
+                          onClick={() => onGenerateReport(processo)}
+                          aria-label={`Gerar relatorio do processo ${processo.id_processo}`}
+                          title="Gerar relatorio"
+                        >
                           <FilePlus2 size={15} aria-hidden="true" />
-                          Relatorio
                         </button>
                       ) : null}
                     </div>
@@ -93,7 +101,7 @@ export function HistoricoListTable({
         </div>
       ) : (
         <p className={styles.empty}>
-          {isLoading ? 'Carregando historico...' : 'Nenhum processo historico encontrado.'}
+          {isLoading ? 'Carregando historico...' : 'Nenhum processo encontrado.'}
         </p>
       )}
 

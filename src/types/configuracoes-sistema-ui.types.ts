@@ -19,15 +19,17 @@ export type ConfiguracoesSistemaResponse = {
 };
 
 export type ConfiguracoesSistemaUpdateRequest = {
-  vacuo_padrao: number;
-  limite_seguranca_vacuo: number;
-  tolerancia_vacuo_percentual: number;
+  vacuo_padrao?: number;
+  limite_seguranca_vacuo?: number;
+  tolerancia_vacuo_percentual?: number;
+  status_geral_sistema?: StatusGeralSistema;
 };
 
 export type ConfiguracoesSistemaFormState = {
   vacuo_padrao: string;
   limite_seguranca_vacuo: string;
   tolerancia_vacuo_percentual: string;
+  status_geral_sistema: string;
 };
 
 export type ConfiguracoesSistemaFormErrors = Partial<
@@ -38,5 +40,3 @@ export type ConfiguracoesSistemaPermissions = {
   canViewConfiguracoesSistema: boolean;
   canEditConfiguracoesSistema: boolean;
 };
-
-export type ConfiguracoesSistemaEndpointState = 'missing' | 'available';

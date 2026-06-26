@@ -33,6 +33,20 @@ export type ProcessoFormState = {
 
 export type ProcessoFormErrors = Partial<Record<keyof ProcessoFormState, string>>;
 
+export type ProcessoTanqueOption = {
+  id_tanque: number;
+  label: string;
+  description: string;
+  status_tanque?: string | null;
+};
+
+export type ProcessoSensorOption = {
+  id_sensor: number;
+  label: string;
+  description?: string;
+  status_sensor?: string | null;
+};
+
 export type ProcessosPageData = {
   activeProcess: ProcessoResponse | null;
   processes: ProcessoResponse[];

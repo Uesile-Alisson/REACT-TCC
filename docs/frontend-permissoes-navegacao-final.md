@@ -21,9 +21,9 @@ nao foi executada nesta fase.
 | `/alarmes` | Sim | Sim | Sim | `PrivateRoute` + `RoleGuard(ALL_ROLES)` | Resolver apenas para tecnico/admin. |
 | `/historico` | Sim | Sim | Sim | `PrivateRoute` + `RoleGuard(ALL_ROLES)` | Gerar relatorio apenas tecnico/admin. |
 | `/relatorios` | Sim | Sim | Sim | `PrivateRoute` + `RoleGuard(ALL_ROLES)` | Operador sem gerar/download. |
-| `/configuracoes/sistema` | Nao | Sim | Sim | `PrivateRoute` + `RoleGuard(TECHNICAL_ROLES)` | Edicao depende de endpoint/backend. |
+| `/configuracoes/sistema` | Nao | Sim | Sim | `PrivateRoute` + `RoleGuard(TECHNICAL_ROLES)` | Edicao via API real. |
 | `/configuracoes/mqtt-hardware` | Nao | Sim | Sim | `PrivateRoute` + `RoleGuard(TECHNICAL_ROLES)` | Edicao restrita a admin no hook/backend. |
-| `/configuracoes/tanques` | Nao | Sim | Sim | `PrivateRoute` + `RoleGuard(TECHNICAL_ROLES)` | Modo leitura enquanto API dedicada nao existe. |
+| `/configuracoes/tanques` | Nao | Sim | Sim | `PrivateRoute` + `RoleGuard(TECHNICAL_ROLES)` | CRUD tecnico via API real. |
 | `/configuracoes/bombas` | Nao | Sim | Sim | `PrivateRoute` + `RoleGuard(TECHNICAL_ROLES)` | Sem acionamento direto de hardware. |
 | `/usuarios` | Nao | Nao | Sim | `PrivateRoute` + `RoleGuard(ADMIN_ROLES)` | CRUD administrativo via `/user`. |
 | `/access-denied` | Sim | Sim | Sim | `PrivateRoute` | Pagina clara para falta de permissao. |
@@ -91,7 +91,7 @@ nao foi executada nesta fase.
 ### Tanques
 
 - Apenas `TECNICO` e `ADMINISTRADOR` acessam.
-- Tela em modo leitura por falta de endpoint HTTP dedicado.
+- Telas de configuracao tecnica usam API dedicada.
 - Nao ha acao operacional de processo.
 
 ### Bombas

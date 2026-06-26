@@ -6,15 +6,13 @@ type TanquesListTableProps = {
   tanques: TanqueConfigResponse[];
   selectedTanqueId?: number;
   isLoading: boolean;
-  endpointMissing: boolean;
-  onSelect: (tanque: TanqueConfigResponse) => void;
+  onSelect: (id_tanque: number) => void;
 };
 
 export function TanquesListTable({
   tanques,
   selectedTanqueId,
   isLoading,
-  endpointMissing,
   onSelect,
 }: TanquesListTableProps) {
   return (
@@ -42,7 +40,7 @@ export function TanquesListTable({
               <tr
                 className={tanque.id_tanque === selectedTanqueId ? styles.selected : undefined}
                 key={tanque.id_tanque}
-                onClick={() => onSelect(tanque)}
+                onClick={() => onSelect(tanque.id_tanque)}
               >
                 <td>
                   <strong>{tanque.nome}</strong>
@@ -65,12 +63,8 @@ export function TanquesListTable({
 
         {!isLoading && tanques.length === 0 ? (
           <div className={styles.emptyState}>
-            <strong>Nenhum tanque carregado.</strong>
-            <span>
-              {endpointMissing
-                ? 'A listagem ficara ativa quando a API expuser uma rota HTTP dedicada.'
-                : 'Nenhum registro retornado pela API.'}
-            </span>
+            <strong>Nenhum tanque configurado.</strong>
+            <span>Nenhum registro retornado pela API.</span>
           </div>
         ) : null}
       </div>

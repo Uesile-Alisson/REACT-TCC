@@ -1,4 +1,5 @@
-import { Eye, Wrench } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Eye, FilePlus2, Wrench } from 'lucide-react';
 import type { AlarmeResponse, AlarmesPermissions } from '../../../types';
 import { formatAlarmeDate } from '../alarmes.utils';
 import { AlarmeSeverityBadge } from '../AlarmeSeverityBadge';
@@ -12,9 +13,11 @@ type AlarmeListTableProps = {
   limit: number;
   isLoading: boolean;
   selectedId?: number;
+  generatingReportId: number | null;
   permissions: AlarmesPermissions;
   onSelect: (idAlarme: number) => void;
   onResolve: (alarme: AlarmeResponse) => void;
+  onGenerateReport: (alarme: AlarmeResponse) => void;
   onPageChange: (page: number) => void;
 };
 
@@ -25,9 +28,11 @@ export function AlarmeListTable({
   limit,
   isLoading,
   selectedId,
+  generatingReportId,
   permissions,
   onSelect,
   onResolve,
+  onGenerateReport,
   onPageChange,
 }: AlarmeListTableProps) {
   const totalPages = Math.max(1, Math.ceil(total / limit));
@@ -57,12 +62,16 @@ export function AlarmeListTable({
               </tr>
             </thead>
             <tbody>
-              {alarmes.map((alarme) => (
-                <tr
+              {alarmes.map((alarme, index) => (
+                <motion.tr
                   key={alarme.id_alarme}
                   className={`${alarme.severidade === 'CRITICO' && alarme.status_alarme === 'ATIVO' ? styles.criticalRow : ''} ${
                     selectedId === alarme.id_alarme ? styles.activeRow : ''
                   }`}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.025, duration: 0.18 }}
+                  whileHover={{ backgroundColor: 'rgba(83, 197, 255, 0.075)' }}
                 >
                   <td>
                     <strong>{alarme.tipo_alarme ?? `Alarme #${alarme.id_alarme}`}</strong>
@@ -79,19 +88,38 @@ export function AlarmeListTable({
                   <td>{formatAlarmeDate(alarme.criado_em)}</td>
                   <td>
                     <div className={styles.actions}>
-                      <button type="button" onClick={() => onSelect(alarme.id_alarme)}>
+                      <button
+                        type="button"
+                        onClick={() => onSelect(alarme.id_alarme)}
+                        aria-label={`Ver detalhes do alarme ${alarme.id_alarme}`}
+                        title="Ver detalhes"
+                      >
                         <Eye size={15} aria-hidden="true" />
-                        Detalhes
                       </button>
                       {permissions.canResolveAlarme(alarme.status_alarme) ? (
-                        <button type="button" onClick={() => onResolve(alarme)}>
+                        <button
+                          type="button"
+                          onClick={() => onResolve(alarme)}
+                          aria-label={`Resolver alarme ${alarme.id_alarme}`}
+                          title="Resolver"
+                        >
                           <Wrench size={15} aria-hidden="true" />
-                          Resolver
+                        </button>
+                      ) : null}
+                      {permissions.canGenerateAlarmeReport ? (
+                        <button
+                          type="button"
+                          onClick={() => onGenerateReport(alarme)}
+                          disabled={generatingReportId === alarme.id_alarme}
+                          aria-label={`Gerar relatorio do alarme ${alarme.id_alarme}`}
+                          title={generatingReportId === alarme.id_alarme ? 'Gerando relatorio' : 'Gerar relatorio'}
+                        >
+                          <FilePlus2 size={15} aria-hidden="true" />
                         </button>
                       ) : null}
                     </div>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>

@@ -30,7 +30,6 @@ export function ConfiguracoesSistemaVacuoCard({
           <div>
             <input
               type="number"
-              min="0"
               step="0.001"
               value={formState.vacuo_padrao}
               onChange={(event) => onChange('vacuo_padrao', event.target.value)}

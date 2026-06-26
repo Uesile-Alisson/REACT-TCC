@@ -2,7 +2,7 @@
 
 ## 1. Resumo da fase
 
-A Fase Front 5 preparou a infraestrutura segura para preview PDF e download PDF/XLSX de relatorios usando Blob/File, headers HTTP, filename sanitizado e limpeza de object URLs.
+A Fase Front 5 preparou a infraestrutura segura para preview PDF/XLSX e download PDF/XLSX de relatorios usando Blob/File, headers HTTP, filename sanitizado e limpeza de object URLs.
 
 A integracao visual completa nao foi conectada porque o projeto ainda nao possui pagina dedicada de Relatorios. Conforme a regra da fase, nao foi criada uma pagina completa do zero. A Dashboard existente apenas exibe contagem de relatorios por HTTP.
 
@@ -12,7 +12,7 @@ API real nao executada nesta fase; preview/download foram integrados por contrat
 
 | Acao | Metodo | Rota | Content-Type | Observacoes |
 |---|---|---|---|---|
-| Preview PDF | GET | `/relatorios/:id_relatorio/preview` | `application/pdf` | Retorna Blob inline. |
+| Preview PDF/XLSX | GET | `/relatorios/:id_relatorio/preview` | `application/pdf` ou XLSX | Retorna Blob inline. |
 | Download PDF/XLSX | GET | `/relatorios/:id_relatorio/download` | `application/pdf` ou XLSX | Retorna Blob attachment. |
 
 ## 3. Services usados
@@ -36,14 +36,15 @@ O parser suporta:
 
 O filename e sanitizado para evitar `/`, `\`, `..` e caracteres invalidos.
 
-## 5. Preview PDF
+## 5. Preview PDF/XLSX
 
 - Hook preparado: `src/hooks/useRelatorioPreview.ts`.
-- Valida PDF antes de chamar o service.
+- Valida PDF ou XLSX antes de chamar o service.
 - Cria object URL com `URL.createObjectURL`.
 - Revoga URL anterior antes de abrir novo preview.
 - Revoga URL no fechamento/desmontagem.
-- Nao abre XLSX em preview.
+- PDF e exibido em iframe.
+- XLSX e carregado pelo endpoint de preview e exibido como painel de arquivo pronto para download/abertura, porque o navegador nao renderiza planilhas XLSX nativamente.
 
 Limitacao: nao foi criado modal visual porque nao existe pagina de Relatorios para consumir o hook.
 
@@ -61,13 +62,13 @@ Limitacao: nao foi criado modal visual porque nao existe pagina de Relatorios pa
 
 | Perfil | Preview | Download |
 |---|---|---|
-| OPERADOR | Sim, para PDF | Nao |
-| TECNICO | Sim, para PDF | Sim, PDF/XLSX conforme tipo |
-| ADMINISTRADOR | Sim, para PDF | Sim, PDF/XLSX conforme tipo |
+| OPERADOR | Sim, PDF/XLSX | Nao |
+| TECNICO | Sim, PDF/XLSX | Sim, PDF/XLSX conforme tipo |
+| ADMINISTRADOR | Sim, PDF/XLSX | Sim, PDF/XLSX conforme tipo |
 
 Regras preparadas:
 
-- XLSX nao tem preview.
+- XLSX tem preview controlado por Blob/object URL.
 - Relatorio de alarme nao permite XLSX.
 - CSV nao existe.
 

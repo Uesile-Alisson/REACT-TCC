@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { previewRelatorio } from '../services/relatorios.service';
 import type { RelatorioResponse } from '../types/relatorios.types';
+import type { FormatoRelatorio } from '../types/common.types';
 import { createObjectUrl, revokeObjectUrl } from '../utils/files';
 import { getAuthErrorMessage } from '../utils/authErrors';
 
@@ -8,6 +9,8 @@ type RelatorioPreviewState = {
   isPreviewOpen: boolean;
   previewUrl: string | null;
   previewFilename: string | null;
+  previewContentType: string | null;
+  previewFormat: FormatoRelatorio | null;
   isPreviewLoading: boolean;
   previewError: string | null;
 };
@@ -21,6 +24,8 @@ const initialState: RelatorioPreviewState = {
   isPreviewOpen: false,
   previewUrl: null,
   previewFilename: null,
+  previewContentType: null,
+  previewFormat: null,
   isPreviewLoading: false,
   previewError: null,
 };
@@ -30,7 +35,16 @@ function isPdfRelatorio(relatorio: RelatorioResponse): boolean {
 }
 
 function getFallbackPreviewFilename(relatorio: RelatorioResponse): string {
-  return relatorio.nome_arquivo ?? `relatorio-${relatorio.id_relatorio}.pdf`;
+  const extension = relatorio.formato === 'XLSX' ? 'xlsx' : 'pdf';
+
+  return relatorio.nome_arquivo ?? `relatorio-${relatorio.id_relatorio}.${extension}`;
+}
+
+function isXlsxRelatorio(relatorio: RelatorioResponse): boolean {
+  return (
+    relatorio.formato === 'XLSX' ||
+    relatorio.content_type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  );
 }
 
 export function useRelatorioPreview(): UseRelatorioPreviewResult {
@@ -49,11 +63,11 @@ export function useRelatorioPreview(): UseRelatorioPreviewResult {
 
   const openPreview = useCallback(
     async (relatorio: RelatorioResponse): Promise<void> => {
-      if (!isPdfRelatorio(relatorio)) {
+      if (!isPdfRelatorio(relatorio) && !isXlsxRelatorio(relatorio)) {
         setState((currentState) => ({
           ...currentState,
           isPreviewOpen: true,
-          previewError: 'Preview esta disponivel apenas para relatorios PDF.',
+          previewError: 'Preview esta disponivel apenas para relatorios PDF ou XLSX.',
         }));
         return;
       }
@@ -63,6 +77,8 @@ export function useRelatorioPreview(): UseRelatorioPreviewResult {
         isPreviewOpen: true,
         previewUrl: null,
         previewFilename: getFallbackPreviewFilename(relatorio),
+        previewContentType: relatorio.content_type ?? null,
+        previewFormat: relatorio.formato ?? null,
         isPreviewLoading: true,
         previewError: null,
       });
@@ -76,6 +92,8 @@ export function useRelatorioPreview(): UseRelatorioPreviewResult {
           isPreviewOpen: true,
           previewUrl: objectUrl,
           previewFilename: file.filename ?? getFallbackPreviewFilename(relatorio),
+          previewContentType: file.contentType ?? relatorio.content_type ?? null,
+          previewFormat: relatorio.formato ?? null,
           isPreviewLoading: false,
           previewError: null,
         });

@@ -38,7 +38,7 @@ const initialRealtimeState: RealtimeState = {
 };
 
 export function RealtimeProvider({ children }: RealtimeProviderProps) {
-  const { accessToken, isAuthenticated } = useAuth();
+  const { accessToken, isAuthenticated, isLoading, user } = useAuth();
   const [state, setState] = useState<RealtimeState>(initialRealtimeState);
 
   const updateRealtimePayload = useCallback((partialState: Partial<RealtimeState>): void => {
@@ -55,7 +55,7 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
   }, []);
 
   const connect = useCallback((): void => {
-    if (!isAuthenticated || !accessToken) {
+    if (isLoading || !isAuthenticated || !accessToken || !user) {
       disconnect();
       return;
     }
@@ -66,10 +66,14 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       lastError: null,
     }));
     connectRealtime(accessToken);
-  }, [accessToken, disconnect, isAuthenticated]);
+  }, [accessToken, disconnect, isAuthenticated, isLoading, user]);
 
   useEffect(() => {
-    if (!isAuthenticated || !accessToken) {
+    if (isLoading) {
+      return undefined;
+    }
+
+    if (!isAuthenticated || !accessToken || !user) {
       queueMicrotask(disconnect);
       return undefined;
     }
@@ -151,7 +155,7 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       unsubscribeAcoplamento();
       disconnectRealtime();
     };
-  }, [accessToken, connect, disconnect, isAuthenticated, updateRealtimePayload]);
+  }, [accessToken, connect, disconnect, isAuthenticated, isLoading, updateRealtimePayload, user]);
 
   const value = useMemo<RealtimeContextData>(
     () => ({

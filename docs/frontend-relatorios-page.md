@@ -21,7 +21,7 @@ A rota `/relatorios` deixou de usar placeholder e passou a ter uma tela operacio
 - `getRelatorioById(idRelatorio)` para detalhe/metadados.
 - `generateProcessReport(idProcesso, payload)` para relatorio de processo.
 - `generateAlarmReport(idAlarme, payload)` para relatorio de alarme.
-- `previewRelatorio(idRelatorio)` para preview em PDF.
+- `previewRelatorio(idRelatorio)` para preview em PDF ou XLSX.
 - `downloadRelatorio(idRelatorio)` para download de arquivo permitido.
 
 Nenhuma pagina usa Axios diretamente.
@@ -46,7 +46,7 @@ Relatorio de processo aceita PDF e XLSX. Relatorio de alarme aceita PDF.
 
 - lista relatorios;
 - visualiza metadados;
-- abre preview PDF quando autorizado pela API;
+- abre preview PDF/XLSX quando autorizado pela API;
 - nao gera relatorio;
 - nao faz download.
 
@@ -54,7 +54,7 @@ Relatorio de processo aceita PDF e XLSX. Relatorio de alarme aceita PDF.
 
 - lista relatorios;
 - visualiza metadados;
-- abre preview PDF;
+- abre preview PDF/XLSX;
 - gera relatorio;
 - faz download nos formatos permitidos.
 
@@ -76,7 +76,7 @@ A geracao usa `useGerarRelatorio` e atualiza a listagem apos sucesso.
 
 O preview usa `useRelatorioPreview`, `previewRelatorio` e `URL.createObjectURL`.
 
-O preview e restrito a PDF. A URL temporaria e revogada ao fechar o modal ou desmontar o componente.
+PDF e exibido em iframe. XLSX e carregado pelo endpoint de preview e exibido como painel de arquivo, com acao direta de baixar/abrir a planilha, porque o navegador nao renderiza XLSX nativamente. A URL temporaria e revogada ao fechar o modal ou desmontar o componente.
 
 ## Download
 
@@ -99,7 +99,7 @@ A tela possui:
 - empty state;
 - mensagens de erro;
 - mensagens de sucesso;
-- aviso de perfil em modo leitura;
+- aviso de perfil com permissao limitada;
 - painel lateral de metadados.
 
 ## Cuidados mantidos

@@ -30,4 +30,5 @@ export type AlarmesPermissions = {
   canViewAlarmes: boolean;
   canViewAlarmeDetails: boolean;
   canResolveAlarme: (status: StatusAlarme) => boolean;
+  canGenerateAlarmeReport: boolean;
 };

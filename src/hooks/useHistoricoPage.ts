@@ -87,7 +87,7 @@ export function useHistoricoPage(): UseHistoricoPageResult {
       status_processo: filters.apenas_falha ? 'FALHA' : filters.status_processo || undefined,
       data_inicio: filters.data_inicio || undefined,
       data_fim: filters.data_fim || undefined,
-      order_by: 'finalizado_em',
+      order_by: 'criado_em',
       order_direction: 'desc',
     } as const;
 

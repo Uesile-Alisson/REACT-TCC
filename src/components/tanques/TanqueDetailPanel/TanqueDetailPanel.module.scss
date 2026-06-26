@@ -70,3 +70,33 @@ dd,
   color: #dcecff;
   line-height: 1.45;
 }
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.actions button {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(122, 185, 244, 0.22);
+  border-radius: 7px;
+  background: rgba(13, 30, 49, 0.92);
+  color: #dcecff;
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 820;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.actions button:first-child {
+  background: linear-gradient(180deg, rgba(83, 197, 255, 0.94), rgba(22, 119, 230, 0.94));
+  color: #03111e;
+}
+
+.actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

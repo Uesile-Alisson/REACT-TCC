@@ -1,8 +1,10 @@
 export type * from './alarmes.types';
 export type * from './alarmes-ui.types';
 export type * from './auth.types';
+export type * from './backup.types';
 export type * from './bombas-ui.types';
 export type * from './common.types';
+export type * from './configuracoes-sensores.types';
 export type * from './configuracoes-sistema-ui.types';
 export type * from './configuracoes-mqtt-hardware-ui.types';
 export type * from './dashboard.types';

@@ -1,4 +1,4 @@
-import { ExternalLink, Wrench } from 'lucide-react';
+import { ExternalLink, FilePlus2, Wrench } from 'lucide-react';
 import type { AlarmeResponse, AlarmesPermissions } from '../../../types';
 import { formatAlarmeDate, getUnknownNumber, getUnknownString } from '../alarmes.utils';
 import { AlarmeSeverityBadge } from '../AlarmeSeverityBadge';
@@ -9,16 +9,20 @@ type AlarmeDetailPanelProps = {
   alarme: AlarmeResponse | null;
   isLoading: boolean;
   error?: string;
+  generatingReportId: number | null;
   permissions: AlarmesPermissions;
   onResolve: (alarme: AlarmeResponse) => void;
+  onGenerateReport: (alarme: AlarmeResponse) => void;
 };
 
 export function AlarmeDetailPanel({
   alarme,
   isLoading,
   error,
+  generatingReportId,
   permissions,
   onResolve,
+  onGenerateReport,
 }: AlarmeDetailPanelProps) {
   if (isLoading) {
     return <section className={styles.panel}>Carregando detalhe do alarme...</section>;
@@ -101,6 +105,16 @@ export function AlarmeDetailPanel({
           <button type="button" onClick={() => onResolve(alarme)}>
             <Wrench size={15} aria-hidden="true" />
             Resolver alarme
+          </button>
+        ) : null}
+        {permissions.canGenerateAlarmeReport ? (
+          <button
+            type="button"
+            onClick={() => onGenerateReport(alarme)}
+            disabled={generatingReportId === alarme.id_alarme}
+          >
+            <FilePlus2 size={15} aria-hidden="true" />
+            {generatingReportId === alarme.id_alarme ? 'Gerando relatorio' : 'Gerar relatorio'}
           </button>
         ) : null}
       </footer>

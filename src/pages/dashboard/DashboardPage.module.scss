@@ -117,6 +117,12 @@
   align-items: stretch;
 }
 
+.chartGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
 .contextPanel {
   display: grid;
   align-content: start;
@@ -182,6 +188,7 @@
 @media (max-width: 1180px) {
   .primaryGrid,
   .secondaryGrid,
+  .chartGrid,
   .loadingGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -191,6 +198,7 @@
   .header,
   .primaryGrid,
   .secondaryGrid,
+  .chartGrid,
   .contextPanel dl {
     display: grid;
     grid-template-columns: 1fr;

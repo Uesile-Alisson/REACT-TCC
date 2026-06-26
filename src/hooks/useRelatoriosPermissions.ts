@@ -10,6 +10,14 @@ function isPdfRelatorio(relatorio: RelatorioResponse): boolean {
   return relatorio.formato === 'PDF' || relatorio.content_type === 'application/pdf';
 }
 
+function isPreviewableRelatorio(relatorio: RelatorioResponse): boolean {
+  return (
+    isPdfRelatorio(relatorio) ||
+    relatorio.formato === 'XLSX' ||
+    relatorio.content_type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  );
+}
+
 export function useRelatoriosPermissions(): RelatoriosPermissions {
   const { user } = useAuth();
   const role = user?.nivel_acesso ?? null;
@@ -19,7 +27,8 @@ export function useRelatoriosPermissions(): RelatoriosPermissions {
     () => ({
       canViewRelatorios: Boolean(role),
       canViewRelatorioDetail: Boolean(role),
-      canPreviewRelatorio: (relatorio: RelatorioResponse): boolean => Boolean(role) && isPdfRelatorio(relatorio),
+      canPreviewRelatorio: (relatorio: RelatorioResponse): boolean =>
+        Boolean(role) && isPreviewableRelatorio(relatorio),
       canDownloadRelatorio: (relatorio: RelatorioResponse): boolean => {
         if (!isTechnicalRole(role)) {
           return false;

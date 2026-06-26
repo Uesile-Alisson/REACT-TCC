@@ -24,6 +24,13 @@ export function MqttStatusCard({
   const mqtt = status?.mqtt;
   const currentStatus = realtimeStatus?.status_conexao ?? mqtt?.status_conexao ?? config?.status_conexao;
   const tone = getStatusTone(currentStatus);
+  const footerMessage = realtimeError
+    ? `Realtime indisponivel: ${realtimeError}`
+    : realtimeConnected
+      ? 'Socket.IO conectado e aguardando eventos MQTT.'
+      : realtimeConnecting
+        ? 'Socket.IO conectando ao backend.'
+        : 'Socket.IO indisponivel. Verifique backend, autenticacao e namespace realtime.';
 
   return (
     <section className={styles.card}>
@@ -56,10 +63,7 @@ export function MqttStatusCard({
 
       <footer>
         <RadioTower size={16} aria-hidden="true" />
-        <span>
-          Realtime {realtimeConnected ? 'ativo' : realtimeConnecting ? 'conectando' : 'indisponivel'}
-          {realtimeError ? `: ${realtimeError}` : ''}
-        </span>
+        <span>{footerMessage}</span>
       </footer>
     </section>
   );

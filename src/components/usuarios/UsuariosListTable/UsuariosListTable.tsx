@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import type { UserResponse } from '../../../types';
 import { getUserAccessLevel } from '../../../hooks/useUsuariosPage';
 import { NivelAcessoBadge } from '../NivelAcessoBadge';
@@ -50,10 +51,14 @@ export function UsuariosListTable({
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <tr
+            {users.map((user, index) => (
+              <motion.tr
                 className={user.id_usuario === selectedUserId ? styles.selected : undefined}
                 key={user.id_usuario}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.025, duration: 0.18 }}
+                whileHover={{ backgroundColor: 'rgba(83, 197, 255, 0.075)' }}
               >
                 <td>
                   <button type="button" className={styles.linkButton} onClick={() => onSelect(user)}>
@@ -89,7 +94,7 @@ export function UsuariosListTable({
                     ) : null}
                   </div>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>

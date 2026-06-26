@@ -21,7 +21,8 @@ A tela concentra processo ativo, listagem, detalhe, criacao/configuracao inicial
 | Detalhe | `getProcessoById` | `GET /processos/:id` | Carregado ao selecionar linha. |
 | Leituras | `getProcessoReadings` | `GET /leituras-eventos/processos/:id/leituras` | Exibe lista simples. |
 | Eventos | `getProcessoEvents` | `GET /leituras-eventos/processos/:id/eventos` | Exibe lista simples. |
-| Criacao | `createProcesso` | `POST /processos` | Usa DTO real com tanque e sensor informados por ID. |
+| Criacao | `createProcesso` | `POST /processos` | Usa DTO real; tanque e sensor de vacuo vêm de selects carregados da API. |
+| Sensores do processo | `listSensoresVacuoByTanque` | `GET /configuracoes/tanques/:id_tanque/sensores` | Front envia filtros de sensor ativo e de vacuo. |
 | Iniciar | `startProcesso` | `POST /processos/:id/iniciar` | HTTP real. |
 | Pausar | `pauseProcesso` | `POST /processos/:id/pausar` | HTTP real. |
 | Retomar | `resumeProcesso` | `POST /processos/:id/retomar` | HTTP real. |
@@ -61,19 +62,23 @@ Campos:
 - nome opcional;
 - tempo maximo;
 - vacuo alvo geral opcional;
-- ID do tanque;
+- tanque selecionado da API de Configuracoes;
 - vacuo alvo do tanque opcional;
-- ID do sensor;
+- sensor de vacuo real obrigatorio;
 - observacoes do sensor opcionais.
 
 Validacoes basicas:
 
 - tempo maximo positivo;
-- ID de tanque positivo;
-- ID de sensor positivo;
+- tanque obrigatorio;
+- sensor obrigatorio pelo DTO do backend;
 - valores de vacuo positivos quando informados.
 
-Limitacao: ainda nao existe endpoint/tela para carregar opcoes de tanques e sensores; por isso os IDs sao informados manualmente.
+Fonte de tanques: `GET /api/configuracoes/tanques`, consumido no frontend como `/configuracoes/tanques`.
+
+Fonte de sensores de vacuo: `GET /api/configuracoes/tanques/:id_tanque/sensores`, consumido no frontend como `/configuracoes/tanques/:id_tanque/sensores`.
+
+O select envia somente `id_sensor` dentro de `tanques[].sensores[]`. Sensores de acoplamento/mangueira pertencem ao fluxo de MQTT/Hardware/Eventos/Alarmes e nao sao listados nem enviados no payload de criacao de processo.
 
 ## 7. Acoes operacionais
 

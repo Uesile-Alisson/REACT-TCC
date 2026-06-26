@@ -4,22 +4,29 @@ import styles from './TanqueDetailPanel.module.scss';
 
 type TanqueDetailPanelProps = {
   tanque: TanqueConfigResponse | null;
-  endpointMissing: boolean;
+  canEdit: boolean;
+  canToggleActive: boolean;
+  isSubmitting: boolean;
+  onEdit: (tanque: TanqueConfigResponse) => void;
+  onToggleActive: (tanque: TanqueConfigResponse) => void;
 };
 
-export function TanqueDetailPanel({ tanque, endpointMissing }: TanqueDetailPanelProps) {
+export function TanqueDetailPanel({
+  tanque,
+  canEdit,
+  canToggleActive,
+  isSubmitting,
+  onEdit,
+  onToggleActive,
+}: TanqueDetailPanelProps) {
   if (!tanque) {
     return (
       <aside className={styles.panel} aria-label="Detalhes do tanque">
         <span className={styles.overline}>Detalhe tecnico</span>
         <h2>Sem tanque selecionado</h2>
-        <p>
-          {endpointMissing
-            ? 'Os detalhes serao preenchidos quando o backend disponibilizar consulta HTTP de tanques.'
-            : 'Selecione um tanque na lista para visualizar os parametros.'}
-        </p>
+        <p>Selecione um tanque na lista para visualizar os parametros.</p>
         <div className={styles.schemaBox}>
-          <strong>Campos confirmados no schema</strong>
+          <strong>Campos integrados</strong>
           <span>nome, volume, unidade_volume, vacuo_padrao e status_tanque.</span>
         </div>
       </aside>
@@ -54,6 +61,19 @@ export function TanqueDetailPanel({ tanque, endpointMissing }: TanqueDetailPanel
           <dd>{new Date(tanque.atualizado_em).toLocaleString('pt-BR')}</dd>
         </div>
       </dl>
+
+      <div className={styles.actions}>
+        <button type="button" onClick={() => onEdit(tanque)} disabled={!canEdit || isSubmitting}>
+          Editar
+        </button>
+        <button
+          type="button"
+          onClick={() => onToggleActive(tanque)}
+          disabled={!canToggleActive || isSubmitting}
+        >
+          {tanque.status_tanque === 'ATIVO' ? 'Desativar' : 'Ativar'}
+        </button>
+      </div>
     </aside>
   );
 }

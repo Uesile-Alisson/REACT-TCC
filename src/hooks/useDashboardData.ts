@@ -75,7 +75,7 @@ export function useDashboardData(): DashboardLoadState {
         order_direction: 'desc',
       }),
       getAlarmesDashboard({ limit: 5 }),
-      listAlarmes({ limit: 5, order_by: 'criado_em', order_direction: 'desc' }),
+      listAlarmes({ limit: 5, order_by: 'ocorrido_em', order_direction: 'desc' }),
       getHistoricoDashboard(),
       getMqttHardwareStatus(),
       listRelatorios({ limit: 1 }),

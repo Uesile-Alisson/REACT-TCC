@@ -40,7 +40,7 @@ const initialData: ProcessosPageData = {
   limit: PAGE_LIMIT,
 };
 
-function getListData(response: ProcessoListResponse): ProcessoResponse[] {
+function getListData<TItem>(response: { data: TItem[] } | TItem[]): TItem[] {
   return Array.isArray(response) ? response : response.data;
 }
 
@@ -74,7 +74,7 @@ export function useProcessosPage(): UseProcessosPageResult {
       setData((currentData) => ({
         ...currentData,
         activeProcess,
-        processes: getListData(processesResponse),
+        processes: getListData<ProcessoResponse>(processesResponse),
         total: getTotal(processesResponse),
         limit: PAGE_LIMIT,
       }));
@@ -99,8 +99,8 @@ export function useProcessosPage(): UseProcessosPageResult {
       setData((currentData) => ({
         ...currentData,
         selectedProcess,
-        selectedReadings,
-        selectedEvents: selectedEvents.slice(0, 8),
+        selectedReadings: getListData(selectedReadings),
+        selectedEvents: getListData(selectedEvents).slice(0, 8),
       }));
     } catch (loadError: unknown) {
       setDetailError(getAuthErrorMessage(loadError));

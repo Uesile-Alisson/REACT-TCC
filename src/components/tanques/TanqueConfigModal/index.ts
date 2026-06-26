@@ -1,0 +1,1 @@
+export { TanqueConfigModal } from './TanqueConfigModal';

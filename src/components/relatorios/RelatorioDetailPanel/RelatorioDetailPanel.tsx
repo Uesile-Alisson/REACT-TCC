@@ -17,22 +17,82 @@ function formatDate(value?: string): string {
     return 'Nao informado';
   }
 
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Data invalida';
+  }
+
   return new Intl.DateTimeFormat('pt-BR', {
     dateStyle: 'medium',
     timeStyle: 'short',
-  }).format(new Date(value));
+  }).format(date);
 }
 
-function getNumberMetadata(relatorio: RelatorioResponse, key: string): string {
-  const value = relatorio[key];
+function formatBytes(value: unknown): string {
+  const numericValue =
+    typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : Number.NaN;
 
-  return typeof value === 'number' ? String(value) : 'Nao informado';
+  if (!Number.isFinite(numericValue)) {
+    return 'Nao informado';
+  }
+
+  return `${numericValue.toLocaleString('pt-BR')} bytes`;
 }
 
-function getStringMetadata(relatorio: RelatorioResponse, key: string): string {
+function getMetadataValue(relatorio: RelatorioResponse, key: string): string {
   const value = relatorio[key];
 
-  return typeof value === 'string' && value.trim() ? value : 'Nao informado';
+  if (key === 'criado_em' || key === 'gerado_em') {
+    return typeof value === 'string' ? formatDate(value) : 'Nao informado';
+  }
+
+  if (key === 'tamanho_bytes') {
+    return formatBytes(value);
+  }
+
+  if (typeof value === 'string') {
+    return value.trim() || 'Nao informado';
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  if (value === null || value === undefined) {
+    return 'Nao informado';
+  }
+
+  return JSON.stringify(value);
+}
+
+function getTechnicalMetadata(relatorio: RelatorioResponse): Array<{ label: string; value: string }> {
+  const fields = [
+    ['ID do relatorio', 'id_relatorio'],
+    ['Titulo', 'titulo'],
+    ['Descricao', 'descricao'],
+    ['Nome do arquivo', 'nome_arquivo'],
+    ['Tipo', 'tipo_relatorio'],
+    ['Formato', 'formato_relatorio'],
+    ['Origem', 'origem'],
+    ['ID do processo', 'id_processo'],
+    ['ID do alarme', 'id_alarme'],
+    ['Usuario gerador', 'usuario_gerador'],
+    ['Gerado em', 'gerado_em'],
+    ['Criado em', 'criado_em'],
+    ['Tamanho', 'tamanho_bytes'],
+    ['Hash do arquivo', 'hash_arquivo'],
+    ['Content type', 'content_type'],
+    ['Storage provider', 'storage_provider'],
+    ['Bucket', 'bucket_name'],
+    ['GridFS file ID', 'gridfs_file_id'],
+    ['Observacao', 'observacao'],
+  ] as const;
+
+  return fields.map(([label, key]) => ({
+    label,
+    value: getMetadataValue(relatorio, key),
+  }));
 }
 
 export function RelatorioDetailPanel({
@@ -78,30 +138,12 @@ export function RelatorioDetailPanel({
       </div>
 
       <dl className={styles.metadata}>
-        <div>
-          <dt>ID do relatorio</dt>
-          <dd>{relatorio.id_relatorio}</dd>
-        </div>
-        <div>
-          <dt>ID do processo</dt>
-          <dd>{getNumberMetadata(relatorio, 'id_processo')}</dd>
-        </div>
-        <div>
-          <dt>ID do alarme</dt>
-          <dd>{getNumberMetadata(relatorio, 'id_alarme')}</dd>
-        </div>
-        <div>
-          <dt>Content type</dt>
-          <dd>{relatorio.content_type ?? 'Nao informado'}</dd>
-        </div>
-        <div>
-          <dt>Criado em</dt>
-          <dd>{formatDate(relatorio.criado_em)}</dd>
-        </div>
-        <div>
-          <dt>Observacao</dt>
-          <dd>{getStringMetadata(relatorio, 'observacao')}</dd>
-        </div>
+        {getTechnicalMetadata(relatorio).map((item) => (
+          <div key={item.label}>
+            <dt>{item.label}</dt>
+            <dd>{item.value}</dd>
+          </div>
+        ))}
       </dl>
 
       <section className={styles.integrity}>

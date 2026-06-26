@@ -30,7 +30,7 @@ Sem processo ativo:
 | Processo ativo | `getActiveProcesso` | `GET /processos/ativo` | Fonte principal para detectar processo em andamento. |
 | Ultimo processo | `listHistoricoProcessos` | `GET /historico/processos` | Usa `limit=1`, `order_by=finalizado_em`, `order_direction=desc`. |
 | Alarmes resumo | `getAlarmesDashboard` | `GET /alarmes/dashboard` | Exibe totais, ativos e criticos quando disponiveis. |
-| Alarmes recentes | `listAlarmes` | `GET /alarmes` | Usa `limit=5`, ordenando por `criado_em desc`. |
+| Alarmes recentes | `listAlarmes` | `GET /alarmes` | Usa `limit=5`, ordenando por `ocorrido_em desc`. |
 | Historico resumo | `getHistoricoDashboard` | `GET /historico/dashboard` | Exibe apenas disponibilidade de indicadores. |
 | MQTT/Hardware | `getMqttHardwareStatus` | `GET /mqtt-hardware/status` | Fonte HTTP inicial. |
 | Relatorios | `listRelatorios` | `GET /relatorios` | Apenas contagem simples; sem preview/download. |

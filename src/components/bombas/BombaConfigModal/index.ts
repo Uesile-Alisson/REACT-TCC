@@ -1,0 +1,1 @@
+export { BombaConfigModal } from './BombaConfigModal';

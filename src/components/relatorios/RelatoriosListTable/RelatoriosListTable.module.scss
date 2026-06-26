@@ -47,21 +47,46 @@
 .tableWrap {
   min-width: 0;
   overflow-x: auto;
+  scrollbar-color: rgba(91, 200, 255, 0.55) rgba(7, 16, 28, 0.92);
+  scrollbar-width: thin;
+}
+
+.tableWrap::-webkit-scrollbar {
+  height: 10px;
+}
+
+.tableWrap::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(7, 16, 28, 0.92);
+}
+
+.tableWrap::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(7, 16, 28, 0.92);
+  border-radius: 999px;
+  background: rgba(91, 200, 255, 0.62);
+}
+
+.tableWrap::-webkit-scrollbar-thumb:hover {
+  background: rgba(122, 185, 244, 0.82);
 }
 
 .tableWrap table {
   width: 100%;
   min-width: 830px;
+  table-layout: fixed;
   border-collapse: collapse;
 }
 
 .tableWrap th,
 .tableWrap td {
+  box-sizing: border-box;
   padding: 12px 10px;
   border-bottom: 1px solid rgba(122, 185, 244, 0.1);
   color: #dcecff;
   font-size: 0.82rem;
   text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tableWrap th {
@@ -72,8 +97,39 @@
   text-transform: uppercase;
 }
 
+.tableWrap th:first-child {
+  width: 28%;
+}
+
+.tableWrap th:nth-child(2) {
+  width: 17%;
+}
+
+.tableWrap th:last-child,
+.tableWrap td:last-child {
+  width: 94px;
+  padding-right: 6px;
+  padding-left: 6px;
+  overflow: visible;
+  text-align: right;
+}
+
 .selected td {
   background: rgba(83, 197, 255, 0.07);
+}
+
+.tableWrap tbody tr {
+  cursor: pointer;
+}
+
+.tableWrap tbody tr:hover td,
+.tableWrap tbody tr:focus-visible td {
+  background: rgba(83, 197, 255, 0.1);
+}
+
+.tableWrap tbody tr:focus-visible {
+  outline: 2px solid rgba(91, 200, 255, 0.72);
+  outline-offset: -2px;
 }
 
 .fileButton {
@@ -100,7 +156,9 @@
 }
 
 .actions {
-  gap: 7px;
+  width: 100%;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .actions button,
@@ -117,7 +175,8 @@
 }
 
 .actions button {
-  width: 36px;
+  width: 34px;
+  min-width: 34px;
   padding: 0;
 }
 

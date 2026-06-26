@@ -6,15 +6,13 @@ type BombasListTableProps = {
   bombas: BombaConfigResponse[];
   selectedBombaId?: number;
   isLoading: boolean;
-  endpointMissing: boolean;
-  onSelect: (bomba: BombaConfigResponse) => void;
+  onSelect: (id_bomba: number) => void;
 };
 
 export function BombasListTable({
   bombas,
   selectedBombaId,
   isLoading,
-  endpointMissing,
   onSelect,
 }: BombasListTableProps) {
   return (
@@ -42,7 +40,7 @@ export function BombasListTable({
               <tr
                 className={bomba.id_bomba === selectedBombaId ? styles.selected : undefined}
                 key={bomba.id_bomba}
-                onClick={() => onSelect(bomba)}
+                onClick={() => onSelect(bomba.id_bomba)}
               >
                 <td>
                   <strong>{bomba.nome}</strong>
@@ -63,12 +61,8 @@ export function BombasListTable({
 
         {!isLoading && bombas.length === 0 ? (
           <div className={styles.emptyState}>
-            <strong>Nenhuma bomba carregada.</strong>
-            <span>
-              {endpointMissing
-                ? 'A listagem ficara ativa quando a API expuser uma rota HTTP dedicada.'
-                : 'Nenhum registro retornado pela API.'}
-            </span>
+            <strong>Nenhuma bomba configurada.</strong>
+            <span>Nenhum registro retornado pela API.</span>
           </div>
         ) : null}
       </div>

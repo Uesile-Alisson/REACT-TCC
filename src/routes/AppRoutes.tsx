@@ -6,6 +6,7 @@ import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import { AlarmesPage } from '../pages/alarmes/AlarmesPage';
+import { BackupsPage } from '../pages/configuracoes/BackupsPage';
 import { BombasPage } from '../pages/configuracoes/BombasPage';
 import { ConfiguracoesMqttHardwarePage } from '../pages/configuracoes/ConfiguracoesMqttHardwarePage';
 import { ConfiguracoesSistemaPage } from '../pages/configuracoes/ConfiguracoesSistemaPage';
@@ -113,6 +114,14 @@ export function AppRoutes() {
             element={
               <RoleGuard roles={TECHNICAL_ROLES}>
                 <BombasPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="/configuracoes/backups"
+            element={
+              <RoleGuard roles={ADMIN_ROLES}>
+                <BackupsPage />
               </RoleGuard>
             }
           />

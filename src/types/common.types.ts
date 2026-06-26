@@ -34,6 +34,7 @@ export type PaginationMeta = {
   limit: number;
   total: number;
   totalPages?: number;
+  total_pages?: number;
 };
 
 export type PaginatedResponse<TItem> = {

@@ -78,8 +78,8 @@ API real nao executada nesta fase; integracao feita com base nos services e cont
 
 ## 11. Mocks removidos ou ainda pendentes
 
-- A busca por `mock`, `MOCK`, `fake`, `dummy`, `setTimeout` e `Promise.resolve` nao encontrou ocorrencias apos os ajustes.
-- Nao ha mocks usados como fonte principal nas paginas integradas.
+- A busca por termos de simulacao nao encontrou ocorrencias apos os ajustes daquela fase.
+- Nao ha dados simulados usados como fonte principal nas paginas integradas.
 
 ## 12. Pendencias para Fase Front 4
 

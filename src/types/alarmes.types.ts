@@ -8,6 +8,8 @@ import type {
   StatusAlarme,
 } from './common.types';
 
+export type AlarmesOrderBy = 'ocorrido_em' | 'severidade' | 'status_alarme' | 'tipo_alarme';
+
 export type ListAlarmesQuery = QueryParams & {
   page?: number;
   limit?: number;
@@ -23,7 +25,7 @@ export type ListAlarmesQuery = QueryParams & {
   data_inicio?: DateString;
   data_fim?: DateString;
   busca?: string;
-  order_by?: string;
+  order_by?: AlarmesOrderBy;
   order_direction?: SortDirection;
 };
 

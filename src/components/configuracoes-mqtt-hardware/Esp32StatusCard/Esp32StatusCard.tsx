@@ -12,6 +12,11 @@ type Esp32StatusCardProps = {
 
 export function Esp32StatusCard({ status, hardwareStatus, heartbeat }: Esp32StatusCardProps) {
   const esp32Online = getHardwareEsp32Online(status, hardwareStatus, heartbeat);
+  const statusMessage =
+    hardwareStatus?.mensagem ??
+    (esp32Online === false
+      ? 'ESP32 offline. Verifique alimentacao, rede e publicacao MQTT.'
+      : 'Aguardando heartbeat do ESP32.');
 
   return (
     <section className={styles.card}>
@@ -44,7 +49,7 @@ export function Esp32StatusCard({ status, hardwareStatus, heartbeat }: Esp32Stat
 
       <footer>
         <Cpu size={16} aria-hidden="true" />
-        <span>{hardwareStatus?.mensagem ?? 'Sem mensagem operacional recente.'}</span>
+        <span>{statusMessage}</span>
       </footer>
     </section>
   );

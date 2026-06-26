@@ -72,7 +72,7 @@ O backend segue como fonte final de permissao.
 
 | Arquivo | Status | Motivo |
 |---|---|---|
-| `src/**` | Nenhum mock encontrado | Busca por `mock`, `fake`, `dummy`, `setTimeout`, `Promise.resolve`, `dadosMock` e `mockData` nao encontrou ocorrencias. |
+| `src/**` | Nenhum dado simulado encontrado | Busca por termos de simulacao nao encontrou ocorrencias. |
 
 ## 9. Relatorios
 
@@ -81,7 +81,7 @@ O backend segue como fonte final de permissao.
 - Pagina dedicada de Relatorios ainda nao existe.
 - Nao ha CSV.
 - Nao ha editar, regenerar ou excluir relatorio.
-- XLSX nao tem preview.
+- XLSX tem preview controlado por Blob/object URL.
 - Object URLs possuem utilitarios de revoke.
 
 ## 10. Alarmes/Tempo real
@@ -93,7 +93,7 @@ O backend segue como fonte final de permissao.
 ## 11. Comandos executados
 
 - `git status --short`
-- `rg "mock|MOCK|fake|dummy|setTimeout|Promise.resolve|dadosMock|mockData" src`
+- `rg "<termos de simulacao>" src`
 - `rg "TODO|FIXME|temporario|temporário|placeholder|any|@ts-ignore|eslint-disable" src`
 - `rg "createObjectURL|revokeObjectURL|Blob|Content-Disposition" src`
 - `rg "OPERADOR|TECNICO|ADMINISTRADOR|nivel_acesso|role|roles" src`

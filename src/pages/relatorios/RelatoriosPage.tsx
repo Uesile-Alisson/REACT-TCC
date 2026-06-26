@@ -1,5 +1,6 @@
 import { FilePlus2, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
+import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
 import { GerarRelatorioModal } from '../../components/relatorios/GerarRelatorioModal';
 import { RelatorioDetailPanel } from '../../components/relatorios/RelatorioDetailPanel';
 import { RelatorioPreviewModal } from '../../components/relatorios/RelatorioPreviewModal';
@@ -13,6 +14,7 @@ import { useRelatorioPreview } from '../../hooks/useRelatorioPreview';
 import { useRelatoriosPage } from '../../hooks/useRelatoriosPage';
 import { useRelatoriosPermissions } from '../../hooks/useRelatoriosPermissions';
 import type { GerarRelatorioFormState } from '../../types';
+import { countBy } from '../../utils/chartData';
 import styles from './RelatoriosPage.module.scss';
 
 export function RelatoriosPage() {
@@ -46,12 +48,16 @@ export function RelatoriosPage() {
     isPreviewOpen,
     previewUrl,
     previewFilename,
+    previewContentType,
+    previewFormat,
     isPreviewLoading,
     previewError,
     openPreview,
     closePreview,
   } = useRelatorioPreview();
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState<boolean>(false);
+  const relatoriosPorFormato = countBy(data.relatorios, (relatorio) => relatorio.formato);
+  const relatoriosPorTipo = countBy(data.relatorios, (relatorio) => relatorio.tipo_relatorio);
 
   async function handleGenerateReport(formState: GerarRelatorioFormState): Promise<boolean> {
     const success = await gerarRelatorio(formState);
@@ -136,6 +142,21 @@ export function RelatoriosPage() {
         canDownload={data.relatorios.some((relatorio) => permissions.canDownloadRelatorio(relatorio))}
       />
 
+      <section className={styles.chartGrid} aria-label="Graficos de relatorios">
+        <RealDataChartPanel
+          title="Relatorios por formato"
+          subtitle="Distribuicao de PDF e XLSX na listagem atual."
+          data={relatoriosPorFormato}
+          variant="pie"
+        />
+        <RealDataChartPanel
+          title="Relatorios por origem"
+          subtitle="Agrupamento por tipo_relatorio retornado pela API."
+          data={relatoriosPorTipo}
+          variant="bar"
+        />
+      </section>
+
       <RelatoriosFilters filters={filters} onChange={setFilters} />
 
       <section className={styles.contentGrid}>
@@ -175,6 +196,8 @@ export function RelatoriosPage() {
         isOpen={isPreviewOpen}
         previewUrl={previewUrl}
         filename={previewFilename}
+        contentType={previewContentType}
+        format={previewFormat}
         isLoading={isPreviewLoading}
         error={previewError}
         onClose={closePreview}

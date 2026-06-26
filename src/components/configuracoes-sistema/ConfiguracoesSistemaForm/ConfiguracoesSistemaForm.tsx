@@ -13,7 +13,6 @@ type ConfiguracoesSistemaFormProps = {
   formState: ConfiguracoesSistemaFormState;
   errors: ConfiguracoesSistemaFormErrors;
   readOnly: boolean;
-  endpointMissing: boolean;
   onChange: (field: keyof ConfiguracoesSistemaFormState, value: string) => void;
 };
 
@@ -22,14 +21,16 @@ export function ConfiguracoesSistemaForm({
   formState,
   errors,
   readOnly,
-  endpointMissing,
   onChange,
 }: ConfiguracoesSistemaFormProps) {
   return (
     <section className={styles.form} aria-label="Formulario de configuracoes do sistema">
       <ConfiguracoesSistemaStatusCard
         configuracao={configuracao}
-        endpointMissing={endpointMissing}
+        formState={formState}
+        errors={errors}
+        readOnly={readOnly}
+        onChange={onChange}
       />
 
       <div className={styles.grid}>

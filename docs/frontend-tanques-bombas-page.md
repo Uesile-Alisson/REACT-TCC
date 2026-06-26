@@ -1,125 +1,85 @@
-# Fase Front 15 - Telas dedicadas de Tanques e Bombas
+# Tanques e Bombas
 
-## Escopo executado
+As telas `/configuracoes/tanques` e `/configuracoes/bombas` foram integradas aos endpoints reais do modulo de Configuracoes da API.
 
-Foram criadas telas dedicadas para:
+## Rotas Consumidas
 
-- `/configuracoes/tanques`
-- `/configuracoes/bombas`
+### Tanques
 
-As rotas ja existiam no front e permanecem protegidas para perfis tecnicos por `RoleGuard` com
-`TECNICO` e `ADMINISTRADOR`.
+- `GET /api/configuracoes/tanques`
+- `GET /api/configuracoes/tanques/:id_tanque`
+- `POST /api/configuracoes/tanques`
+- `PATCH /api/configuracoes/tanques/:id_tanque`
+- `PATCH /api/configuracoes/tanques/:id_tanque/ativar`
+- `PATCH /api/configuracoes/tanques/:id_tanque/desativar`
 
-## Resultado da revisao da API
+No frontend, os services usam rotas sem `/api`, porque a instancia Axios ja possui base URL com `/api`.
 
-A revisao do backend indicou modelos Prisma para `tanques`, `bombas` e `valvulas`, mas nao foram
-encontrados controllers HTTP dedicados para cadastro ou manutencao direta de Tanques e Bombas.
+### Bombas
 
-Endpoints relacionados encontrados no contrato atual:
+- `GET /api/configuracoes/bombas`
+- `GET /api/configuracoes/bombas/:id_bomba`
+- `POST /api/configuracoes/bombas`
+- `PATCH /api/configuracoes/bombas/:id_bomba`
+- `PATCH /api/configuracoes/bombas/:id_bomba/ativar`
+- `PATCH /api/configuracoes/bombas/:id_bomba/desativar`
 
-- historico de tanques dentro de processos;
-- leituras/eventos;
-- configuracoes e comandos de MQTT hardware.
+## Permissoes
 
-Nenhum desses endpoints foi usado nesta fase, porque o escopo proibe acionar hardware diretamente,
-misturar historico/processos e inventar contratos HTTP.
+- `OPERADOR`: nao acessa as rotas nem os itens de menu.
+- `TECNICO`: lista, visualiza detalhe, cria, edita, ativa e desativa cadastros.
+- `ADMINISTRADOR`: lista, visualiza detalhe, cria, edita, ativa e desativa cadastros.
 
-## Decisao tecnica
-
-As telas foram implementadas em modo leitura/pendencia de endpoint:
-
-- sem chamadas HTTP;
-- sem services falsos;
-- sem criar/editar/excluir registros;
-- sem comandos MQTT, Socket.IO ou ESP32;
-- sem fluxo de processos ativos;
-- sem campos operacionais fora do cadastro tecnico confirmado.
+O backend continua sendo a fonte final de permissao. O frontend apenas controla UX e exibe erros de API.
 
 ## Tanques
 
-Campos preparados conforme schema observado:
+Campos integrados conforme DTO real:
 
-- `id_tanque`
 - `nome`
 - `volume`
 - `unidade_volume`
 - `vacuo_padrao`
 - `status_tanque`
-- `criado_em`
-- `atualizado_em`
 
-Componentes criados:
+Estados implementados:
 
-- `TanquesSummaryCards`
-- `TanquesListTable`
-- `TanqueDetailPanel`
-- `TanqueStatusBadge`
-
-Hooks e tipos:
-
-- `useTanquesPage`
-- `useTanquesBombasPermissions`
-- `TanqueConfigResponse`
-- `TanquesSummary`
-- `TanquesPermissions`
+- carregamento inicial;
+- lista vazia;
+- erro global;
+- carregamento de acao;
+- mensagem de sucesso;
+- detalhe por ID;
+- criacao;
+- edicao;
+- confirmacao antes de ativar/desativar.
 
 ## Bombas
 
-Campos preparados conforme schema observado:
+Campos integrados conforme DTO real:
 
-- `id_bomba`
-- `id_configuracao_sistema`
-- `id_usuario_alteracao`
 - `nome`
 - `tipo_bomba`
 - `status_padrao`
 - `entrada_por_pressao`
 - `entrada_por_tempo`
 - `encerramento_automatico`
-- `criado_em`
-- `atualizado_em`
 
-Componentes criados:
+Estados implementados:
 
-- `BombasSummaryCards`
-- `BombasListTable`
-- `BombaDetailPanel`
-- `BombaStatusBadge`
+- carregamento inicial;
+- lista vazia;
+- erro global;
+- carregamento de acao;
+- mensagem de sucesso;
+- detalhe por ID;
+- criacao;
+- edicao;
+- confirmacao antes de ativar/desativar.
 
-Hooks e tipos:
+## Limites de Escopo
 
-- `useBombasPage`
-- `useTanquesBombasPermissions`
-- `BombaConfigResponse`
-- `BombasSummary`
-- `BombasPermissions`
-
-## Permissoes
-
-As rotas continuam protegidas por perfil tecnico:
-
-- `TECNICO`: pode visualizar;
-- `ADMINISTRADOR`: pode visualizar;
-- `OPERADOR`: nao acessa pelas rotas protegidas.
-
-Criacao, edicao e exclusao permanecem desabilitadas porque a API nao possui endpoint HTTP dedicado
-documentado para essas operacoes.
-
-## Pendencias para liberar integracao real
-
-Para ativar CRUD real no front, o backend precisa expor e documentar endpoints HTTP dedicados, por
-exemplo:
-
-- `GET /tanques`
-- `GET /tanques/:id`
-- `POST /tanques`
-- `PATCH /tanques/:id`
-- `DELETE /tanques/:id`
-- `GET /bombas`
-- `GET /bombas/:id`
-- `POST /bombas`
-- `PATCH /bombas/:id`
-- `DELETE /bombas/:id`
-
-Quando esses endpoints existirem, a proxima etapa recomendada e criar services tipados e substituir
-o estado local dos hooks por chamadas HTTP centralizadas.
+Nao foi criado `DELETE`.
+Nao foi criado comando de bomba ou valvula.
+Nao houve integracao direta com MQTT ou ESP32.
+Nao houve dados simulados, seed ou simulacao de sucesso.
