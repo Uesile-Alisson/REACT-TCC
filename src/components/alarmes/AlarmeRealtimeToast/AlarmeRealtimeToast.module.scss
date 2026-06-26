@@ -12,6 +12,7 @@
 
 .toast p,
 .toast strong,
+.toast em,
 .toast span {
   display: block;
   margin: 0;
@@ -28,6 +29,14 @@
 .toast strong {
   margin-top: 5px;
   color: #f5f9ff;
+}
+
+.toast em {
+  margin-top: 4px;
+  color: #c8d8ea;
+  font-size: 0.86rem;
+  font-style: normal;
+  line-height: 1.45;
 }
 
 .toast span {

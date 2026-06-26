@@ -65,11 +65,19 @@ export type HeartbeatPayload = {
 export type AlarmCreatedPayload = {
   id_alarme?: Id;
   id_processo?: Id;
+  titulo?: string;
+  title?: string;
+  descricao?: string;
+  description?: string;
   severidade?: SeveridadeAlarme;
   status_alarme?: StatusAlarme;
   tipo_alarme?: string;
+  origem_alarme?: string;
   mensagem?: string;
+  ocorrido_em?: DateString;
+  enviado_em?: DateString;
   criado_em?: DateString;
+  created_at?: DateString;
   [key: string]: unknown;
 };
 
