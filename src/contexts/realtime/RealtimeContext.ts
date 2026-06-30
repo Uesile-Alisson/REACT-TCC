@@ -6,6 +6,7 @@ import type {
   HeartbeatPayload,
   MqttConnectionStatusPayload,
   MqttErrorPayload,
+  ProcessPrecheckResultPayload,
   SensorAcoplamentoPayload,
   SensorReadingPayload,
 } from '../../services/realtime';
@@ -23,6 +24,7 @@ export type RealtimeContextData = {
   lastSensorReading: SensorReadingPayload | null;
   lastAlarm: AlarmCreatedPayload | null;
   lastAcoplamento: SensorAcoplamentoPayload | null;
+  lastPrecheckResult: ProcessPrecheckResultPayload | null;
   eventsCount: number;
   connect: () => void;
   disconnect: () => void;

@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { Info, UserRound } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
+import { useLocation } from 'react-router-dom';
 import { z } from 'zod';
 import { AuthButton } from '../../components/auth/AuthButton';
 import { AuthCard } from '../../components/auth/AuthCard';
@@ -18,6 +19,10 @@ const forgotPasswordSchema = z.object({
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
+type ForgotPasswordLocationState = {
+  login?: string;
+};
+
 const feedbackStyle = {
   margin: 0,
   color: '#ff8b98',
@@ -31,6 +36,8 @@ const successStyle = {
 } satisfies CSSProperties;
 
 export function ForgotPasswordPage() {
+  const location = useLocation();
+  const routeState = location.state as ForgotPasswordLocationState | null;
   const {
     control,
     formState: { errors, isSubmitSuccessful, isSubmitting },
@@ -39,7 +46,7 @@ export function ForgotPasswordPage() {
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
-      login: '',
+      login: routeState?.login ?? '',
     },
   });
 

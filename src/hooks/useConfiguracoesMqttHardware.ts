@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { normalizeApiError } from '../api/api-error';
 import {
   getMqttHardwareConfig,
@@ -95,6 +95,12 @@ export function useConfiguracoesMqttHardware(): UseConfiguracoesMqttHardwareResu
 
     setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      void refresh();
+    });
+  }, [refresh]);
 
   const saveConfig = useCallback(async (payload: UpdateMqttConfigRequest): Promise<boolean> => {
     setIsSaving(true);

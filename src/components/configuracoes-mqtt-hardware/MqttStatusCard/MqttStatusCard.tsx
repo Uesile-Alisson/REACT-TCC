@@ -22,15 +22,22 @@ export function MqttStatusCard({
   realtimeError,
 }: MqttStatusCardProps) {
   const mqtt = status?.mqtt;
-  const currentStatus = realtimeStatus?.status_conexao ?? mqtt?.status_conexao ?? config?.status_conexao;
+  const currentStatus =
+    realtimeStatus?.status_conexao ?? mqtt?.status_conexao ?? status?.status_conexao ?? config?.status_conexao;
   const tone = getStatusTone(currentStatus);
-  const footerMessage = realtimeError
-    ? `Realtime indisponivel: ${realtimeError}`
-    : realtimeConnected
-      ? 'Socket.IO conectado e aguardando eventos MQTT.'
+  const brokerConfigured = Boolean(mqtt?.broker_url || config?.broker_url);
+  const brokerConnected = currentStatus === 'CONNECTED';
+  const footerMessage = brokerConnected
+    ? realtimeConnected
+      ? 'Broker conectado. Socket.IO tambem esta recebendo eventos.'
+      : 'Broker conectado pelo status HTTP/configuracao. Realtime ainda sem evento recente.'
+    : realtimeError
+      ? `Realtime indisponivel: ${realtimeError}`
       : realtimeConnecting
         ? 'Socket.IO conectando ao backend.'
-        : 'Socket.IO indisponivel. Verifique backend, autenticacao e namespace realtime.';
+        : brokerConfigured
+          ? 'Broker configurado. Aguardando confirmacao de conexao pelo backend.'
+          : 'Configuracao do broker ainda nao carregada nesta tela.';
 
   return (
     <section className={styles.card}>

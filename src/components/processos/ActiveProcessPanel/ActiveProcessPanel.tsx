@@ -17,6 +17,7 @@ type ActiveProcessPanelProps = {
   lastReading?: SensorReadingPayload | null;
   lastAcoplamento?: SensorAcoplamentoPayload | null;
   esp32Online?: boolean | null;
+  startBlockedMessage?: string | null;
   onAction: (action: ProcessoAction, process: ProcessoResponse) => void;
   onCreate: () => void;
 };
@@ -28,6 +29,7 @@ export function ActiveProcessPanel({
   lastReading,
   lastAcoplamento,
   esp32Online,
+  startBlockedMessage,
   onAction,
   onCreate,
 }: ActiveProcessPanelProps) {
@@ -76,6 +78,7 @@ export function ActiveProcessPanel({
         process={process}
         permissions={permissions}
         loadingAction={loadingAction}
+        startBlockedMessage={startBlockedMessage}
         onAction={onAction}
       />
     </section>

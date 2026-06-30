@@ -9,6 +9,7 @@ import {
   startProcesso,
 } from '../services/processos.service';
 import type { CreateProcessoRequest, ProcessoAction, ProcessoFormState } from '../types';
+import type { ProcessoPrecheckResponse } from '../types/processos.types';
 import { getAuthErrorMessage } from '../utils/authErrors';
 
 type UseProcessActionsResult = {
@@ -22,6 +23,10 @@ type UseProcessActionsResult = {
     idProcesso: number,
     reason?: string,
   ) => Promise<void>;
+};
+
+type UseProcessActionsOptions = {
+  onPrecheckBlocked?: (precheck: ProcessoPrecheckResponse) => void;
 };
 
 function toOptionalNumber(value: string): number | undefined {
@@ -54,7 +59,52 @@ function buildCreatePayload(form: ProcessoFormState): CreateProcessoRequest {
   };
 }
 
-export function useProcessActions(onDone: () => Promise<void>): UseProcessActionsResult {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isPrecheckResponse(value: unknown): value is ProcessoPrecheckResponse {
+  return (
+    isRecord(value) &&
+    typeof value.id_processo === 'number' &&
+    typeof value.aprovado === 'boolean' &&
+    typeof value.bloqueado === 'boolean' &&
+    Array.isArray(value.itens)
+  );
+}
+
+function extractPrecheckFromError(error: unknown): ProcessoPrecheckResponse | null {
+  if (!isRecord(error) || !isRecord(error.originalError)) {
+    return null;
+  }
+
+  const response = error.originalError.response;
+
+  if (!isRecord(response)) {
+    return null;
+  }
+
+  const data = response.data;
+
+  if (isPrecheckResponse(data)) {
+    return data;
+  }
+
+  if (isRecord(data)) {
+    const candidates = [data.prechecagem, data.precheck, data.checklist, data.resultado];
+    const precheck = candidates.find(isPrecheckResponse);
+
+    return precheck ?? null;
+  }
+
+  return null;
+}
+
+export function useProcessActions(
+  onDone: () => Promise<void>,
+  options?: UseProcessActionsOptions,
+): UseProcessActionsResult {
+  const onPrecheckBlocked = options?.onPrecheckBlocked;
   const [actionLoading, setActionLoading] = useState<ProcessoAction | 'create' | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
@@ -126,12 +176,20 @@ export function useProcessActions(onDone: () => Promise<void>): UseProcessAction
 
         await onDone();
       } catch (error: unknown) {
+        const blockedPrecheck = action === 'start' ? extractPrecheckFromError(error) : null;
+
+        if (blockedPrecheck) {
+          onPrecheckBlocked?.(blockedPrecheck);
+          setActionError('Backend bloqueou o inicio do processo. Revise a pre-checagem operacional.');
+          return;
+        }
+
         setActionError(getAuthErrorMessage(error));
       } finally {
         setActionLoading(null);
       }
     },
-    [onDone],
+    [onDone, onPrecheckBlocked],
   );
 
   return {

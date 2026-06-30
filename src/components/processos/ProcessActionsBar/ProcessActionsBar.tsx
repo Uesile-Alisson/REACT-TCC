@@ -6,6 +6,7 @@ type ProcessActionsBarProps = {
   process: ProcessoResponse;
   permissions: ProcessosPermissions;
   loadingAction: ProcessoAction | 'create' | null;
+  startBlockedMessage?: string | null;
   onAction: (action: ProcessoAction, process: ProcessoResponse) => void;
 };
 
@@ -13,6 +14,7 @@ export function ProcessActionsBar({
   process,
   permissions,
   loadingAction,
+  startBlockedMessage,
   onAction,
 }: ProcessActionsBarProps) {
   const status = process.status_processo;
@@ -20,7 +22,12 @@ export function ProcessActionsBar({
   return (
     <div className={styles.actions} aria-label="Acoes do processo">
       {permissions.canStartProcess(status) ? (
-        <button type="button" onClick={() => onAction('start', process)} disabled={Boolean(loadingAction)}>
+        <button
+          type="button"
+          onClick={() => onAction('start', process)}
+          disabled={Boolean(loadingAction) || Boolean(startBlockedMessage)}
+          title={startBlockedMessage ?? undefined}
+        >
           <Play size={15} aria-hidden="true" />
           {loadingAction === 'start' ? 'Iniciando' : 'Iniciar'}
         </button>

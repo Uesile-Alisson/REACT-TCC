@@ -1,0 +1,1 @@
+export { ProcessDetailsErrorBoundary } from './ProcessDetailsErrorBoundary';

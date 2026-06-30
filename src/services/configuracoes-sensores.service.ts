@@ -1,5 +1,6 @@
 import { api } from '../api/axios';
 import type {
+  CreateSensorConfiguracaoDto,
   SensoresProcessoListResponse,
   SensorProcessoOption,
 } from '../types';
@@ -22,4 +23,16 @@ export async function listSensoresVacuoByTanque(
   );
 
   return data.data;
+}
+
+export async function createSensorConfiguracao(
+  id_tanque: number,
+  payload: CreateSensorConfiguracaoDto,
+): Promise<SensorProcessoOption> {
+  const { data } = await api.post<SensorProcessoOption>(
+    `${TANQUES_CONFIGURACAO_ENDPOINT}/${id_tanque}/sensores`,
+    payload,
+  );
+
+  return data;
 }

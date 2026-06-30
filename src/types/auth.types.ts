@@ -1,4 +1,4 @@
-import type { ApiErrorPayload, ApiMessageResponse, NivelAcesso } from './common.types';
+import type { ApiErrorPayload, ApiMessageResponse, DateString, NivelAcesso } from './common.types';
 
 export type AccessLevel = NivelAcesso;
 
@@ -10,6 +10,8 @@ export type AuthUser = {
   id_nivel_acesso?: number;
   nivel_acesso: AccessLevel;
   primeiro_acesso: boolean;
+  ultimo_acesso?: DateString | null;
+  criado_em?: DateString | null;
 };
 
 export type SignInRequest = {
@@ -63,6 +65,8 @@ export type ApiAuthUser = {
   id_nivel_acesso?: number;
   nivel_acesso: ApiAccessLevel;
   primeiro_acesso: boolean;
+  ultimo_acesso?: DateString | null;
+  criado_em?: DateString | null;
 };
 
 export type ApiSignInResponse = {
@@ -79,4 +83,6 @@ export type AuthMeResponse = {
   id_nivel_acesso: number;
   nivel_acesso: AccessLevel;
   primeiro_acesso: boolean;
+  ultimo_acesso?: DateString | null;
+  criado_em?: DateString | null;
 };

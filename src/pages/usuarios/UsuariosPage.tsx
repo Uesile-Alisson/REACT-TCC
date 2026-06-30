@@ -1,5 +1,5 @@
 import { Plus, RefreshCw } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
 import { AlterarNivelAcessoModal } from '../../components/usuarios/AlterarNivelAcessoModal';
 import { CredenciaisTemporariasModal } from '../../components/usuarios/CredenciaisTemporariasModal';
@@ -55,6 +55,15 @@ export function UsuariosPage() {
       { name: 'Concluido', value: users.filter((user) => !user.primeiro_acesso).length },
     ],
     [users],
+  );
+  const canManageUser = useCallback(
+    (targetUser: UserResponse): boolean => {
+      const targetLevel = getUserAccessLevel(targetUser);
+      const isAnotherUser = currentUser?.id !== targetUser.id_usuario;
+
+      return !(currentUser?.nivel_acesso === 'ADMINISTRADOR' && targetLevel === 'ADMINISTRADOR' && isAnotherUser);
+    },
+    [currentUser?.id, currentUser?.nivel_acesso],
   );
 
   if (!permissions.canViewUsuarios) {
@@ -157,6 +166,7 @@ export function UsuariosPage() {
           canEdit={permissions.canEditUsuario}
           canUpdateRole={permissions.canUpdateNivelAcesso}
           canDelete={permissions.canDeleteUsuario}
+          canManageUser={canManageUser}
           onSelect={selectUser}
           onEdit={setEditUser}
           onUpdateRole={setRoleUser}

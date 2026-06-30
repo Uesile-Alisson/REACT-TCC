@@ -1,4 +1,4 @@
-import { MQTT_HARDWARE_EVENTS, SOCKET_SYSTEM_EVENTS } from './socket-events';
+import { MQTT_HARDWARE_EVENTS, PROCESSOS_EVENTS, SOCKET_SYSTEM_EVENTS } from './socket-events';
 import { getRealtimeSocket, onRealtimeEvent } from './socket-client';
 import type {
   AlarmCreatedPayload,
@@ -7,6 +7,7 @@ import type {
   HeartbeatPayload,
   MqttConnectionStatusPayload,
   MqttErrorPayload,
+  ProcessPrecheckResultPayload,
   RealtimeListener,
   SensorAcoplamentoPayload,
   SensorReadingPayload,
@@ -75,6 +76,12 @@ export function onSensorAcoplamentoUpdated(
   return onRealtimeEvent(MQTT_HARDWARE_EVENTS.SENSOR_ACOPLAMENTO_UPDATED, listener);
 }
 
+export function onProcessPrecheckResult(
+  listener: RealtimeListener<ProcessPrecheckResultPayload>,
+): () => void {
+  return onRealtimeEvent(PROCESSOS_EVENTS.PRECHECK_RESULT, listener);
+}
+
 export const realtimeService = {
   onSocketConnect,
   onSocketDisconnect,
@@ -87,4 +94,5 @@ export const realtimeService = {
   onSensorReading,
   onAlarmCreated,
   onSensorAcoplamentoUpdated,
+  onProcessPrecheckResult,
 };

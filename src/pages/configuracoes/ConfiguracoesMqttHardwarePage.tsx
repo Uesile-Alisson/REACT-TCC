@@ -57,18 +57,30 @@ export function ConfiguracoesMqttHardwarePage() {
   const canUseBackups = user?.nivel_acesso === 'ADMINISTRADOR';
   const effectiveHeartbeat =
     esp32Online === null ? lastHeartbeat : { ...(lastHeartbeat ?? {}), esp32_online: esp32Online };
-  const mqttStatus = mqttConnectionStatus?.status_conexao ?? status?.mqtt?.status_conexao ?? config?.status_conexao;
+  const mqttStatus =
+    mqttConnectionStatus?.status_conexao ??
+    status?.mqtt?.status_conexao ??
+    status?.status_conexao ??
+    config?.status_conexao;
   const esp32StatusKnown = effectiveHeartbeat?.esp32_online ?? status?.esp32_online ?? null;
+  const hasMqttConfig = Boolean(config?.id_mqtt_configuracao || config?.broker_url);
+  const hasBrokerEndpoint = Boolean(status?.mqtt?.broker_url || config?.broker_url);
   const diagnosticItems = [
     {
       label: 'API',
-      value: configError || statusError ? 'Backend com falha ou resposta parcial' : 'Consultas HTTP respondendo',
-      tone: configError || statusError ? 'warning' : 'success',
+      value: configError
+        ? 'Falha ao consultar configuracao MQTT'
+        : statusError
+          ? 'Configuracao carregada, mas status retornou resposta parcial'
+          : 'Consultas HTTP respondendo',
+      tone: configError ? 'danger' : statusError ? 'warning' : 'success',
     },
     {
       label: 'Configuracao MQTT',
-      value: config ? 'Configuracao carregada' : 'Configuracao MQTT nao encontrada ou indisponivel',
-      tone: config ? 'success' : 'warning',
+      value: hasMqttConfig
+        ? `Configuracao carregada${config?.ativo === false ? ' (inativa)' : ''}`
+        : 'Configuracao MQTT nao carregada nesta tela',
+      tone: hasMqttConfig ? 'success' : 'warning',
     },
     {
       label: 'Broker MQTT',
@@ -77,8 +89,10 @@ export function ConfiguracoesMqttHardwarePage() {
           ? 'Broker conectado'
           : mqttStatus === 'CONNECTING'
             ? 'Broker conectando'
-            : 'Broker MQTT desconectado ou sem status recente',
-      tone: mqttStatus === 'CONNECTED' ? 'success' : mqttStatus === 'CONNECTING' ? 'warning' : 'danger',
+            : hasBrokerEndpoint
+              ? 'Broker configurado, aguardando status realtime/HTTP'
+              : 'Broker MQTT sem configuracao carregada',
+      tone: mqttStatus === 'CONNECTED' ? 'success' : mqttStatus === 'CONNECTING' || hasBrokerEndpoint ? 'warning' : 'danger',
     },
     {
       label: 'ESP32',

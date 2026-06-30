@@ -33,6 +33,8 @@ function normalizeAuthUser(apiUser: ApiAuthUser): AuthUser {
     id_nivel_acesso: apiUser.id_nivel_acesso,
     nivel_acesso: normalizeAccessLevel(apiUser.nivel_acesso),
     primeiro_acesso: apiUser.primeiro_acesso,
+    ultimo_acesso: apiUser.ultimo_acesso,
+    criado_em: apiUser.criado_em,
   };
 }
 

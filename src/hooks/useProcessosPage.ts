@@ -40,12 +40,16 @@ const initialData: ProcessosPageData = {
   limit: PAGE_LIMIT,
 };
 
-function getListData<TItem>(response: { data: TItem[] } | TItem[]): TItem[] {
-  return Array.isArray(response) ? response : response.data;
+function getListData<TItem>(response: { data?: TItem[] } | TItem[] | null | undefined): TItem[] {
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  return Array.isArray(response?.data) ? response.data : [];
 }
 
 function getTotal(response: ProcessoListResponse): number {
-  return Array.isArray(response) ? response.length : response.meta.total;
+  return Array.isArray(response) ? response.length : response.meta?.total ?? getListData(response).length;
 }
 
 export function useProcessosPage(): UseProcessosPageResult {
@@ -61,7 +65,7 @@ export function useProcessosPage(): UseProcessosPageResult {
     setError(null);
 
     try {
-      const [activeProcess, processesResponse] = await Promise.all([
+      const [activeProcessResult, processesResult] = await Promise.allSettled([
         getActiveProcesso(),
         listProcessos({
           page: data.page,
@@ -70,6 +74,14 @@ export function useProcessosPage(): UseProcessosPageResult {
           status_processo: filters.status || undefined,
         }),
       ]);
+
+      if (processesResult.status === 'rejected') {
+        throw processesResult.reason;
+      }
+
+      const activeProcess =
+        activeProcessResult.status === 'fulfilled' ? activeProcessResult.value : null;
+      const processesResponse = processesResult.value;
 
       setData((currentData) => ({
         ...currentData,
@@ -90,18 +102,34 @@ export function useProcessosPage(): UseProcessosPageResult {
     setDetailError(null);
 
     try {
-      const [selectedProcess, selectedReadings, selectedEvents] = await Promise.all([
+      const [selectedProcessResult, selectedReadingsResult, selectedEventsResult] = await Promise.allSettled([
         getProcessoById(idProcesso),
         getProcessoReadings(idProcesso, { limit: 8 }),
         getProcessoEvents(idProcesso),
       ]);
 
+      if (selectedProcessResult.status === 'rejected') {
+        throw selectedProcessResult.reason;
+      }
+
+      const detailMessages = [
+        selectedReadingsResult.status === 'rejected'
+          ? `Leituras indisponiveis: ${getAuthErrorMessage(selectedReadingsResult.reason)}`
+          : null,
+        selectedEventsResult.status === 'rejected'
+          ? `Eventos indisponiveis: ${getAuthErrorMessage(selectedEventsResult.reason)}`
+          : null,
+      ].filter(Boolean);
+
       setData((currentData) => ({
         ...currentData,
-        selectedProcess,
-        selectedReadings: getListData(selectedReadings),
-        selectedEvents: getListData(selectedEvents).slice(0, 8),
+        selectedProcess: selectedProcessResult.value,
+        selectedReadings:
+          selectedReadingsResult.status === 'fulfilled' ? getListData(selectedReadingsResult.value) : [],
+        selectedEvents:
+          selectedEventsResult.status === 'fulfilled' ? getListData(selectedEventsResult.value).slice(0, 8) : [],
       }));
+      setDetailError(detailMessages.length > 0 ? detailMessages.join(' / ') : null);
     } catch (loadError: unknown) {
       setDetailError(getAuthErrorMessage(loadError));
     } finally {

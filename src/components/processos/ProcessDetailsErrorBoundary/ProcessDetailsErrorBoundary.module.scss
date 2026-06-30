@@ -1,0 +1,44 @@
+.errorState {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 103, 126, 0.32);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 67, 96, 0.1), rgba(16, 24, 40, 0.88)),
+    rgba(12, 18, 30, 0.92);
+  color: #ffb8c2;
+  box-shadow: 0 18px 48px rgba(2, 8, 23, 0.26);
+}
+
+.errorState strong {
+  color: #ffe3e7;
+  font-size: 0.95rem;
+}
+
+.errorState span {
+  color: rgba(255, 221, 226, 0.82);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.errorState button {
+  width: fit-content;
+  min-height: 2.25rem;
+  padding: 0 0.85rem;
+  border: 1px solid rgba(255, 139, 154, 0.42);
+  border-radius: 7px;
+  background: rgba(255, 94, 116, 0.14);
+  color: #ffe5e8;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.errorState button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 170, 181, 0.72);
+  background: rgba(255, 94, 116, 0.22);
+}

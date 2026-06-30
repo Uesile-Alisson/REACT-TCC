@@ -17,3 +17,21 @@ export type SensoresProcessoListResponse = {
   data: SensorProcessoOption[];
   total: number;
 };
+
+export type CreateSensorConfiguracaoDto = {
+  nome: string;
+  modelo?: string;
+  tipo_sensor: SensorTipo;
+  status_sensor: SensorStatus;
+  unidade_medida?: string | null;
+};
+
+export type SensorConfigFormState = {
+  nome: string;
+  modelo: string;
+  tipo_sensor: SensorTipo;
+  status_sensor: SensorStatus;
+  unidade_medida: string;
+};
+
+export type SensorConfigFormErrors = Partial<Record<keyof SensorConfigFormState, string>>;

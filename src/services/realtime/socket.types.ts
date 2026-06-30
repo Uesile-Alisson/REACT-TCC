@@ -1,4 +1,5 @@
 import type { DateString, Id, SeveridadeAlarme, StatusAlarme, StatusProcesso } from '../../types';
+import type { ProcessoPrecheckResponse } from '../../types/processos.types';
 
 export type RealtimeConnectionState = {
   isConnected: boolean;
@@ -99,6 +100,8 @@ export type ProcessLifecyclePayload = {
   metrics?: Record<string, unknown>;
   dashboard?: Record<string, unknown>;
 };
+
+export type ProcessPrecheckResultPayload = ProcessoPrecheckResponse;
 
 export type AlarmRealtimePayload = {
   id_alarme?: Id;

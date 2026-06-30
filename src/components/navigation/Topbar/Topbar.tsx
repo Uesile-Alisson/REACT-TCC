@@ -1,10 +1,11 @@
 import type { RefObject } from 'react';
 import { motion } from 'framer-motion';
-import { LogOut, Menu, RadioTower, ShieldCheck } from 'lucide-react';
+import { Menu, RadioTower } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { getNavigationItemByPath } from '../../../config/navigation';
 import { useMqttHardwareRealtime } from '../../../hooks/useMqttHardwareRealtime';
 import type { AuthUser } from '../../../types';
+import { UserProfilePopover } from '../UserProfilePopover';
 import styles from './Topbar.module.scss';
 
 type TopbarProps = {
@@ -14,22 +15,6 @@ type TopbarProps = {
   onLogout: () => void;
   onOpenMenu: () => void;
 };
-
-function formatProfile(user: AuthUser | null): string {
-  if (!user) {
-    return 'Sessao autenticada';
-  }
-
-  if (user.nivel_acesso === 'TECNICO') {
-    return 'Tecnico';
-  }
-
-  if (user.nivel_acesso === 'ADMINISTRADOR') {
-    return 'Administrador';
-  }
-
-  return 'Operador';
-}
 
 export function Topbar({ isMenuOpen, menuButtonRef, user, onLogout, onOpenMenu }: TopbarProps) {
   const location = useLocation();
@@ -76,20 +61,7 @@ export function Topbar({ isMenuOpen, menuButtonRef, user, onLogout, onOpenMenu }
         <motion.span className={styles.statusBadge} whileHover={{ y: -2, scale: 1.02 }}>
           ESP32 {esp32Online === true ? 'online' : 'status pendente'}
         </motion.span>
-        <motion.span className={styles.userBadge} whileHover={{ y: -2, scale: 1.02 }}>
-          <ShieldCheck size={16} aria-hidden="true" />
-          {user ? `${user.nome} / ${formatProfile(user)}` : formatProfile(user)}
-        </motion.span>
-        <motion.button
-          className={styles.logoutButton}
-          type="button"
-          onClick={onLogout}
-          whileHover={{ scale: 1.04, backgroundColor: 'rgba(255, 78, 101, 0.14)' }}
-          whileTap={{ scale: 0.96 }}
-        >
-          <LogOut size={16} aria-hidden="true" />
-          Sair
-        </motion.button>
+        <UserProfilePopover user={user} onLogout={onLogout} />
       </div>
     </motion.header>
   );

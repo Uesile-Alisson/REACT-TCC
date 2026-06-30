@@ -8,9 +8,12 @@ import type {
   ProcessoDashboardResponse,
   ProcessoEventListResponse,
   ProcessoListResponse,
+  ProcessoPrecheckResponse,
   ProcessoReadingListResponse,
   ProcessoReadingQuery,
   ProcessoResponse,
+  ProcessoValvulaAcaoResponse,
+  ProcessoValvulaResumo,
   UpdateProcessoConfigRequest,
 } from '../types/processos.types';
 
@@ -123,6 +126,83 @@ export async function getProcessoEvents(
   return data;
 }
 
+export async function getPrechecagem(idProcesso: number): Promise<ProcessoPrecheckResponse> {
+  const { data } = await api.get<ProcessoPrecheckResponse>(`/processos/${idProcesso}/prechecagem`);
+
+  return data;
+}
+
+export async function executarPrechecagem(idProcesso: number): Promise<ProcessoPrecheckResponse> {
+  const { data } = await api.post<ProcessoPrecheckResponse>(
+    `/processos/${idProcesso}/prechecagem/executar`,
+  );
+
+  return data;
+}
+
+export async function validarAcoplamentoTanque(
+  idProcesso: number,
+  idTanque: number,
+): Promise<ProcessoPrecheckResponse> {
+  const { data } = await api.post<ProcessoPrecheckResponse>(
+    `/processos/${idProcesso}/tanques/${idTanque}/acoplamento/validar`,
+  );
+
+  return data;
+}
+
+export async function validarSensorProcesso(
+  idProcesso: number,
+  idSensor: number,
+): Promise<ProcessoPrecheckResponse> {
+  const { data } = await api.post<ProcessoPrecheckResponse>(
+    `/processos/${idProcesso}/sensores/${idSensor}/validar`,
+  );
+
+  return data;
+}
+
+export async function listarValvulasProcesso(
+  idProcesso: number,
+): Promise<ProcessoValvulaResumo[]> {
+  const { data } = await api.get<ProcessoValvulaResumo[]>(`/processos/${idProcesso}/valvulas`);
+
+  return data;
+}
+
+export async function validarValvulaProcesso(
+  idProcesso: number,
+  idValvula: number,
+): Promise<ProcessoValvulaAcaoResponse> {
+  const { data } = await api.post<ProcessoValvulaAcaoResponse>(
+    `/processos/${idProcesso}/valvulas/${idValvula}/validar`,
+  );
+
+  return data;
+}
+
+export async function abrirValvulaProcesso(
+  idProcesso: number,
+  idValvula: number,
+): Promise<ProcessoValvulaAcaoResponse> {
+  const { data } = await api.post<ProcessoValvulaAcaoResponse>(
+    `/processos/${idProcesso}/valvulas/${idValvula}/abrir`,
+  );
+
+  return data;
+}
+
+export async function fecharValvulaProcesso(
+  idProcesso: number,
+  idValvula: number,
+): Promise<ProcessoValvulaAcaoResponse> {
+  const { data } = await api.post<ProcessoValvulaAcaoResponse>(
+    `/processos/${idProcesso}/valvulas/${idValvula}/fechar`,
+  );
+
+  return data;
+}
+
 export const processosService = {
   createProcesso,
   listProcessos,
@@ -138,4 +218,12 @@ export const processosService = {
   emergencyStopProcesso,
   getProcessoReadings,
   getProcessoEvents,
+  getPrechecagem,
+  executarPrechecagem,
+  validarAcoplamentoTanque,
+  validarSensorProcesso,
+  listarValvulasProcesso,
+  validarValvulaProcesso,
+  abrirValvulaProcesso,
+  fecharValvulaProcesso,
 };

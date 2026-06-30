@@ -24,7 +24,7 @@ export function ProcessDetailPanel({
     return <section className={styles.panel}>Carregando detalhe do processo...</section>;
   }
 
-  if (error) {
+  if (error && !process) {
     return (
       <section className={styles.panel}>
         <p className={styles.error}>{error}</p>
@@ -49,6 +49,8 @@ export function ProcessDetailPanel({
         </div>
         <ProcessStatusBadge status={process.status_processo} />
       </header>
+
+      {error ? <p className={styles.error}>{error}</p> : null}
 
       <ProcessMetricsCards process={process} lastReading={readings[0] ?? null} />
 

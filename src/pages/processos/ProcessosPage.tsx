@@ -6,17 +6,34 @@ import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
 import { ConfirmProcessActionModal } from '../../components/processos/ConfirmProcessActionModal';
 import { NewProcessModal } from '../../components/processos/NewProcessModal';
 import { ProcessDetailPanel } from '../../components/processos/ProcessDetailPanel';
+import { ProcessDetailsErrorBoundary } from '../../components/processos/ProcessDetailsErrorBoundary';
+import { ProcessPrecheckPanel } from '../../components/processos/ProcessPrecheckPanel';
 import { ProcessListTable, STATUS_OPTIONS } from '../../components/processos/ProcessListTable';
 import { ProcessStatusBadge } from '../../components/processos/ProcessStatusBadge';
 import { useAcoplamentoRealtime } from '../../hooks/useAcoplamentoRealtime';
 import { useMqttHardwareRealtime } from '../../hooks/useMqttHardwareRealtime';
 import { useProcessActions } from '../../hooks/useProcessActions';
 import { useProcessPermissions } from '../../hooks/useProcessPermissions';
+import { useProcessPrecheck } from '../../hooks/useProcessPrecheck';
 import { useProcessosPage } from '../../hooks/useProcessosPage';
 import { useSensorReadingsRealtime } from '../../hooks/useSensorReadingsRealtime';
 import type { ProcessoAction, ProcessoActionState, ProcessoFormState } from '../../types';
 import { countBy, formatShortDate, toNumber } from '../../utils/chartData';
 import styles from './ProcessosPage.module.scss';
+
+function isPrecheckExpired(executedAt?: string | null, validitySeconds?: number | null): boolean {
+  if (!executedAt || !validitySeconds) {
+    return true;
+  }
+
+  const timestamp = new Date(executedAt).getTime();
+
+  if (Number.isNaN(timestamp)) {
+    return true;
+  }
+
+  return Date.now() - timestamp > validitySeconds * 1000;
+}
 
 export function ProcessosPage() {
   const {
@@ -35,6 +52,10 @@ export function ProcessosPage() {
   const { lastSensorReading } = useSensorReadingsRealtime();
   const { lastAcoplamento } = useAcoplamentoRealtime();
   const { esp32Online, mqttConnectionStatus } = useMqttHardwareRealtime();
+  const precheckProcess = data.selectedProcess ?? data.activeProcess;
+  const detailsResetKey =
+    precheckProcess?.id_processo ?? data.selectedProcess?.id_processo ?? data.activeProcess?.id_processo ?? null;
+  const precheck = useProcessPrecheck(precheckProcess?.id_processo ?? null);
   const {
     actionLoading,
     actionError,
@@ -42,7 +63,9 @@ export function ProcessosPage() {
     clearFeedback,
     createConfiguredProcess,
     runProcessAction,
-  } = useProcessActions(refresh);
+  } = useProcessActions(refresh, {
+    onPrecheckBlocked: precheck.setPrecheckFromBackend,
+  });
   const [isNewProcessOpen, setIsNewProcessOpen] = useState<boolean>(false);
   const [actionState, setActionState] = useState<ProcessoActionState | null>(null);
   const processosPorStatus = countBy(data.processes, (processo) => processo.status_processo);
@@ -52,6 +75,17 @@ export function ProcessosPage() {
       value: toNumber(reading.valor_vacuo) ?? 0,
     }))
     .reverse();
+  const activeProcessPrecheck =
+    data.activeProcess && precheck.precheck?.id_processo === data.activeProcess.id_processo
+      ? precheck.precheck
+      : null;
+  const startBlockedMessage =
+    activeProcessPrecheck &&
+    (!activeProcessPrecheck.aprovado ||
+      activeProcessPrecheck.bloqueado ||
+      isPrecheckExpired(activeProcessPrecheck.executado_em, activeProcessPrecheck.validade_segundos))
+      ? 'Execute uma pre-checagem aprovada e dentro da validade antes de iniciar.'
+      : null;
 
   async function handleCreateProcess(form: ProcessoFormState): Promise<void> {
     await createConfiguredProcess(form);
@@ -146,6 +180,7 @@ export function ProcessosPage() {
         lastReading={lastSensorReading}
         lastAcoplamento={lastAcoplamento}
         esp32Online={esp32Online}
+        startBlockedMessage={startBlockedMessage}
         onAction={(action, process) => setActionState({ type: action, process })}
         onCreate={() => setIsNewProcessOpen(true)}
       />
@@ -198,26 +233,50 @@ export function ProcessosPage() {
         </motion.label>
       </motion.section>
 
-      <section className={styles.contentGrid}>
-        <ProcessListTable
-          processes={data.processes}
-          total={data.total}
-          page={data.page}
-          limit={data.limit}
-          isLoading={isLoading}
-          selectedId={data.selectedProcess?.id_processo}
-          onSelect={(idProcesso) => void selectProcess(idProcesso)}
-          onPageChange={setPage}
+      <ProcessDetailsErrorBoundary resetKey={detailsResetKey}>
+        <ProcessPrecheckPanel
+          precheck={precheck.precheck}
+          valves={precheck.valves}
+          tanks={precheck.tanks}
+          sensors={precheck.sensors}
+          processStatus={precheckProcess?.status_processo}
+          hasProcess={Boolean(precheckProcess)}
+          isLoading={precheck.isLoading}
+          loadingAction={precheck.loadingAction}
+          error={precheck.error}
+          feedback={precheck.feedback}
+          socketFeedback={precheck.socketFeedback}
+          onRefresh={() => void precheck.refreshPrecheck()}
+          onExecute={() => void precheck.executePrecheck()}
+          onValidateTank={(idTanque) => void precheck.validateTankCoupling(idTanque)}
+          onValidateSensor={(idSensor) => void precheck.validateSensor(idSensor)}
+          onValidateValve={(idValvula) => void precheck.validateValve(idValvula)}
+          onOpenValve={(idValvula) => void precheck.openValve(idValvula)}
+          onCloseValve={(idValvula) => void precheck.closeValve(idValvula)}
+          onClearFeedback={precheck.clearFeedback}
         />
 
-        <ProcessDetailPanel
-          process={data.selectedProcess}
-          readings={data.selectedReadings}
-          events={data.selectedEvents}
-          isLoading={isDetailLoading}
-          error={detailError}
-        />
-      </section>
+        <section className={styles.contentGrid}>
+          <ProcessListTable
+            processes={data.processes}
+            total={data.total}
+            page={data.page}
+            limit={data.limit}
+            isLoading={isLoading}
+            selectedId={data.selectedProcess?.id_processo}
+            onSelect={(idProcesso) => void selectProcess(idProcesso)}
+            onPageChange={setPage}
+          />
+
+          <ProcessDetailPanel
+            process={data.selectedProcess}
+            readings={data.selectedReadings}
+            events={data.selectedEvents}
+            isLoading={isDetailLoading}
+            error={detailError}
+          />
+        </section>
+      </ProcessDetailsErrorBoundary>
 
       <NewProcessModal
         key={isNewProcessOpen ? 'new-process-open' : 'new-process-closed'}

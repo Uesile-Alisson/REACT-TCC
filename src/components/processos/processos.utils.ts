@@ -37,7 +37,9 @@ export function getProcessStatusLabel(status?: StatusProcesso | string | null): 
     FALHA: 'Falha',
   };
 
-  return status && status in labels ? labels[status as StatusProcesso] : 'Nao informado';
+  return typeof status === 'string' && status in labels
+    ? labels[status as StatusProcesso]
+    : 'Nao informado';
 }
 
 export function getProcessTone(status?: StatusProcesso | string | null): ProcessTone {

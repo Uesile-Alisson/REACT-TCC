@@ -105,3 +105,101 @@ export type ProcessoEventResponse = {
 export type ProcessoEventListResponse =
   | PaginatedResponse<ProcessoEventResponse>
   | ProcessoEventResponse[];
+
+export type ProcessoPrecheckStatus =
+  | 'APROVADO'
+  | 'REPROVADO'
+  | 'PENDENTE'
+  | 'FALHA'
+  | 'NAO_SUPORTADO'
+  | 'NAO_CONFIRMADO'
+  | 'IGNORADO';
+
+export type ProcessoPrecheckGrupo =
+  | 'USUARIO'
+  | 'PROCESSO'
+  | 'TANQUES'
+  | 'ACOPLAMENTO'
+  | 'SENSORES'
+  | 'VALVULAS'
+  | 'BOMBAS'
+  | 'MQTT'
+  | 'ESP32'
+  | 'SOCKET'
+  | 'LOGS';
+
+export type ProcessoPrecheckItem = {
+  codigo?: string;
+  titulo: string;
+  grupo: ProcessoPrecheckGrupo;
+  status: ProcessoPrecheckStatus;
+  obrigatorio?: boolean;
+  bloqueante?: boolean;
+  mensagem?: string;
+  evidencia?: string;
+  detalhes?: Record<string, unknown> | string | null;
+  id_recurso?: Id | string | null;
+  tipo_recurso?: string | null;
+  timestamp?: DateString | null;
+};
+
+export type ProcessoPrecheckFalha = {
+  codigo?: string;
+  titulo?: string;
+  mensagem: string;
+  grupo?: ProcessoPrecheckGrupo;
+  id_recurso?: Id | string | null;
+  bloqueante?: boolean;
+};
+
+export type ProcessoPrecheckAviso = {
+  codigo?: string;
+  titulo?: string;
+  mensagem: string;
+  grupo?: ProcessoPrecheckGrupo;
+};
+
+export type ProcessoPrecheckRecomendacao = {
+  codigo?: string;
+  titulo?: string;
+  mensagem: string;
+  grupo?: ProcessoPrecheckGrupo;
+};
+
+export type ProcessoPrecheckResponse = {
+  id_processo: Id;
+  status_geral: ProcessoPrecheckStatus;
+  aprovado: boolean;
+  bloqueado: boolean;
+  executado_em?: DateString | null;
+  validade_segundos?: number | null;
+  grupos?: ProcessoPrecheckGrupo[];
+  itens: ProcessoPrecheckItem[];
+  falhas_bloqueantes?: ProcessoPrecheckFalha[];
+  avisos?: ProcessoPrecheckAviso[];
+  recomendacoes?: ProcessoPrecheckRecomendacao[];
+};
+
+export type ProcessoValvulaResumo = {
+  id_valvula: Id;
+  nome?: string;
+  id_tanque?: Id | null;
+  tanque?: unknown;
+  id_bomba?: Id | null;
+  bomba?: unknown;
+  status_atual?: string | null;
+  ultimo_acionamento?: DateString | null;
+  pode_validar?: boolean;
+  pode_abrir_fechar?: boolean;
+  [key: string]: unknown;
+};
+
+export type ProcessoValvulaAcaoResponse = ProcessoPrecheckItem | {
+  id_processo?: Id;
+  id_valvula?: Id;
+  status?: ProcessoPrecheckStatus;
+  mensagem?: string;
+  evidencia?: string;
+  executado_em?: DateString;
+  [key: string]: unknown;
+};

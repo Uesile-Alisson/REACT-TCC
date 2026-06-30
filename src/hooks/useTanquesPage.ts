@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { normalizeApiError } from '../api/api-error';
+import { createSensorConfiguracao } from '../services/configuracoes-sensores.service';
 import {
   ativarTanqueConfiguracao,
   createTanqueConfiguracao,
@@ -15,6 +16,7 @@ import type {
   TanquesPageState,
   TanquesSummary,
   UpdateTanqueConfiguracaoDto,
+  CreateSensorConfiguracaoDto,
 } from '../types';
 
 const DEFAULT_PAGINATION = {
@@ -37,6 +39,7 @@ type UseTanquesPageResult = TanquesPageState & {
   loadTanques: (query?: QueryTanquesConfiguracao) => Promise<void>;
   selectTanque: (id_tanque: number | null) => Promise<void>;
   createTanque: (payload: CreateTanqueConfiguracaoDto) => Promise<boolean>;
+  createSensor: (id_tanque: number, payload: CreateSensorConfiguracaoDto) => Promise<boolean>;
   updateTanque: (id_tanque: number, payload: UpdateTanqueConfiguracaoDto) => Promise<boolean>;
   ativarTanque: (id_tanque: number) => Promise<boolean>;
   desativarTanque: (id_tanque: number) => Promise<boolean>;
@@ -175,6 +178,27 @@ export function useTanquesPage(): UseTanquesPageResult {
     }
   }, [loadTanques]);
 
+  const createSensor = useCallback(
+    async (id_tanque: number, payload: CreateSensorConfiguracaoDto): Promise<boolean> => {
+      setActionLoading(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      try {
+        await createSensorConfiguracao(id_tanque, payload);
+        setSuccessMessage('Sensor criado com sucesso.');
+        await selectTanque(id_tanque);
+        return true;
+      } catch (createError) {
+        setError(getConfiguracoesErrorMessage(createError));
+        return false;
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [selectTanque],
+  );
+
   const updateTanque = useCallback(
     async (id_tanque: number, payload: UpdateTanqueConfiguracaoDto): Promise<boolean> => {
       if (Object.keys(payload).length === 0) {
@@ -259,6 +283,7 @@ export function useTanquesPage(): UseTanquesPageResult {
     loadTanques,
     selectTanque,
     createTanque,
+    createSensor,
     updateTanque,
     ativarTanque,
     desativarTanque,

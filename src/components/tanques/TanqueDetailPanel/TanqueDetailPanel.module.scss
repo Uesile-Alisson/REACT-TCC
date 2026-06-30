@@ -73,7 +73,7 @@ dd,
 
 .actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -99,4 +99,10 @@ dd,
 .actions button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+@media (max-width: 760px) {
+  .actions {
+    grid-template-columns: 1fr;
+  }
 }

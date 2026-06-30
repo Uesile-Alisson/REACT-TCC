@@ -39,6 +39,7 @@ export const PROCESSOS_EVENTS = {
   CONFIG_UPDATED: 'process:config-updated',
   METRICS_UPDATED: 'process:metrics-updated',
   DASHBOARD_UPDATED: 'process:dashboard-updated',
+  PRECHECK_RESULT: 'process:precheck-result',
   STATUS_CHANGED: 'process:status-changed',
   ERROR: 'process:error',
 } as const;

@@ -11,6 +11,7 @@ type UsuariosListTableProps = {
   canEdit: boolean;
   canUpdateRole: boolean;
   canDelete: boolean;
+  canManageUser: (user: UserResponse) => boolean;
   onSelect: (user: UserResponse) => void;
   onEdit: (user: UserResponse) => void;
   onUpdateRole: (user: UserResponse) => void;
@@ -24,6 +25,7 @@ export function UsuariosListTable({
   canEdit,
   canUpdateRole,
   canDelete,
+  canManageUser,
   onSelect,
   onEdit,
   onUpdateRole,
@@ -51,51 +53,57 @@ export function UsuariosListTable({
             </tr>
           </thead>
           <tbody>
-            {users.map((user, index) => (
-              <motion.tr
-                className={user.id_usuario === selectedUserId ? styles.selected : undefined}
-                key={user.id_usuario}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.025, duration: 0.18 }}
-                whileHover={{ backgroundColor: 'rgba(83, 197, 255, 0.075)' }}
-              >
-                <td>
-                  <button type="button" className={styles.linkButton} onClick={() => onSelect(user)}>
-                    {user.nome}
-                  </button>
-                  <small>{user.login}</small>
-                </td>
-                <td>{user.email}</td>
-                <td>
-                  <NivelAcessoBadge nivel={getUserAccessLevel(user)} />
-                </td>
-                <td>{user.primeiro_acesso ? 'Pendente' : 'Concluido'}</td>
-                <td>{user.atualizado_em ? new Date(user.atualizado_em).toLocaleString('pt-BR') : 'Indisponivel'}</td>
-                <td>
-                  <div className={styles.actions}>
-                    <button type="button" onClick={() => onSelect(user)}>
-                      Ver
+            {users.map((user, index) => {
+              const canManageTargetUser = canManageUser(user);
+
+              return (
+                <motion.tr
+                  className={user.id_usuario === selectedUserId ? styles.selected : undefined}
+                  key={user.id_usuario}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.025, duration: 0.18 }}
+                  whileHover={{ backgroundColor: 'rgba(83, 197, 255, 0.075)' }}
+                >
+                  <td>
+                    <button type="button" className={styles.linkButton} onClick={() => onSelect(user)}>
+                      {user.nome}
                     </button>
-                    {canEdit ? (
-                      <button type="button" onClick={() => onEdit(user)}>
-                        Editar
+                    <small>{user.login}</small>
+                  </td>
+                  <td>{user.email}</td>
+                  <td>
+                    <NivelAcessoBadge nivel={getUserAccessLevel(user)} />
+                  </td>
+                  <td>{user.primeiro_acesso ? 'Pendente' : 'Concluido'}</td>
+                  <td>
+                    {user.atualizado_em ? new Date(user.atualizado_em).toLocaleString('pt-BR') : 'Indisponivel'}
+                  </td>
+                  <td>
+                    <div className={styles.actions}>
+                      <button type="button" onClick={() => onSelect(user)}>
+                        Ver
                       </button>
-                    ) : null}
-                    {canUpdateRole ? (
-                      <button type="button" onClick={() => onUpdateRole(user)}>
-                        Nivel
-                      </button>
-                    ) : null}
-                    {canDelete ? (
-                      <button type="button" className={styles.dangerButton} onClick={() => onDelete(user)}>
-                        Excluir
-                      </button>
-                    ) : null}
-                  </div>
-                </td>
-              </motion.tr>
-            ))}
+                      {canEdit && canManageTargetUser ? (
+                        <button type="button" onClick={() => onEdit(user)}>
+                          Editar
+                        </button>
+                      ) : null}
+                      {canUpdateRole && canManageTargetUser ? (
+                        <button type="button" onClick={() => onUpdateRole(user)}>
+                          Nivel
+                        </button>
+                      ) : null}
+                      {canDelete && canManageTargetUser ? (
+                        <button type="button" className={styles.dangerButton} onClick={() => onDelete(user)}>
+                          Excluir
+                        </button>
+                      ) : null}
+                    </div>
+                  </td>
+                </motion.tr>
+              );
+            })}
           </tbody>
         </table>
 

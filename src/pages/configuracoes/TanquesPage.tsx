@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
 import { ConfirmActionModal } from '../../components/configuracoes/ConfirmActionModal';
 import { TanqueDetailPanel } from '../../components/tanques/TanqueDetailPanel';
+import { SensorConfigModal } from '../../components/tanques/SensorConfigModal';
 import { TanqueConfigModal } from '../../components/tanques/TanqueConfigModal';
 import { TanquesListTable } from '../../components/tanques/TanquesListTable';
 import { TanquesSummaryCards } from '../../components/tanques/TanquesSummaryCards';
@@ -15,6 +16,7 @@ import styles from './TanquesPage.module.scss';
 export function TanquesPage() {
   const permissions = useTanquesBombasPermissions();
   const [editingTanque, setEditingTanque] = useState<TanqueConfigResponse | null>(null);
+  const [sensorTarget, setSensorTarget] = useState<TanqueConfigResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [toggleTarget, setToggleTarget] = useState<TanqueConfigResponse | null>(null);
   const {
@@ -29,6 +31,7 @@ export function TanquesPage() {
     selectTanque,
     loadTanques,
     createTanque,
+    createSensor,
     updateTanque,
     ativarTanque,
     desativarTanque,
@@ -127,11 +130,16 @@ export function TanquesPage() {
         <TanqueDetailPanel
           tanque={selectedTanque}
           canEdit={permissions.canEditTanques}
+          canCreateSensor={permissions.canEditTanques}
           canToggleActive={permissions.canActivateTanques || permissions.canDeactivateTanques}
           isSubmitting={actionLoading}
           onEdit={(tanque) => {
             setEditingTanque(tanque);
             setIsModalOpen(true);
+            clearMessages();
+          }}
+          onCreateSensor={(tanque) => {
+            setSensorTarget(tanque);
             clearMessages();
           }}
           onToggleActive={(tanque) => {
@@ -150,6 +158,16 @@ export function TanquesPage() {
           onClose={() => setIsModalOpen(false)}
           onCreate={createTanque}
           onUpdate={updateTanque}
+        />
+      ) : null}
+
+      {sensorTarget ? (
+        <SensorConfigModal
+          key={`sensor-${sensorTarget.id_tanque}`}
+          tanque={sensorTarget}
+          isSubmitting={actionLoading}
+          onClose={() => setSensorTarget(null)}
+          onCreate={createSensor}
         />
       ) : null}
 

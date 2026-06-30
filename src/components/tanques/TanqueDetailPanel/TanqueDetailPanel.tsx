@@ -5,18 +5,22 @@ import styles from './TanqueDetailPanel.module.scss';
 type TanqueDetailPanelProps = {
   tanque: TanqueConfigResponse | null;
   canEdit: boolean;
+  canCreateSensor: boolean;
   canToggleActive: boolean;
   isSubmitting: boolean;
   onEdit: (tanque: TanqueConfigResponse) => void;
+  onCreateSensor: (tanque: TanqueConfigResponse) => void;
   onToggleActive: (tanque: TanqueConfigResponse) => void;
 };
 
 export function TanqueDetailPanel({
   tanque,
   canEdit,
+  canCreateSensor,
   canToggleActive,
   isSubmitting,
   onEdit,
+  onCreateSensor,
   onToggleActive,
 }: TanqueDetailPanelProps) {
   if (!tanque) {
@@ -65,6 +69,13 @@ export function TanqueDetailPanel({
       <div className={styles.actions}>
         <button type="button" onClick={() => onEdit(tanque)} disabled={!canEdit || isSubmitting}>
           Editar
+        </button>
+        <button
+          type="button"
+          onClick={() => onCreateSensor(tanque)}
+          disabled={!canCreateSensor || isSubmitting}
+        >
+          Novo sensor
         </button>
         <button
           type="button"

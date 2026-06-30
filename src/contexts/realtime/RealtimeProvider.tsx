@@ -11,6 +11,7 @@ import {
   type HeartbeatPayload,
   type MqttConnectionStatusPayload,
   type MqttErrorPayload,
+  type ProcessPrecheckResultPayload,
   type SensorAcoplamentoPayload,
 } from '../../services/realtime';
 import { RealtimeContext, type RealtimeContextData } from './RealtimeContext';
@@ -34,6 +35,7 @@ const initialRealtimeState: RealtimeState = {
   lastSensorReading: null,
   lastAlarm: null,
   lastAcoplamento: null,
+  lastPrecheckResult: null,
   eventsCount: 0,
 };
 
@@ -138,6 +140,9 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
     const unsubscribeAcoplamento = realtimeService.onSensorAcoplamentoUpdated(
       (payload: SensorAcoplamentoPayload) => updateRealtimePayload({ lastAcoplamento: payload }),
     );
+    const unsubscribePrecheck = realtimeService.onProcessPrecheckResult(
+      (payload: ProcessPrecheckResultPayload) => updateRealtimePayload({ lastPrecheckResult: payload }),
+    );
 
     queueMicrotask(connect);
 
@@ -153,6 +158,7 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       unsubscribeSensorReading();
       unsubscribeAlarmCreated();
       unsubscribeAcoplamento();
+      unsubscribePrecheck();
       disconnectRealtime();
     };
   }, [accessToken, connect, disconnect, isAuthenticated, isLoading, updateRealtimePayload, user]);

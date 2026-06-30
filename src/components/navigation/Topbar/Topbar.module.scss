@@ -1,4 +1,6 @@
 .topbar {
+  position: relative;
+  z-index: 80;
   display: flex;
   gap: 18px;
   align-items: center;
@@ -74,9 +76,7 @@
   min-width: 0;
 }
 
-.statusBadge,
-.userBadge,
-.logoutButton {
+.statusBadge {
   display: inline-flex;
   min-height: 36px;
   align-items: center;
@@ -89,8 +89,7 @@
   text-transform: uppercase;
 }
 
-.statusBadge,
-.userBadge {
+.statusBadge {
   max-width: min(100%, 360px);
   padding: 0 11px;
   overflow: hidden;
@@ -99,26 +98,6 @@
   color: #dcecff;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.logoutButton {
-  padding: 0 14px;
-  border: 1px solid rgba(122, 185, 244, 0.28);
-  background: linear-gradient(180deg, rgba(83, 197, 255, 0.98), rgba(22, 119, 230, 0.98));
-  color: #03111e;
-  cursor: pointer;
-  transition:
-    box-shadow 160ms ease,
-    filter 160ms ease,
-    transform 160ms ease;
-}
-
-.logoutButton:hover,
-.logoutButton:focus-visible {
-  box-shadow: 0 0 0 3px rgba(29, 155, 255, 0.16);
-  filter: saturate(1.06);
-  outline: 0;
-  transform: translateY(-1px);
 }
 
 @media (max-width: 760px) {
@@ -141,9 +120,7 @@
     justify-content: stretch;
   }
 
-  .statusBadge,
-  .userBadge,
-  .logoutButton {
+  .statusBadge {
     flex: 1 1 145px;
   }
 }
