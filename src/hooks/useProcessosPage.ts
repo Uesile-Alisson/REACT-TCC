@@ -31,6 +31,7 @@ const PAGE_LIMIT = 8;
 
 const initialData: ProcessosPageData = {
   activeProcess: null,
+  activeReadings: [],
   processes: [],
   selectedProcess: null,
   selectedReadings: [],
@@ -82,10 +83,16 @@ export function useProcessosPage(): UseProcessosPageResult {
       const activeProcess =
         activeProcessResult.status === 'fulfilled' ? activeProcessResult.value : null;
       const processesResponse = processesResult.value;
+      const activeReadings = activeProcess?.id_processo
+        ? await getProcessoReadings(activeProcess.id_processo, { limit: 30 })
+            .then(getListData)
+            .catch(() => [])
+        : [];
 
       setData((currentData) => ({
         ...currentData,
         activeProcess,
+        activeReadings,
         processes: getListData<ProcessoResponse>(processesResponse),
         total: getTotal(processesResponse),
         limit: PAGE_LIMIT,

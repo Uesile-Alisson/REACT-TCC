@@ -3,9 +3,10 @@ import type {
   HeartbeatPayload,
   MqttConnectionStatusPayload,
   MqttHardwareStatusResponse,
-  SensorAcoplamentoPayload,
+  ProcessoPrecheckResponse,
   SensorReadingPayload,
 } from '../../../types';
+import { getAcoplamentoStatusSummary } from '../../processos/processos.utils';
 import { formatBoolean, formatDateTime, formatNumber, getMqttTone } from '../dashboard.utils';
 import { StatusBadge } from '../StatusBadge';
 import styles from './SystemStatusPanel.module.scss';
@@ -18,7 +19,7 @@ type SystemStatusPanelProps = {
   esp32Online?: boolean | null;
   lastHeartbeat?: HeartbeatPayload | null;
   lastSensorReading?: SensorReadingPayload | null;
-  lastAcoplamento?: SensorAcoplamentoPayload | null;
+  activePrecheck?: ProcessoPrecheckResponse | null;
   eventsCount: number;
   partialError?: string;
   realtimeError?: string | null;
@@ -32,18 +33,24 @@ export function SystemStatusPanel({
   esp32Online,
   lastHeartbeat,
   lastSensorReading,
-  lastAcoplamento,
+  activePrecheck,
   eventsCount,
   partialError,
   realtimeError,
 }: SystemStatusPanelProps) {
-  const mqttStatus = mqttRealtimeStatus?.status_conexao ?? hardwareStatus?.status_conexao ?? 'Sem status';
-  const currentEsp32Status = esp32Online ?? hardwareStatus?.esp32_online ?? null;
+  const mqttStatus =
+    mqttRealtimeStatus?.status_conexao ??
+    hardwareStatus?.status_conexao ??
+    hardwareStatus?.mqtt?.status_conexao ??
+    'Sem status';
+  const currentEsp32Status =
+    esp32Online ?? hardwareStatus?.esp32_online ?? hardwareStatus?.hardware?.esp32Online ?? null;
   const realtimeLabel = isRealtimeConnected
     ? 'Realtime online'
     : isRealtimeConnecting
       ? 'Realtime conectando'
       : 'Realtime offline';
+  const acoplamentoStatus = getAcoplamentoStatusSummary(activePrecheck);
 
   return (
     <article className={styles.panel}>
@@ -74,14 +81,21 @@ export function SystemStatusPanel({
         <div className={styles.item}>
           <Link2 size={18} aria-hidden="true" />
           <span>Acoplamento</span>
-          <strong>{lastAcoplamento?.status_acoplamento ?? 'Sem evento'}</strong>
+          <strong>{acoplamentoStatus.label}</strong>
         </div>
       </div>
 
       <footer className={styles.footer}>
         <StatusBadge label={realtimeLabel} tone={isRealtimeConnected ? 'success' : 'neutral'} />
         <span>Eventos recebidos: {eventsCount}</span>
-        <span>Heartbeat: {formatDateTime(lastHeartbeat?.enviado_em ?? hardwareStatus?.enviado_em)}</span>
+        <span>
+          Heartbeat:{' '}
+          {formatDateTime(
+            lastHeartbeat?.enviado_em ??
+              hardwareStatus?.enviado_em ??
+              hardwareStatus?.hardware?.lastHeartbeatAt,
+          )}
+        </span>
       </footer>
 
       {partialError ? <p className={styles.partialError}>{partialError}</p> : null}

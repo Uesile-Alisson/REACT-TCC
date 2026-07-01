@@ -59,7 +59,11 @@ function ChartTooltip({ active, label, payload }: TooltipProps) {
   );
 }
 
-function hasChartData(data: ChartDatum[]): boolean {
+function hasChartData(data: ChartDatum[], variant: RealDataChartPanelProps['variant']): boolean {
+  if (variant === 'line') {
+    return data.some((item) => Number.isFinite(item.value));
+  }
+
   return data.some((item) => Number.isFinite(item.value) && item.value > 0);
 }
 
@@ -90,7 +94,7 @@ export function RealDataChartPanel({
         <p>{subtitle}</p>
       </header>
 
-      {hasChartData(chartData) ? (
+      {hasChartData(chartData, variant) ? (
         <motion.div
           className={styles.chart}
           initial={{ opacity: 0, scale: 0.96 }}

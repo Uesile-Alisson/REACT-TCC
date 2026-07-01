@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Clock, Gauge, RadioTower, Workflow } from 'lucide-react';
-import type { ProcessoReadingResponse, ProcessoResponse, SensorAcoplamentoPayload } from '../../../types';
+import type { ProcessoReadingResponse, ProcessoResponse } from '../../../types';
 import {
   countRelation,
   formatProcessDate,
@@ -12,14 +12,14 @@ import styles from './ProcessMetricsCards.module.scss';
 type ProcessMetricsCardsProps = {
   process: ProcessoResponse | null;
   lastReading?: ProcessoReadingResponse | null;
-  lastAcoplamento?: SensorAcoplamentoPayload | null;
+  acoplamentoStatusLabel?: string;
   esp32Online?: boolean | null;
 };
 
 export function ProcessMetricsCards({
   process,
   lastReading,
-  lastAcoplamento,
+  acoplamentoStatusLabel,
   esp32Online,
 }: ProcessMetricsCardsProps) {
   const tankCount = process ? countRelation(process, 'tanques') : null;
@@ -37,7 +37,9 @@ export function ProcessMetricsCards({
     {
       icon: RadioTower,
       label: 'Hardware',
-      value: `ESP32 ${esp32Online === true ? 'online' : 'pendente'} / ${lastAcoplamento?.status_acoplamento ?? 'acoplamento pendente'}`,
+      value: `ESP32 ${esp32Online === true ? 'online' : 'pendente'} / acoplamento ${
+        acoplamentoStatusLabel?.toLowerCase() ?? 'nao informado'
+      }`,
     },
   ];
 

@@ -183,11 +183,13 @@ export type ProcessoPrecheckResponse = {
 export type ProcessoValvulaResumo = {
   id_valvula: Id;
   nome?: string;
+  nome_valvula?: string;
   id_tanque?: Id | null;
   tanque?: unknown;
   id_bomba?: Id | null;
   bomba?: unknown;
   status_atual?: string | null;
+  status_valvula?: string | null;
   ultimo_acionamento?: DateString | null;
   pode_validar?: boolean;
   pode_abrir_fechar?: boolean;

@@ -24,6 +24,8 @@ type UseConfiguracoesMqttHardwareResult = {
   clearFeedback: () => void;
 };
 
+const MQTT_HARDWARE_STATUS_REFRESH_MS = 5000;
+
 function getMqttConfigErrorMessage(error: unknown): string {
   const apiError = normalizeApiError(error);
 
@@ -96,11 +98,35 @@ export function useConfiguracoesMqttHardware(): UseConfiguracoesMqttHardwareResu
     setIsLoading(false);
   }, []);
 
+  const refreshStatus = useCallback(async (): Promise<void> => {
+    try {
+      const nextStatus = await getMqttHardwareStatus();
+
+      setStatus(nextStatus);
+      setStatusError(null);
+    } catch (error: unknown) {
+      setStatusError(getMqttStatusErrorMessage(error));
+    }
+  }, []);
+
   useEffect(() => {
+    let isActive = true;
+
     queueMicrotask(() => {
-      void refresh();
+      if (isActive) {
+        void refresh();
+      }
     });
-  }, [refresh]);
+
+    const intervalId = window.setInterval(() => {
+      void refreshStatus();
+    }, MQTT_HARDWARE_STATUS_REFRESH_MS);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(intervalId);
+    };
+  }, [refresh, refreshStatus]);
 
   const saveConfig = useCallback(async (payload: UpdateMqttConfigRequest): Promise<boolean> => {
     setIsSaving(true);

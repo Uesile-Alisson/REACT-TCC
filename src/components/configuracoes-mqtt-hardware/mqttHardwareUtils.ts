@@ -39,21 +39,25 @@ export function getMqttStatusLabel(status?: string | null): string {
     DISCONNECTED: 'Desconectado',
     CONNECTING: 'Conectando',
     ERROR: 'Erro',
+    CONECTADO: 'Conectado',
+    DESCONECTADO: 'Desconectado',
+    RECONECTANDO: 'Reconectando',
+    FALHA: 'Falha',
   };
 
   return labels[status as MqttConnectionStatus] ?? status;
 }
 
 export function getStatusTone(status?: string | null): 'success' | 'warning' | 'danger' | 'neutral' {
-  if (status === 'CONNECTED') {
+  if (status === 'CONNECTED' || status === 'CONECTADO') {
     return 'success';
   }
 
-  if (status === 'CONNECTING') {
+  if (status === 'CONNECTING' || status === 'RECONECTANDO') {
     return 'warning';
   }
 
-  if (status === 'ERROR') {
+  if (status === 'ERROR' || status === 'FALHA') {
     return 'danger';
   }
 
@@ -65,7 +69,13 @@ export function getHardwareEsp32Online(
   realtimeStatus: HardwareStatusPayload | null,
   heartbeat: HeartbeatPayload | null,
 ): boolean | null {
-  return heartbeat?.esp32_online ?? realtimeStatus?.esp32_online ?? httpStatus?.esp32_online ?? null;
+  return (
+    heartbeat?.esp32_online ??
+    realtimeStatus?.esp32_online ??
+    httpStatus?.esp32_online ??
+    httpStatus?.hardware?.esp32Online ??
+    null
+  );
 }
 
 export function getSensorLabel(reading: SensorReadingPayload | null): string {

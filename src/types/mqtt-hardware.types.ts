@@ -1,6 +1,14 @@
 import type { DateString } from './common.types';
 
-export type MqttConnectionStatus = 'CONNECTED' | 'DISCONNECTED' | 'CONNECTING' | 'ERROR';
+export type MqttConnectionStatus =
+  | 'CONNECTED'
+  | 'DISCONNECTED'
+  | 'CONNECTING'
+  | 'ERROR'
+  | 'CONECTADO'
+  | 'DESCONECTADO'
+  | 'RECONECTANDO'
+  | 'FALHA';
 
 export type MqttStatusSummary = {
   connected?: boolean;
@@ -18,7 +26,18 @@ export type MqttHardwareStatusResponse = {
   mqtt?: MqttStatusSummary;
   status_conexao?: MqttConnectionStatus | string;
   esp32_online?: boolean;
-  hardware?: Record<string, unknown>;
+  hardware?: {
+    mqttConnected?: boolean;
+    esp32Online?: boolean;
+    lastHeartbeatAt?: DateString | null;
+    lastStatusAt?: DateString | null;
+    lastReadingAt?: DateString | null;
+    currentStatus?: string | null;
+    lastError?: string | null;
+    updatedAt?: DateString;
+    enviado_em?: DateString;
+    [key: string]: unknown;
+  };
   consultado_em?: DateString;
   enviado_em?: DateString;
   [key: string]: unknown;

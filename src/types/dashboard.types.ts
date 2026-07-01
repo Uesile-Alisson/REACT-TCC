@@ -1,10 +1,11 @@
 import type { AlarmeDashboardResponse, AlarmeResponse } from './alarmes.types';
 import type { HistoricoDashboardResponse, HistoricoProcessoResponse } from './historico.types';
 import type { MqttHardwareStatusResponse } from './mqtt-hardware.types';
-import type { ProcessoResponse } from './processos.types';
+import type { ProcessoPrecheckResponse, ProcessoResponse } from './processos.types';
 
 export type DashboardPartialErrors = {
   activeProcess?: string;
+  activePrecheck?: string;
   lastProcess?: string;
   alarms?: string;
   history?: string;
@@ -14,6 +15,7 @@ export type DashboardPartialErrors = {
 
 export type DashboardData = {
   activeProcess: ProcessoResponse | null;
+  activePrecheck: ProcessoPrecheckResponse | null;
   lastProcess: HistoricoProcessoResponse | null;
   recentAlarms: AlarmeResponse[];
   alarmsSummary: AlarmeDashboardResponse | null;

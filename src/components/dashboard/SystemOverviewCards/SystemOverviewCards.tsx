@@ -21,7 +21,9 @@ export function SystemOverviewCards({
     : data.lastProcess
       ? 'Sem processo ativo'
       : 'Sem processo recente';
-  const mqttStatus = data.hardwareStatus?.status_conexao ?? 'Sem status';
+  const mqttStatus =
+    data.hardwareStatus?.status_conexao ?? data.hardwareStatus?.mqtt?.status_conexao ?? 'Sem status';
+  const esp32Online = data.hardwareStatus?.esp32_online ?? data.hardwareStatus?.hardware?.esp32Online;
   const realtimeLabel = realtimeConnected
     ? 'Realtime online'
     : realtimeConnecting
@@ -79,7 +81,7 @@ export function SystemOverviewCards({
         </div>
         <div>
           <p>Comunicacao</p>
-          <strong>{formatBoolean(data.hardwareStatus?.esp32_online)}</strong>
+          <strong>{formatBoolean(esp32Online)}</strong>
           <span>MQTT: {mqttStatus}</span>
           <StatusBadge label={realtimeLabel} tone={realtimeConnected ? 'success' : 'neutral'} />
         </div>

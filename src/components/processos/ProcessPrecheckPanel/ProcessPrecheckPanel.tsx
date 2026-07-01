@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { AlertTriangle, Clock3, RefreshCw, ShieldCheck, Wrench } from 'lucide-react';
+import { AlertTriangle, Clock3, Play, RefreshCw, ShieldCheck, Wrench } from 'lucide-react';
 import type {
   ProcessoPrecheckGrupo,
   ProcessoPrecheckItem,
@@ -30,8 +30,12 @@ type ProcessPrecheckPanelProps = {
   error: string | null;
   feedback: string | null;
   socketFeedback: string | null;
+  canStartProcess?: boolean;
+  isStartingProcess?: boolean;
+  startBlockedMessage?: string | null;
   onRefresh: () => void;
   onExecute: () => void;
+  onStartProcess?: () => void;
   onValidateTank: (idTanque: number) => void;
   onValidateSensor: (idSensor: number) => void;
   onValidateValve: (idValvula: number) => void;
@@ -171,7 +175,7 @@ function formatDetails(details: ProcessoPrecheckItem['detalhes']): string | null
 }
 
 function getValveLabel(valve: ProcessoValvulaResumo): string {
-  return formatDisplayValue(valve.nome, `Valvula #${valve.id_valvula}`);
+  return formatDisplayValue(valve.nome_valvula ?? valve.nome, `Valvula #${valve.id_valvula}`);
 }
 
 function getValveRelation(value?: number | string | null, fallback?: unknown): string {
@@ -200,8 +204,12 @@ export function ProcessPrecheckPanel({
   error,
   feedback,
   socketFeedback,
+  canStartProcess = false,
+  isStartingProcess = false,
+  startBlockedMessage,
   onRefresh,
   onExecute,
+  onStartProcess,
   onValidateTank,
   onValidateSensor,
   onValidateValve,
@@ -218,6 +226,13 @@ export function ProcessPrecheckPanel({
   const hasBlockingFailures = blockingFailures.length > 0;
   const hasNotices = warnings.length > 0 || recommendations.length > 0;
   const canOpenCloseValves = processStatus === 'EM_EXECUCAO';
+  const canStartAfterPrecheck = Boolean(
+    precheck?.aprovado &&
+      !precheck.bloqueado &&
+      !expired &&
+      canStartProcess &&
+      onStartProcess,
+  );
 
   return (
     <motion.section
@@ -310,6 +325,25 @@ export function ProcessPrecheckPanel({
               <small>{expired ? 'Execute novamente antes de iniciar.' : 'Backend continua sendo autoridade.'}</small>
             </article>
           </div>
+
+          {canStartAfterPrecheck ? (
+            <section className={styles.startPanel} role="status">
+              <div>
+                <strong>Pre-checagem aprovada</strong>
+                <span>O processo esta pronto para iniciar com validacao final do backend.</span>
+              </div>
+              <button
+                className={styles.primaryButton}
+                type="button"
+                onClick={onStartProcess}
+                disabled={isStartingProcess || Boolean(startBlockedMessage)}
+                title={startBlockedMessage ?? undefined}
+              >
+                <Play size={15} aria-hidden="true" />
+                {isStartingProcess ? 'Iniciando' : 'Iniciar processo'}
+              </button>
+            </section>
+          ) : null}
 
           {hasBlockingFailures ? (
             <section className={styles.blockingState}>
@@ -408,7 +442,7 @@ export function ProcessPrecheckPanel({
                     <small>Ultimo acionamento: {formatProcessDate(valve.ultimo_acionamento)}</small>
                   </div>
                   <div className={styles.valveStatus}>
-                    <StatusBadge status={String(valve.status_atual ?? 'PENDENTE')} />
+                    <StatusBadge status={String(valve.status_atual ?? valve.status_valvula ?? 'PENDENTE')} />
                     <button
                       type="button"
                       disabled={!canValidate || Boolean(loadingAction)}

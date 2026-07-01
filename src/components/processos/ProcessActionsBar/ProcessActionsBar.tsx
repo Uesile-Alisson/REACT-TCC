@@ -7,6 +7,7 @@ type ProcessActionsBarProps = {
   permissions: ProcessosPermissions;
   loadingAction: ProcessoAction | 'create' | null;
   startBlockedMessage?: string | null;
+  variant?: 'default' | 'featured';
   onAction: (action: ProcessoAction, process: ProcessoResponse) => void;
 };
 
@@ -15,12 +16,15 @@ export function ProcessActionsBar({
   permissions,
   loadingAction,
   startBlockedMessage,
+  variant = 'default',
   onAction,
 }: ProcessActionsBarProps) {
   const status = process.status_processo;
+  const actionsClassName =
+    variant === 'featured' ? `${styles.actions} ${styles.featured}` : styles.actions;
 
   return (
-    <div className={styles.actions} aria-label="Acoes do processo">
+    <div className={actionsClassName} aria-label="Acoes do processo">
       {permissions.canStartProcess(status) ? (
         <button
           type="button"

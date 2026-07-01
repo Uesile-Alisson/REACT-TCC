@@ -12,10 +12,13 @@ import type {
 type UseProcessoConfiguracaoOptionsResult = {
   tanqueOptions: ProcessoTanqueOption[];
   sensorOptions: ProcessoSensorOption[];
+  sensorOptionsByTanque: Record<number, ProcessoSensorOption[]>;
   loadingTanques: boolean;
   loadingSensores: boolean;
+  loadingSensoresByTanque: Record<number, boolean>;
   errorTanques: string | null;
   errorSensores: string | null;
+  errorSensoresByTanque: Record<number, string | null>;
   selectedTanqueId: number | null;
   setSelectedTanqueId: (id_tanque: number | null) => void;
   reloadTanques: () => Promise<void>;
@@ -93,10 +96,13 @@ export function useProcessoConfiguracaoOptions(
 ): UseProcessoConfiguracaoOptionsResult {
   const [tanques, setTanques] = useState<TanqueConfigResponse[]>([]);
   const [sensorOptions, setSensorOptions] = useState<ProcessoSensorOption[]>([]);
+  const [sensorOptionsByTanque, setSensorOptionsByTanque] = useState<Record<number, ProcessoSensorOption[]>>({});
   const [loadingTanques, setLoadingTanques] = useState<boolean>(false);
   const [loadingSensores, setLoadingSensores] = useState<boolean>(false);
+  const [loadingSensoresByTanque, setLoadingSensoresByTanque] = useState<Record<number, boolean>>({});
   const [errorTanques, setErrorTanques] = useState<string | null>(null);
   const [errorSensores, setErrorSensores] = useState<string | null>(null);
+  const [errorSensoresByTanque, setErrorSensoresByTanque] = useState<Record<number, string | null>>({});
   const [selectedTanqueId, setSelectedTanqueIdState] = useState<number | null>(null);
 
   const setSelectedTanqueId = useCallback((id_tanque: number | null): void => {
@@ -142,14 +148,24 @@ export function useProcessoConfiguracaoOptions(
     setLoadingSensores(true);
     setErrorSensores(null);
     setSensorOptions([]);
+    setLoadingSensoresByTanque((current) => ({ ...current, [id_tanque]: true }));
+    setErrorSensoresByTanque((current) => ({ ...current, [id_tanque]: null }));
 
     try {
       const response = await listSensoresVacuoByTanque(id_tanque);
-      setSensorOptions(response.filter(isVacuumSensor).map(buildSensorOption));
+      const nextOptions = response.filter(isVacuumSensor).map(buildSensorOption);
+
+      setSensorOptions(nextOptions);
+      setSensorOptionsByTanque((current) => ({ ...current, [id_tanque]: nextOptions }));
     } catch (error) {
-      setErrorSensores(getSensorOptionsErrorMessage(error));
+      const message = getSensorOptionsErrorMessage(error);
+
+      setErrorSensores(message);
+      setSensorOptionsByTanque((current) => ({ ...current, [id_tanque]: [] }));
+      setErrorSensoresByTanque((current) => ({ ...current, [id_tanque]: message }));
     } finally {
       setLoadingSensores(false);
+      setLoadingSensoresByTanque((current) => ({ ...current, [id_tanque]: false }));
     }
   }, []);
 
@@ -161,10 +177,13 @@ export function useProcessoConfiguracaoOptions(
   return {
     tanqueOptions,
     sensorOptions,
+    sensorOptionsByTanque,
     loadingTanques,
     loadingSensores,
+    loadingSensoresByTanque,
     errorTanques,
     errorSensores,
+    errorSensoresByTanque,
     selectedTanqueId,
     setSelectedTanqueId,
     reloadTanques,

@@ -39,6 +39,7 @@ export function ConfiguracoesMqttHardwarePage() {
     mqttConnectionStatus,
     mqttError,
     hardwareStatus,
+    hardwareState,
     esp32Online,
     lastHeartbeat,
     eventsCount,
@@ -63,6 +64,8 @@ export function ConfiguracoesMqttHardwarePage() {
     status?.status_conexao ??
     config?.status_conexao;
   const esp32StatusKnown = effectiveHeartbeat?.esp32_online ?? status?.esp32_online ?? null;
+  const currentEsp32Status =
+    esp32StatusKnown ?? hardwareState?.esp32Online ?? status?.hardware?.esp32Online ?? null;
   const hasMqttConfig = Boolean(config?.id_mqtt_configuracao || config?.broker_url);
   const hasBrokerEndpoint = Boolean(status?.mqtt?.broker_url || config?.broker_url);
   const diagnosticItems = [
@@ -85,24 +88,29 @@ export function ConfiguracoesMqttHardwarePage() {
     {
       label: 'Broker MQTT',
       value:
-        mqttStatus === 'CONNECTED'
+        mqttStatus === 'CONNECTED' || mqttStatus === 'CONECTADO'
           ? 'Broker conectado'
-          : mqttStatus === 'CONNECTING'
+          : mqttStatus === 'CONNECTING' || mqttStatus === 'RECONECTANDO'
             ? 'Broker conectando'
             : hasBrokerEndpoint
               ? 'Broker configurado, aguardando status realtime/HTTP'
               : 'Broker MQTT sem configuracao carregada',
-      tone: mqttStatus === 'CONNECTED' ? 'success' : mqttStatus === 'CONNECTING' || hasBrokerEndpoint ? 'warning' : 'danger',
+      tone:
+        mqttStatus === 'CONNECTED' || mqttStatus === 'CONECTADO'
+          ? 'success'
+          : mqttStatus === 'CONNECTING' || mqttStatus === 'RECONECTANDO' || hasBrokerEndpoint
+            ? 'warning'
+            : 'danger',
     },
     {
       label: 'ESP32',
       value:
-        esp32StatusKnown === true
+        currentEsp32Status === true
           ? 'ESP32 online'
-          : esp32StatusKnown === false
+          : currentEsp32Status === false
             ? 'ESP32 offline'
             : 'Aguardando heartbeat do ESP32',
-      tone: esp32StatusKnown === true ? 'success' : esp32StatusKnown === false ? 'danger' : 'warning',
+      tone: currentEsp32Status === true ? 'success' : currentEsp32Status === false ? 'danger' : 'warning',
     },
     {
       label: 'Socket.IO',

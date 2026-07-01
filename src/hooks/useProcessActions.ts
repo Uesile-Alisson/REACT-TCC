@@ -43,19 +43,16 @@ function buildCreatePayload(form: ProcessoFormState): CreateProcessoRequest {
   return {
     nome_processo: form.nome_processo.trim() || undefined,
     tempo_maximo: Number(form.tempo_maximo),
-    vacuo_alvo: toOptionalNumber(form.vacuo_alvo),
-    tanques: [
-      {
-        id_tanque: Number(form.id_tanque),
-        vacuo_alvo: toOptionalNumber(form.vacuo_alvo_tanque),
-        sensores: [
-          {
-            id_sensor: Number(form.id_sensor),
-            observacoes: form.observacoes_sensor.trim() || undefined,
-          },
-        ],
-      },
-    ],
+    tanques: form.tanques.map((tanque) => ({
+      id_tanque: Number(tanque.id_tanque),
+      vacuo_alvo: toOptionalNumber(tanque.vacuo_alvo_tanque),
+      sensores: [
+        {
+          id_sensor: Number(tanque.id_sensor),
+          observacoes: tanque.observacoes_sensor.trim() || undefined,
+        },
+      ],
+    })),
   };
 }
 

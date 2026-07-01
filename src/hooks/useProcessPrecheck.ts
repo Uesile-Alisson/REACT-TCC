@@ -99,13 +99,13 @@ function getNumericDetail(item: ProcessoPrecheckItem, keys: string[]): number | 
 
 function buildReferences(
   items: ProcessoPrecheckItem[],
-  group: string,
+  groups: string[],
   keys: string[],
 ): ResourceReference[] {
   const references = new Map<number, ResourceReference>();
 
   items
-    .filter((item) => item.grupo === group)
+    .filter((item) => groups.includes(item.grupo))
     .forEach((item) => {
       const id = getNumericDetail(item, keys);
 
@@ -115,13 +115,28 @@ function buildReferences(
 
       references.set(id, {
         id,
-        label: item.titulo || `${group} #${id}`,
+        label: item.titulo || `${item.grupo} #${id}`,
         status: item.status,
         message: item.mensagem,
       });
     });
 
   return Array.from(references.values());
+}
+
+function buildReferencesWithFallback(
+  items: ProcessoPrecheckItem[],
+  preferredGroups: string[],
+  fallbackGroups: string[],
+  keys: string[],
+): ResourceReference[] {
+  const preferredReferences = buildReferences(items, preferredGroups, keys);
+
+  if (preferredReferences.length > 0) {
+    return preferredReferences;
+  }
+
+  return buildReferences(items, fallbackGroups, keys);
 }
 
 export function useProcessPrecheck(idProcesso?: number | null): UseProcessPrecheckResult {
@@ -344,11 +359,17 @@ export function useProcessPrecheck(idProcesso?: number | null): UseProcessPreche
   }, [idProcesso, lastPrecheckResult]);
 
   const tanks = useMemo(
-    () => buildReferences(precheck?.itens ?? [], 'TANQUES', ['id_tanque', 'tanque_id', 'id_recurso']),
+    () =>
+      buildReferencesWithFallback(
+        precheck?.itens ?? [],
+        ['ACOPLAMENTO'],
+        ['TANQUES'],
+        ['id_tanque', 'tanque_id', 'id_recurso'],
+      ),
     [precheck],
   );
   const sensors = useMemo(
-    () => buildReferences(precheck?.itens ?? [], 'SENSORES', ['id_sensor', 'sensor_id', 'id_recurso']),
+    () => buildReferences(precheck?.itens ?? [], ['SENSORES'], ['id_sensor', 'sensor_id', 'id_recurso']),
     [precheck],
   );
 

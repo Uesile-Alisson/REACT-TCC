@@ -102,6 +102,7 @@
 
 .errorState,
 .infoState,
+.startPanel,
 .blockingState,
 .emptyState {
   display: flex;
@@ -124,6 +125,20 @@
   color: #dcecff;
 }
 
+.startPanel {
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid rgba(64, 220, 153, 0.28);
+  background: rgba(44, 189, 128, 0.1);
+  color: #dcecff;
+}
+
+.startPanel span {
+  display: block;
+  margin-top: 3px;
+  color: #9cb4cf;
+}
+
 .blockingState {
   border: 1px solid rgba(255, 139, 152, 0.32);
   background: rgba(255, 78, 101, 0.1);
@@ -139,6 +154,7 @@
 .errorState strong,
 .errorState span,
 .infoState strong,
+.startPanel strong,
 .blockingState strong,
 .blockingState span,
 .emptyState strong,
@@ -305,6 +321,7 @@
 @media (max-width: 720px) {
   .header,
   .valves header,
+  .startPanel,
   .groupCard li,
   .resourceCard li,
   .valveList article {

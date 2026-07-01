@@ -39,6 +39,17 @@ const initialRealtimeState: RealtimeState = {
   eventsCount: 0,
 };
 
+function resolveEsp32Online(payload: unknown): boolean | null {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  const data = payload as Record<string, unknown>;
+  const value = data.esp32_online ?? data.esp32Online;
+
+  return typeof value === 'boolean' ? value : null;
+}
+
 export function RealtimeProvider({ children }: RealtimeProviderProps) {
   const { accessToken, isAuthenticated, isLoading, user } = useAuth();
   const [state, setState] = useState<RealtimeState>(initialRealtimeState);
@@ -117,18 +128,21 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       }),
     );
     const unsubscribeHardwareState = realtimeService.onHardwareState(
-      (payload: HardwareStatePayload) => updateRealtimePayload({ hardwareState: payload }),
+      (payload: HardwareStatePayload) => updateRealtimePayload({
+        hardwareState: payload,
+        esp32Online: resolveEsp32Online(payload),
+      }),
     );
     const unsubscribeHardwareStatus = realtimeService.onHardwareStatus(
       (payload: HardwareStatusPayload) => updateRealtimePayload({
         hardwareStatus: payload,
-        esp32Online: payload.esp32_online ?? null,
+        esp32Online: resolveEsp32Online(payload),
       }),
     );
     const unsubscribeHeartbeat = realtimeService.onHeartbeat(
       (payload: HeartbeatPayload) => updateRealtimePayload({
         lastHeartbeat: payload,
-        esp32Online: payload.esp32_online ?? null,
+        esp32Online: resolveEsp32Online(payload),
       }),
     );
     const unsubscribeSensorReading = realtimeService.onSensorReading(

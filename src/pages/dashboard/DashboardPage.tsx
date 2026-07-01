@@ -5,10 +5,10 @@ import { RecentAlarmsPanel } from '../../components/dashboard/RecentAlarmsPanel'
 import { SystemOverviewCards } from '../../components/dashboard/SystemOverviewCards';
 import { SystemStatusPanel } from '../../components/dashboard/SystemStatusPanel';
 import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
-import { useAcoplamentoRealtime } from '../../hooks/useAcoplamentoRealtime';
 import { useAlarmesRealtime } from '../../hooks/useAlarmesRealtime';
 import { useDashboardData } from '../../hooks/useDashboardData';
 import { useMqttHardwareRealtime } from '../../hooks/useMqttHardwareRealtime';
+import { useRealtime } from '../../hooks/useRealtime';
 import { useSensorReadingsRealtime } from '../../hooks/useSensorReadingsRealtime';
 import { countBy } from '../../utils/chartData';
 import styles from './DashboardPage.module.scss';
@@ -26,7 +26,8 @@ export function DashboardPage() {
   } = useMqttHardwareRealtime();
   const { lastSensorReading } = useSensorReadingsRealtime();
   const { lastAlarm } = useAlarmesRealtime();
-  const { lastAcoplamento } = useAcoplamentoRealtime();
+  const { lastPrecheckResult } = useRealtime();
+  const effectivePrecheck = lastPrecheckResult ?? data.activePrecheck;
   const alarmesPorSeveridade = countBy(data.recentAlarms, (alarme) => alarme.severidade);
   const indicadoresOperacionais = [
     { name: 'Alarmes ativos', value: data.alarmsSummary?.ativos ?? 0 },
@@ -99,9 +100,9 @@ export function DashboardPage() {
           esp32Online={esp32Online}
           lastHeartbeat={lastHeartbeat}
           lastSensorReading={lastSensorReading}
-          lastAcoplamento={lastAcoplamento}
+          activePrecheck={effectivePrecheck}
           eventsCount={eventsCount}
-          partialError={partialErrors.hardware}
+          partialError={partialErrors.hardware ?? partialErrors.activePrecheck}
           realtimeError={realtimeError}
         />
       </section>

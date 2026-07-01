@@ -21,17 +21,27 @@ export type ProcessoActionState = {
   process: ProcessoResponse;
 };
 
-export type ProcessoFormState = {
-  nome_processo: string;
-  tempo_maximo: string;
-  vacuo_alvo: string;
+export type ProcessoTanqueFormState = {
   id_tanque: string;
   vacuo_alvo_tanque: string;
   id_sensor: string;
   observacoes_sensor: string;
 };
 
-export type ProcessoFormErrors = Partial<Record<keyof ProcessoFormState, string>>;
+export type ProcessoFormState = {
+  nome_processo: string;
+  tempo_maximo: string;
+  quantidade_tanques: string;
+  tanques: ProcessoTanqueFormState[];
+};
+
+export type ProcessoTanqueFormErrors = Partial<Record<keyof ProcessoTanqueFormState, string>>;
+
+export type ProcessoFormErrors = Partial<
+  Record<'nome_processo' | 'tempo_maximo' | 'quantidade_tanques', string>
+> & {
+  tanques?: ProcessoTanqueFormErrors[];
+};
 
 export type ProcessoTanqueOption = {
   id_tanque: number;
@@ -49,6 +59,7 @@ export type ProcessoSensorOption = {
 
 export type ProcessosPageData = {
   activeProcess: ProcessoResponse | null;
+  activeReadings: ProcessoReadingResponse[];
   processes: ProcessoResponse[];
   selectedProcess: ProcessoResponse | null;
   selectedReadings: ProcessoReadingResponse[];

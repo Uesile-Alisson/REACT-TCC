@@ -26,7 +26,7 @@ export function MqttStatusCard({
     realtimeStatus?.status_conexao ?? mqtt?.status_conexao ?? status?.status_conexao ?? config?.status_conexao;
   const tone = getStatusTone(currentStatus);
   const brokerConfigured = Boolean(mqtt?.broker_url || config?.broker_url);
-  const brokerConnected = currentStatus === 'CONNECTED';
+  const brokerConnected = currentStatus === 'CONNECTED' || currentStatus === 'CONECTADO';
   const footerMessage = brokerConnected
     ? realtimeConnected
       ? 'Broker conectado. Socket.IO tambem esta recebendo eventos.'

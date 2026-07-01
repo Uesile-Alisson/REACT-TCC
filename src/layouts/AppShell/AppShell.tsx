@@ -36,6 +36,38 @@ export function AppShell() {
     };
   }, [closeMobileMenu, isMobileMenuOpen]);
 
+  useEffect(() => {
+    const closeModalFromBackdrop = (event: PointerEvent): void => {
+      const target = event.target;
+
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
+      const dialog = target.closest('[role="dialog"][aria-modal="true"]');
+
+      if (!dialog || target !== dialog) {
+        return;
+      }
+
+      const closeButton = Array.from(dialog.querySelectorAll('button')).find((button) => {
+        const label = `${button.textContent ?? ''} ${button.getAttribute('aria-label') ?? ''}`
+          .trim()
+          .toLowerCase();
+
+        return label.includes('fechar') || label.includes('cancelar');
+      });
+
+      closeButton?.click();
+    };
+
+    document.addEventListener('pointerdown', closeModalFromBackdrop);
+
+    return () => {
+      document.removeEventListener('pointerdown', closeModalFromBackdrop);
+    };
+  }, []);
+
   return (
     <div className={styles.appShell}>
       <Sidebar userRole={user?.nivel_acesso ?? null} />
@@ -52,9 +84,9 @@ export function AppShell() {
           <motion.main
             key={location.pathname}
             className={styles.content}
-            initial={{ opacity: 0, y: 14, filter: 'blur(6px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -8, filter: 'blur(4px)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
           >
             <Outlet />

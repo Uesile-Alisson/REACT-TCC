@@ -91,16 +91,21 @@ export function getSeverityTone(severity?: string | null): StatusTone {
 export function getMqttTone(status?: string | null): StatusTone {
   const normalized = status?.toLowerCase() ?? '';
 
-  if (normalized.includes('connected') || normalized.includes('conectado')) {
-    return 'success';
+  if (
+    normalized.includes('error') ||
+    normalized.includes('falha') ||
+    normalized.includes('disconnected') ||
+    normalized.includes('desconectado')
+  ) {
+    return 'danger';
   }
 
-  if (normalized.includes('connecting') || normalized.includes('conectando')) {
+  if (normalized.includes('connecting') || normalized.includes('conectando') || normalized.includes('reconectando')) {
     return 'warning';
   }
 
-  if (normalized.includes('error') || normalized.includes('disconnected')) {
-    return 'danger';
+  if (normalized.includes('connected') || normalized === 'conectado') {
+    return 'success';
   }
 
   return 'neutral';

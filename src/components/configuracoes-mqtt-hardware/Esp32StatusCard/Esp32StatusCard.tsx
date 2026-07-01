@@ -16,7 +16,9 @@ export function Esp32StatusCard({ status, hardwareStatus, heartbeat }: Esp32Stat
     hardwareStatus?.mensagem ??
     (esp32Online === false
       ? 'ESP32 offline. Verifique alimentacao, rede e publicacao MQTT.'
-      : 'Aguardando heartbeat do ESP32.');
+      : esp32Online === true
+        ? 'Heartbeat recebido. ESP32 comunicando com o backend.'
+        : 'Aguardando heartbeat do ESP32.');
 
   return (
     <section className={styles.card}>
@@ -31,19 +33,26 @@ export function Esp32StatusCard({ status, hardwareStatus, heartbeat }: Esp32Stat
       <dl className={styles.grid}>
         <div>
           <dt>Ultimo heartbeat</dt>
-          <dd>{formatDateTime(heartbeat?.enviado_em)}</dd>
+          <dd>{formatDateTime(heartbeat?.enviado_em ?? status?.hardware?.lastHeartbeatAt)}</dd>
         </div>
         <div>
           <dt>Firmware</dt>
-          <dd>{heartbeat?.firmware ?? 'Indisponivel'}</dd>
+          <dd>{heartbeat?.firmware ?? heartbeat?.firmware_version ?? 'Indisponivel'}</dd>
         </div>
         <div>
           <dt>Uptime</dt>
-          <dd>{heartbeat?.uptime ?? 'Indisponivel'}</dd>
+          <dd>{heartbeat?.uptime ?? heartbeat?.uptime_ms ?? 'Indisponivel'}</dd>
         </div>
         <div>
           <dt>Ultimo status</dt>
-          <dd>{formatDateTime(hardwareStatus?.enviado_em ?? status?.enviado_em ?? status?.consultado_em)}</dd>
+          <dd>
+            {formatDateTime(
+              hardwareStatus?.enviado_em ??
+                status?.enviado_em ??
+                status?.hardware?.lastStatusAt ??
+                status?.consultado_em,
+            )}
+          </dd>
         </div>
       </dl>
 

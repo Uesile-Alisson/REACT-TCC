@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getAlarmesDashboard, listAlarmes } from '../services/alarmes.service';
 import { getHistoricoDashboard, listHistoricoProcessos } from '../services/historico.service';
 import { getMqttHardwareStatus } from '../services/mqtt-hardware.service';
-import { getActiveProcesso } from '../services/processos.service';
+import { getActiveProcesso, getPrechecagem, listProcessos } from '../services/processos.service';
 import { listRelatorios } from '../services/relatorios.service';
 import type {
   DashboardData,
@@ -10,11 +10,13 @@ import type {
   DashboardPartialErrors,
 } from '../types/dashboard.types';
 import type { HistoricoProcessoListResponse, HistoricoProcessoResponse } from '../types/historico.types';
+import type { ProcessoListResponse, ProcessoPrecheckResponse, ProcessoResponse } from '../types/processos.types';
 import type { RelatorioListResponse } from '../types/relatorios.types';
 import { getAuthErrorMessage } from '../utils/authErrors';
 
 const initialData: DashboardData = {
   activeProcess: null,
+  activePrecheck: null,
   lastProcess: null,
   recentAlarms: [],
   alarmsSummary: null,
@@ -37,6 +39,12 @@ function getListData<TItem>(response: { data: TItem[] } | TItem[]): TItem[] {
 }
 
 function getLastProcess(response: HistoricoProcessoListResponse): HistoricoProcessoResponse | null {
+  const processes = getListData(response);
+
+  return processes[0] ?? null;
+}
+
+function getFirstProcess(response: ProcessoListResponse): ProcessoResponse | null {
   const processes = getListData(response);
 
   return processes[0] ?? null;
@@ -89,10 +97,33 @@ export function useDashboardData(): DashboardLoadState {
     const historySummary = getSettledValue(results[4], 'history', nextPartialErrors);
     const hardwareStatus = getSettledValue(results[5], 'hardware', nextPartialErrors);
     const reports = getSettledValue(results[6], 'reports', nextPartialErrors);
+    let activePrecheck: ProcessoPrecheckResponse | null = null;
+    let precheckProcess = activeProcess;
+
+    if (!precheckProcess) {
+      try {
+        const configuredProcesses = await listProcessos({
+          status_processo: 'CONFIGURADO',
+          limit: 1,
+        });
+        precheckProcess = getFirstProcess(configuredProcesses);
+      } catch (precheckProcessError: unknown) {
+        nextPartialErrors.activePrecheck = getAuthErrorMessage(precheckProcessError);
+      }
+    }
+
+    if (precheckProcess?.id_processo) {
+      try {
+        activePrecheck = await getPrechecagem(precheckProcess.id_processo);
+      } catch (precheckError: unknown) {
+        nextPartialErrors.activePrecheck = getAuthErrorMessage(precheckError);
+      }
+    }
 
     setPartialErrors(nextPartialErrors);
     setData({
       activeProcess,
+      activePrecheck,
       lastProcess: lastProcessResponse ? getLastProcess(lastProcessResponse) : null,
       recentAlarms: recentAlarmsResponse ? getListData(recentAlarmsResponse) : [],
       alarmsSummary,

@@ -29,6 +29,14 @@ export type MqttErrorPayload = {
 };
 
 export type HardwareStatePayload = {
+  mqttConnected?: boolean;
+  esp32Online?: boolean;
+  lastHeartbeatAt?: DateString | null;
+  lastStatusAt?: DateString | null;
+  lastReadingAt?: DateString | null;
+  currentStatus?: string | null;
+  lastError?: string | null;
+  updatedAt?: DateString;
   enviado_em?: DateString;
   [key: string]: unknown;
 };
@@ -57,9 +65,13 @@ export type HardwareStatusPayload = {
 export type HeartbeatPayload = {
   esp32_online?: boolean;
   uptime?: number;
+  uptime_ms?: number | null;
   firmware?: string;
+  firmware_version?: string | null;
   id_processo?: Id;
   enviado_em?: DateString;
+  heartbeat_at?: DateString | null;
+  lastHeartbeatAt?: DateString | null;
   [key: string]: unknown;
 };
 

@@ -2,7 +2,6 @@ import type {
   ProcessoAction,
   ProcessoResponse,
   ProcessosPermissions,
-  SensorAcoplamentoPayload,
   SensorReadingPayload,
 } from '../../../types';
 import { ProcessActionsBar } from '../ProcessActionsBar';
@@ -15,7 +14,7 @@ type ActiveProcessPanelProps = {
   permissions: ProcessosPermissions;
   loadingAction: ProcessoAction | 'create' | null;
   lastReading?: SensorReadingPayload | null;
-  lastAcoplamento?: SensorAcoplamentoPayload | null;
+  acoplamentoStatusLabel?: string;
   esp32Online?: boolean | null;
   startBlockedMessage?: string | null;
   onAction: (action: ProcessoAction, process: ProcessoResponse) => void;
@@ -27,7 +26,7 @@ export function ActiveProcessPanel({
   permissions,
   loadingAction,
   lastReading,
-  lastAcoplamento,
+  acoplamentoStatusLabel,
   esp32Online,
   startBlockedMessage,
   onAction,
@@ -70,7 +69,7 @@ export function ActiveProcessPanel({
       <ProcessMetricsCards
         process={process}
         lastReading={lastReading}
-        lastAcoplamento={lastAcoplamento}
+        acoplamentoStatusLabel={acoplamentoStatusLabel}
         esp32Online={esp32Online}
       />
 
@@ -79,6 +78,7 @@ export function ActiveProcessPanel({
         permissions={permissions}
         loadingAction={loadingAction}
         startBlockedMessage={startBlockedMessage}
+        variant="featured"
         onAction={onAction}
       />
     </section>
