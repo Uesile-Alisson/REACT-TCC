@@ -19,7 +19,7 @@ export function LastProcessCard({ process, partialError }: LastProcessCardProps)
     return (
       <article className={styles.card}>
         <header className={styles.header}>
-          <div>
+          <div className={styles.titleBlock}>
             <p className={styles.overline}>Ultimo processo</p>
             <h2>Nenhum processo recente encontrado</h2>
           </div>
@@ -43,7 +43,7 @@ export function LastProcessCard({ process, partialError }: LastProcessCardProps)
   return (
     <article className={styles.card}>
       <header className={styles.header}>
-        <div>
+        <div className={styles.titleBlock}>
           <p className={styles.overline}>Ultimo processo</p>
           <h2>{process.nome_processo ?? `Processo #${process.id_processo}`}</h2>
         </div>

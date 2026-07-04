@@ -46,7 +46,12 @@ export const PROCESSOS_EVENTS = {
 
 export const ALARMES_EVENTS = {
   SOCKET_CONNECTED: 'alarm:socket-connected',
+  CREATED: 'alarm:created',
+  UPDATED: 'alarm:updated',
+  ACKNOWLEDGED: 'alarm:acknowledged',
+  NORMALIZED: 'alarm:normalized',
   RESOLVED: 'alarm:resolved',
+  RECOVERY_ATTEMPT: 'alarm:recovery-attempt',
   DASHBOARD_UPDATED: 'alarm:dashboard-updated',
   NOTIFICATION: 'alarm:notification',
 } as const;

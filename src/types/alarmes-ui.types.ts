@@ -29,6 +29,7 @@ export type AlarmesPartialErrors = {
 export type AlarmesPermissions = {
   canViewAlarmes: boolean;
   canViewAlarmeDetails: boolean;
+  canAcknowledgeAlarme: boolean;
   canResolveAlarme: (status: StatusAlarme) => boolean;
   canGenerateAlarmeReport: boolean;
 };

@@ -5,7 +5,7 @@
 .header span {
   display: block;
   margin-bottom: 12px;
-  color: #5bc8ff;
+  color: var(--color-accent);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -14,7 +14,7 @@
 
 .header h2 {
   margin: 0;
-  color: #f6fbff;
+  color: var(--color-text);
   font-size: clamp(1.65rem, 3vw, 2.15rem);
   font-weight: 740;
   line-height: 1.05;
@@ -22,7 +22,19 @@
 
 .header p {
   margin: 12px 0 0;
-  color: #9cb4cf;
+  color: var(--color-text-muted);
   font-size: 0.95rem;
   line-height: 1.65;
+}
+
+:global(html[data-theme="light"]) .header span {
+  color: #087fd6;
+}
+
+:global(html[data-theme="light"]) .header h2 {
+  color: #0e1b2a;
+}
+
+:global(html[data-theme="light"]) .header p {
+  color: #526b84;
 }

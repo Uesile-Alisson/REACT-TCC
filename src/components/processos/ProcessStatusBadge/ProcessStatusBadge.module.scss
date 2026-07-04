@@ -44,3 +44,35 @@
 .neutral {
   background: rgba(75, 156, 255, 0.1);
 }
+
+:global(html[data-theme="light"]) .badge {
+  border-color: rgba(8, 127, 214, 0.38);
+  background: rgba(212, 231, 246, 0.96);
+  color: #17324a;
+  font-weight: 880;
+}
+
+:global(html[data-theme="light"]) .success {
+  border-color: rgba(8, 127, 91, 0.5);
+  background: rgba(8, 127, 91, 0.16);
+  color: #046147;
+}
+
+:global(html[data-theme="light"]) .warning {
+  border-color: rgba(180, 107, 0, 0.55);
+  background: rgba(219, 132, 0, 0.2);
+  color: #7a4300;
+}
+
+:global(html[data-theme="light"]) .danger {
+  border-color: rgba(201, 47, 69, 0.5);
+  background: rgba(201, 47, 69, 0.16);
+  color: #982337;
+}
+
+:global(html[data-theme="light"]) .info,
+:global(html[data-theme="light"]) .neutral {
+  border-color: rgba(8, 127, 214, 0.48);
+  background: rgba(8, 127, 214, 0.16);
+  color: #075f9e;
+}

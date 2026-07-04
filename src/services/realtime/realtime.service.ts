@@ -1,7 +1,12 @@
-import { MQTT_HARDWARE_EVENTS, PROCESSOS_EVENTS, SOCKET_SYSTEM_EVENTS } from './socket-events';
-import { getRealtimeSocket, onRealtimeEvent } from './socket-client';
+import { ALARMES_EVENTS, MQTT_HARDWARE_EVENTS, PROCESSOS_EVENTS, SOCKET_SYSTEM_EVENTS } from './socket-events';
+import { getRealtimeSocket, onAlarmesRealtimeEvent, onRealtimeEvent } from './socket-client';
 import type {
+  AlarmAcknowledgedPayload,
   AlarmCreatedPayload,
+  AlarmNormalizedPayload,
+  AlarmRecoveryAttemptPayload,
+  AlarmResolvedPayload,
+  AlarmUpdatedPayload,
   HardwareStatePayload,
   HardwareStatusPayload,
   HeartbeatPayload,
@@ -67,7 +72,35 @@ export function onSensorReading(listener: RealtimeListener<SensorReadingPayload>
 }
 
 export function onAlarmCreated(listener: RealtimeListener<AlarmCreatedPayload>): () => void {
-  return onRealtimeEvent(MQTT_HARDWARE_EVENTS.ALARM_CREATED, listener);
+  const unsubscribeMqttAlarmCreated = onRealtimeEvent(MQTT_HARDWARE_EVENTS.ALARM_CREATED, listener);
+  const unsubscribeAlarmCreated = onAlarmesRealtimeEvent(ALARMES_EVENTS.CREATED, listener);
+
+  return () => {
+    unsubscribeMqttAlarmCreated();
+    unsubscribeAlarmCreated();
+  };
+}
+
+export function onAlarmUpdated(listener: RealtimeListener<AlarmUpdatedPayload>): () => void {
+  return onAlarmesRealtimeEvent(ALARMES_EVENTS.UPDATED, listener);
+}
+
+export function onAlarmAcknowledged(listener: RealtimeListener<AlarmAcknowledgedPayload>): () => void {
+  return onAlarmesRealtimeEvent(ALARMES_EVENTS.ACKNOWLEDGED, listener);
+}
+
+export function onAlarmNormalized(listener: RealtimeListener<AlarmNormalizedPayload>): () => void {
+  return onAlarmesRealtimeEvent(ALARMES_EVENTS.NORMALIZED, listener);
+}
+
+export function onAlarmResolved(listener: RealtimeListener<AlarmResolvedPayload>): () => void {
+  return onAlarmesRealtimeEvent(ALARMES_EVENTS.RESOLVED, listener);
+}
+
+export function onAlarmRecoveryAttempt(
+  listener: RealtimeListener<AlarmRecoveryAttemptPayload>,
+): () => void {
+  return onAlarmesRealtimeEvent(ALARMES_EVENTS.RECOVERY_ATTEMPT, listener);
 }
 
 export function onSensorAcoplamentoUpdated(
@@ -93,6 +126,11 @@ export const realtimeService = {
   onHeartbeat,
   onSensorReading,
   onAlarmCreated,
+  onAlarmUpdated,
+  onAlarmAcknowledged,
+  onAlarmNormalized,
+  onAlarmResolved,
+  onAlarmRecoveryAttempt,
   onSensorAcoplamentoUpdated,
   onProcessPrecheckResult,
 };

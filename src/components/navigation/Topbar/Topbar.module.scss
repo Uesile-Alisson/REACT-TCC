@@ -9,8 +9,8 @@
   min-height: 78px;
   max-width: 100%;
   padding: 18px 24px;
-  border-bottom: 1px solid rgba(122, 185, 244, 0.14);
-  background: rgba(5, 13, 24, 0.76);
+  border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-bg) 76%, transparent);
   backdrop-filter: blur(14px);
 }
 
@@ -32,7 +32,7 @@
 
 .topbar h1 {
   overflow: hidden;
-  color: #f5f9ff;
+  color: var(--color-text);
   font-size: 1.2rem;
   line-height: 1.15;
   text-overflow: ellipsis;
@@ -45,23 +45,23 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(122, 185, 244, 0.26);
+  border: 1px solid var(--color-border-strong);
   border-radius: 7px;
-  background: rgba(13, 30, 49, 0.82);
-  color: #dcecff;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 
 .menuButton:hover,
 .menuButton:focus-visible {
-  border-color: rgba(83, 197, 255, 0.48);
+  border-color: var(--color-accent-strong);
   outline: 0;
   box-shadow: 0 0 0 3px rgba(29, 155, 255, 0.18);
 }
 
 .overline {
   margin-bottom: 5px;
-  color: #5bc8ff;
+  color: var(--color-accent);
   font-size: 0.68rem;
   font-weight: 820;
   letter-spacing: 0.13em;
@@ -93,9 +93,9 @@
   max-width: min(100%, 360px);
   padding: 0 11px;
   overflow: hidden;
-  border: 1px solid rgba(122, 185, 244, 0.18);
-  background: rgba(13, 30, 49, 0.72);
-  color: #dcecff;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

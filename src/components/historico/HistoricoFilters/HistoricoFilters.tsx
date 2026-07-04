@@ -91,7 +91,7 @@ export function HistoricoFilters({ filters, onChange }: HistoricoFiltersProps) {
         </span>
         <span className={styles.checkText}>
           <AlertTriangle size={14} aria-hidden="true" />
-          Apenas falha
+          Falhas e interrompidos
         </span>
       </motion.label>
     </motion.section>

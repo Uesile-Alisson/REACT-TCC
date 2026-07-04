@@ -9,7 +9,7 @@
   max-width: 100%;
   padding: 18px;
   overflow-x: hidden;
-  background: rgba(1, 7, 14, 0.72);
+  background: color-mix(in srgb, var(--color-bg) 72%, transparent);
   backdrop-filter: blur(10px);
 }
 
@@ -20,12 +20,10 @@
   max-height: min(720px, calc(100vh - 36px));
   grid-template-rows: auto minmax(0, 1fr);
   overflow: hidden;
-  border: 1px solid rgba(122, 185, 244, 0.22);
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(9, 21, 36, 0.98), rgba(4, 10, 18, 0.98)),
-    #07111d;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.46);
+  background: var(--gradient-sidebar);
+  box-shadow: var(--shadow-shell);
 }
 
 .header {
@@ -35,7 +33,7 @@
   justify-content: space-between;
   min-width: 0;
   padding: 18px;
-  border-bottom: 1px solid rgba(122, 185, 244, 0.14);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .brand {
@@ -58,14 +56,14 @@
 }
 
 .brand strong {
-  color: #f5f9ff;
+  color: var(--color-text);
   font-size: 0.95rem;
   letter-spacing: 0.14em;
 }
 
 .brand span {
   overflow: hidden;
-  color: #7894ae;
+  color: var(--color-text-subtle);
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.12em;
@@ -81,16 +79,16 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(122, 185, 244, 0.26);
+  border: 1px solid var(--color-border-strong);
   border-radius: 7px;
-  background: rgba(13, 30, 49, 0.82);
-  color: #dcecff;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 
 .closeButton:hover,
 .closeButton:focus-visible {
-  border-color: rgba(83, 197, 255, 0.48);
+  border-color: var(--color-accent-strong);
   outline: 0;
   box-shadow: 0 0 0 3px rgba(29, 155, 255, 0.18);
 }
@@ -113,7 +111,7 @@
   padding: 0 12px;
   border: 1px solid transparent;
   border-radius: 7px;
-  color: #9cb4cf;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
   font-weight: 760;
   text-decoration: none;
@@ -127,16 +125,16 @@
 
 .navItem:hover,
 .navItem:focus-visible {
-  border-color: rgba(122, 185, 244, 0.18);
-  background: rgba(58, 153, 255, 0.08);
-  color: #eff7ff;
+  border-color: var(--color-border-strong);
+  background: var(--color-accent-muted);
+  color: var(--color-text);
   outline: 0;
 }
 
 .active {
-  border-color: rgba(83, 197, 255, 0.32);
-  background: linear-gradient(90deg, rgba(29, 155, 255, 0.2), rgba(29, 155, 255, 0.06));
-  color: #f5f9ff;
+  border-color: var(--color-accent-strong);
+  background: linear-gradient(90deg, var(--color-accent-muted), transparent);
+  color: var(--color-text);
 }
 
 @media (max-width: 940px) {

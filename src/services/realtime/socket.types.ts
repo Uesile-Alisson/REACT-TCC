@@ -78,6 +78,9 @@ export type HeartbeatPayload = {
 export type AlarmCreatedPayload = {
   id_alarme?: Id;
   id_processo?: Id;
+  id_processo_tanque?: Id;
+  id_processo_tanque_sensor?: Id;
+  id_mqtt_mensagem?: Id;
   titulo?: string;
   title?: string;
   descricao?: string;
@@ -87,10 +90,67 @@ export type AlarmCreatedPayload = {
   tipo_alarme?: string;
   origem_alarme?: string;
   mensagem?: string;
+  valor_detectado?: number | null;
+  unidade?: string | null;
+  normalizado_em?: DateString | null;
+  resolvido_em?: DateString | null;
+  bloqueante?: boolean;
+  requer_intervencao?: boolean;
+  recuperacao_automatica?: boolean;
+  tentativas_recuperacao?: number;
+  reconhecido?: boolean;
+  ultimo_reconhecimento_em?: DateString | null;
   ocorrido_em?: DateString;
   enviado_em?: DateString;
   criado_em?: DateString;
   created_at?: DateString;
+  [key: string]: unknown;
+};
+
+export type AlarmUpdatedPayload = {
+  id_alarme: Id;
+  status_alarme?: StatusAlarme;
+  emitted_at?: DateString;
+  message?: string;
+  [key: string]: unknown;
+};
+
+export type AlarmAcknowledgedPayload = {
+  success?: boolean;
+  id_alarme: Id;
+  action?: 'ACKNOWLEDGED';
+  message?: string;
+  occurred_at?: DateString;
+  status_alarme?: StatusAlarme;
+  reconhecido_em?: DateString;
+  id_usuario?: Id;
+  [key: string]: unknown;
+};
+
+export type AlarmNormalizedPayload = {
+  id_alarme: Id;
+  status_alarme?: 'NORMALIZADO';
+  normalizado_em?: DateString;
+  emitted_at?: DateString;
+  [key: string]: unknown;
+};
+
+export type AlarmResolvedPayload = {
+  success?: boolean;
+  id_alarme: Id;
+  action?: 'RESOLVED';
+  message?: string;
+  occurred_at?: DateString;
+  status_alarme?: 'RESOLVIDO';
+  resolvido_em?: DateString;
+  id_usuario_responsavel?: Id;
+  [key: string]: unknown;
+};
+
+export type AlarmRecoveryAttemptPayload = {
+  id_alarme: Id;
+  attempted_at?: DateString;
+  emitted_at?: DateString;
   [key: string]: unknown;
 };
 

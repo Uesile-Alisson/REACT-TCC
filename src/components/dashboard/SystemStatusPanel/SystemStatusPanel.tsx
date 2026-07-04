@@ -55,7 +55,7 @@ export function SystemStatusPanel({
   return (
     <article className={styles.panel}>
       <header className={styles.header}>
-        <div>
+        <div className={styles.titleBlock}>
           <p className={styles.overline}>Status do sistema</p>
           <h2>Comunicacao e hardware</h2>
         </div>

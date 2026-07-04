@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Activity } from 'lucide-react';
 import logo from '../../assets/logo.png';
+import { ThemeToggle } from '../theme/ThemeToggle';
 import styles from './AuthLayout.module.scss';
 
 type AuthLayoutProps = {
@@ -11,6 +12,10 @@ type AuthLayoutProps = {
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <main className={styles.shell}>
+      <div className={styles.themeSlot}>
+        <ThemeToggle />
+      </div>
+
       <motion.section
         className={styles.brandPanel}
         aria-label="TSEA Solucao a Vacuo"

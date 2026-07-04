@@ -48,6 +48,7 @@ export function getSeverityTone(severity?: SeveridadeAlarme | string | null): Al
 export function getStatusLabel(status?: StatusAlarme | string | null): string {
   const labels: Record<StatusAlarme, string> = {
     ATIVO: 'Ativo',
+    NORMALIZADO: 'Normalizado',
     RESOLVIDO: 'Resolvido',
   };
 
@@ -61,6 +62,10 @@ export function getStatusTone(status?: StatusAlarme | string | null): AlarmeTone
 
   if (status === 'RESOLVIDO') {
     return 'success';
+  }
+
+  if (status === 'NORMALIZADO') {
+    return 'warning';
   }
 
   return 'neutral';

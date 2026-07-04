@@ -16,7 +16,7 @@
 }
 
 .textLink {
-  color: #66c8ff;
+  color: var(--color-accent);
   font-size: 0.88rem;
   font-weight: 760;
   text-decoration: none;
@@ -27,7 +27,7 @@
 
 .textLink:hover,
 .textLink:focus-visible {
-  color: #b7e9ff;
+  color: var(--color-text);
   outline: 0;
   text-shadow: 0 0 18px rgba(78, 196, 255, 0.45);
 }
@@ -37,10 +37,10 @@
   gap: 12px;
   align-items: flex-start;
   padding: 14px;
-  border: 1px solid rgba(85, 185, 255, 0.2);
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
-  background: rgba(6, 26, 45, 0.68);
-  color: #a8bfd8;
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
   font-size: 0.88rem;
   line-height: 1.55;
 }
@@ -48,5 +48,5 @@
 .infoBox svg {
   flex: 0 0 auto;
   margin-top: 2px;
-  color: #5bc8ff;
+  color: var(--color-accent);
 }

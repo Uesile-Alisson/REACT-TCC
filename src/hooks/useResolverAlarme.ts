@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
-import { resolveAlarme } from '../services/alarmes.service';
-import { getAuthErrorMessage } from '../utils/authErrors';
+import { getAlarmeActionErrorMessage, resolveAlarme } from '../services/alarmes.service';
 
 type UseResolverAlarmeResult = {
   isResolving: boolean;
@@ -33,7 +32,7 @@ export function useResolverAlarme(onDone: () => Promise<void>): UseResolverAlarm
 
         return true;
       } catch (error: unknown) {
-        setResolveError(getAuthErrorMessage(error));
+        setResolveError(getAlarmeActionErrorMessage(error));
 
         return false;
       } finally {

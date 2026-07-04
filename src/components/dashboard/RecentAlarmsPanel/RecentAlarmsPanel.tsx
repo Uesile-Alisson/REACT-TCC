@@ -44,7 +44,7 @@ export function RecentAlarmsPanel({
   return (
     <article className={styles.panel}>
       <header className={styles.header}>
-        <div>
+        <div className={styles.titleBlock}>
           <p className={styles.overline}>Alarmes recentes</p>
           <h2>Resumo de ocorrencias</h2>
         </div>

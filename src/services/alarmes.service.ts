@@ -1,10 +1,14 @@
 import { api } from '../api/axios';
+import { ApiError } from '../api/api-error';
 import type {
+  AcknowledgeAlarmeRequest,
   AlarmeDashboardResponse,
   AlarmeListResponse,
   AlarmeResponse,
+  AlarmAcknowledgement,
   ListAlarmesQuery,
   ResolveAlarmeRequest,
+  ResolveAlarmeResponse,
 } from '../types/alarmes.types';
 
 export async function listAlarmes(query?: ListAlarmesQuery): Promise<AlarmeListResponse> {
@@ -27,6 +31,10 @@ export async function listActiveAlarmes(query?: ListAlarmesQuery): Promise<Alarm
   const { data } = await api.get<AlarmeListResponse>('/alarmes/ativos', { params: query });
 
   return data;
+}
+
+export async function getActiveAlarms(query?: ListAlarmesQuery): Promise<AlarmeListResponse> {
+  return listActiveAlarmes(query);
 }
 
 export async function listCriticalAlarmes(query?: ListAlarmesQuery): Promise<AlarmeListResponse> {
@@ -76,23 +84,59 @@ export async function getAlarmeById(id: number): Promise<AlarmeResponse> {
   return data;
 }
 
+export async function getAlarmById(id: number): Promise<AlarmeResponse> {
+  return getAlarmeById(id);
+}
+
+export async function acknowledgeAlarm(
+  id: number,
+  payload: AcknowledgeAlarmeRequest = {},
+): Promise<AlarmAcknowledgement> {
+  const { data } = await api.post<AlarmAcknowledgement>(`/alarmes/${id}/reconhecer`, payload);
+
+  return data;
+}
+
 export async function resolveAlarme(
   id: number,
   payload: ResolveAlarmeRequest,
-): Promise<AlarmeResponse> {
-  const { data } = await api.patch<AlarmeResponse>(`/alarmes/${id}/resolver`, payload);
+): Promise<ResolveAlarmeResponse> {
+  const { data } = await api.patch<ResolveAlarmeResponse>(`/alarmes/${id}/resolver`, payload);
 
   return data;
+}
+
+export async function resolveAlarm(
+  id: number,
+  payload: ResolveAlarmeRequest = {},
+): Promise<ResolveAlarmeResponse> {
+  return resolveAlarme(id, payload);
+}
+
+export function getAlarmeActionErrorMessage(error: unknown): string {
+  if (error instanceof ApiError && error.statusCode === 409) {
+    return error.message || 'A API recusou a acao porque o alarme ainda depende de normalizacao tecnica.';
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Nao foi possivel concluir a acao do alarme.';
 }
 
 export const alarmesService = {
   listAlarmes,
   getAlarmesDashboard,
   listActiveAlarmes,
+  getActiveAlarms,
   listCriticalAlarmes,
   listAlarmesByProcesso,
   listActiveAlarmesByProcesso,
   listCriticalAlarmesByProcesso,
   getAlarmeById,
+  getAlarmById,
+  acknowledgeAlarm,
   resolveAlarme,
+  resolveAlarm,
 };

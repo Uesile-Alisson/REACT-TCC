@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { getNavigationItemByPath } from '../../../config/navigation';
 import { useMqttHardwareRealtime } from '../../../hooks/useMqttHardwareRealtime';
 import type { AuthUser } from '../../../types';
+import { ThemeToggle } from '../../theme/ThemeToggle';
 import { UserProfilePopover } from '../UserProfilePopover';
 import styles from './Topbar.module.scss';
 
@@ -61,6 +62,7 @@ export function Topbar({ isMenuOpen, menuButtonRef, user, onLogout, onOpenMenu }
         <motion.span className={styles.statusBadge} whileHover={{ y: -2, scale: 1.02 }}>
           ESP32 {esp32Online === true ? 'online' : 'status pendente'}
         </motion.span>
+        <ThemeToggle />
         <UserProfilePopover user={user} onLogout={onLogout} />
       </div>
     </motion.header>

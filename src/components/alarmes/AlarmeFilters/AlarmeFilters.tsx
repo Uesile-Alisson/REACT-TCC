@@ -8,7 +8,7 @@ type AlarmeFiltersProps = {
 };
 
 const SEVERITY_OPTIONS: Array<SeveridadeAlarme | ''> = ['', 'INFO', 'MEDIO', 'CRITICO'];
-const STATUS_OPTIONS: Array<StatusAlarme | ''> = ['', 'ATIVO', 'RESOLVIDO'];
+const STATUS_OPTIONS: Array<StatusAlarme | ''> = ['', 'ATIVO', 'NORMALIZADO', 'RESOLVIDO'];
 
 export function AlarmeFilters({ filters, onChange }: AlarmeFiltersProps) {
   const fieldMotion = {

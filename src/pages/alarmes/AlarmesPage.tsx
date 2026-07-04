@@ -1,53 +1,27 @@
 import { RefreshCw } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AlarmeDetailPanel } from '../../components/alarmes/AlarmeDetailPanel';
 import { AlarmeFilters } from '../../components/alarmes/AlarmeFilters';
 import { AlarmeListTable } from '../../components/alarmes/AlarmeListTable';
-import { AlarmeRealtimeToast } from '../../components/alarmes/AlarmeRealtimeToast';
 import { AlarmeSummaryCards } from '../../components/alarmes/AlarmeSummaryCards';
 import { ResolverAlarmeModal } from '../../components/alarmes/ResolverAlarmeModal';
+import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
 import { useAlarmePermissions } from '../../hooks/useAlarmePermissions';
 import { useAlarmesPage } from '../../hooks/useAlarmesPage';
-import { useAlarmesRealtime } from '../../hooks/useAlarmesRealtime';
 import { useGerarRelatorioAlarme } from '../../hooks/useGerarRelatorioAlarme';
 import { useResolverAlarme } from '../../hooks/useResolverAlarme';
-import type { AlarmeResponse, AlarmCreatedPayload } from '../../types';
+import { acknowledgeAlarm, getAlarmeActionErrorMessage } from '../../services/alarmes.service';
+import type { AlarmeResponse } from '../../types';
 import { countBy, formatShortDate } from '../../utils/chartData';
 import styles from './AlarmesPage.module.scss';
 
-const MEDIUM_REALARM_MS = 10000;
-const CRITICAL_REALARM_MS = 5000;
-
-type RealtimeAlarmKey = string;
-type RealtimeAlarmTimers = Map<RealtimeAlarmKey, ReturnType<typeof setTimeout>>;
+type AlarmesLocationState = {
+  selectedAlarmeId?: number;
+};
 
 function getAlarmDate(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value : null;
-}
-
-function getRealtimeAlarmKey(alarm: AlarmCreatedPayload): RealtimeAlarmKey {
-  return String(alarm.id_alarme ?? 'realtime');
-}
-
-function isResolvedAlarm(alarm: Pick<AlarmCreatedPayload, 'status_alarme'>): boolean {
-  return alarm.status_alarme === 'RESOLVIDO';
-}
-
-function isActiveAlarm(alarm: Pick<AlarmCreatedPayload, 'status_alarme'>): boolean {
-  return alarm.status_alarme !== 'RESOLVIDO';
-}
-
-function getRealarmDelay(alarm: AlarmCreatedPayload): number | null {
-  if (alarm.severidade === 'CRITICO') {
-    return CRITICAL_REALARM_MS;
-  }
-
-  if (alarm.severidade === 'MEDIO') {
-    return MEDIUM_REALARM_MS;
-  }
-
-  return null;
 }
 
 export function AlarmesPage() {
@@ -63,8 +37,8 @@ export function AlarmesPage() {
     refresh,
     selectAlarme,
   } = useAlarmesPage();
+  const location = useLocation();
   const permissions = useAlarmePermissions();
-  const { lastAlarm } = useAlarmesRealtime();
   const {
     isResolving,
     resolveError,
@@ -80,67 +54,9 @@ export function AlarmesPage() {
     gerarRelatorioAlarme,
   } = useGerarRelatorioAlarme();
   const [resolveTarget, setResolveTarget] = useState<AlarmeResponse | null>(null);
-  const [realtimeAlarms, setRealtimeAlarms] = useState<Record<RealtimeAlarmKey, AlarmCreatedPayload>>({});
-  const [visibleRealtimeAlarmKey, setVisibleRealtimeAlarmKey] = useState<RealtimeAlarmKey | null>(null);
-  const dismissedInfoIdsRef = useRef<Set<RealtimeAlarmKey>>(new Set());
-  const realarmTimersRef = useRef<RealtimeAlarmTimers>(new Map());
-
-  const clearRealarmTimer = useCallback((key: RealtimeAlarmKey): void => {
-    const timer = realarmTimersRef.current.get(key);
-
-    if (timer) {
-      clearTimeout(timer);
-      realarmTimersRef.current.delete(key);
-    }
-  }, []);
-
-  const removeRealtimeAlarm = useCallback(
-    (key: RealtimeAlarmKey): void => {
-      clearRealarmTimer(key);
-      setRealtimeAlarms((currentAlarms) => {
-        if (!currentAlarms[key]) {
-          return currentAlarms;
-        }
-
-        const nextAlarms = { ...currentAlarms };
-        delete nextAlarms[key];
-
-        return nextAlarms;
-      });
-      setVisibleRealtimeAlarmKey((currentKey) => (currentKey === key ? null : currentKey));
-    },
-    [clearRealarmTimer],
-  );
-
-  const scheduleRealtimeReappear = useCallback((alarm: AlarmCreatedPayload): void => {
-    const key = getRealtimeAlarmKey(alarm);
-    const delay = getRealarmDelay(alarm);
-
-    if (!delay || realarmTimersRef.current.has(key)) {
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      realarmTimersRef.current.delete(key);
-      setRealtimeAlarms((currentAlarms) => {
-        const currentAlarm = currentAlarms[key];
-
-        if (!currentAlarm || isResolvedAlarm(currentAlarm)) {
-          return currentAlarms;
-        }
-
-        setVisibleRealtimeAlarmKey(key);
-
-        return currentAlarms;
-      });
-    }, delay);
-
-    realarmTimersRef.current.set(key, timer);
-  }, []);
-
-  const visibleRealtimeAlarm: AlarmCreatedPayload | null = visibleRealtimeAlarmKey
-    ? realtimeAlarms[visibleRealtimeAlarmKey] ?? null
-    : null;
+  const [acknowledgingId, setAcknowledgingId] = useState<number | null>(null);
+  const [acknowledgeError, setAcknowledgeError] = useState<string | null>(null);
+  const [acknowledgeSuccess, setAcknowledgeSuccess] = useState<string | null>(null);
   const severityChartData = useMemo(
     () => [
       { name: 'Info', value: data.alarmes.filter((alarme) => alarme.severidade === 'INFO').length },
@@ -152,6 +68,10 @@ export function AlarmesPage() {
   const statusChartData = useMemo(
     () => [
       { name: 'Ativo', value: data.alarmes.filter((alarme) => alarme.status_alarme === 'ATIVO').length },
+      {
+        name: 'Normalizado',
+        value: data.alarmes.filter((alarme) => alarme.status_alarme === 'NORMALIZADO').length,
+      },
       {
         name: 'Resolvido',
         value: data.alarmes.filter((alarme) => alarme.status_alarme === 'RESOLVIDO').length,
@@ -172,84 +92,39 @@ export function AlarmesPage() {
   );
 
   useEffect(() => {
-    const activeTimers = realarmTimersRef.current;
+    const locationState = location.state as AlarmesLocationState | null;
+    const selectedAlarmeId = locationState?.selectedAlarmeId;
 
-    return () => {
-      activeTimers.forEach((timer) => clearTimeout(timer));
-      activeTimers.clear();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!lastAlarm) {
-      return;
+    if (typeof selectedAlarmeId === 'number') {
+      void selectAlarme(selectedAlarmeId);
     }
-
-    const key = getRealtimeAlarmKey(lastAlarm);
-
-    if (isResolvedAlarm(lastAlarm)) {
-      queueMicrotask(() => removeRealtimeAlarm(key));
-      return;
-    }
-
-    if (lastAlarm.severidade === 'INFO' && dismissedInfoIdsRef.current.has(key)) {
-      return;
-    }
-
-    queueMicrotask(() => {
-      clearRealarmTimer(key);
-      setRealtimeAlarms((currentAlarms) => ({
-        ...currentAlarms,
-        [key]: lastAlarm,
-      }));
-      setVisibleRealtimeAlarmKey(key);
-    });
-  }, [clearRealarmTimer, lastAlarm, removeRealtimeAlarm]);
-
-  useEffect(() => {
-    const resolvedIds = data.alarmes
-      .filter((alarme) => alarme.status_alarme === 'RESOLVIDO')
-      .map((alarme) => String(alarme.id_alarme));
-
-    if (resolvedIds.length === 0) {
-      return;
-    }
-
-    queueMicrotask(() => {
-      resolvedIds.forEach(removeRealtimeAlarm);
-    });
-  }, [data.alarmes, removeRealtimeAlarm]);
-
-  function handleCloseRealtimeAlarm(): void {
-    if (!visibleRealtimeAlarm) {
-      return;
-    }
-
-    const key = getRealtimeAlarmKey(visibleRealtimeAlarm);
-
-    if (!isActiveAlarm(visibleRealtimeAlarm)) {
-      removeRealtimeAlarm(key);
-      return;
-    }
-
-    setVisibleRealtimeAlarmKey(null);
-
-    if (visibleRealtimeAlarm.severidade === 'INFO') {
-      dismissedInfoIdsRef.current.add(key);
-      removeRealtimeAlarm(key);
-      return;
-    }
-
-    scheduleRealtimeReappear(visibleRealtimeAlarm);
-  }
+  }, [location.state, selectAlarme]);
 
   async function handleResolve(idAlarme: number, observacao: string): Promise<void> {
     const resolved = await resolverAlarme(idAlarme, observacao);
 
     if (resolved) {
-      removeRealtimeAlarm(String(idAlarme));
       setResolveTarget(null);
       await selectAlarme(idAlarme);
+    }
+  }
+
+  async function handleAcknowledge(alarme: AlarmeResponse): Promise<void> {
+    setAcknowledgingId(alarme.id_alarme);
+    setAcknowledgeError(null);
+    setAcknowledgeSuccess(null);
+
+    try {
+      const result = await acknowledgeAlarm(alarme.id_alarme);
+      setAcknowledgeSuccess(
+        result.message || 'Reconhecimento registrado. O alarme continua ativo ate normalizacao tecnica.',
+      );
+      await refresh();
+      await selectAlarme(alarme.id_alarme);
+    } catch (error: unknown) {
+      setAcknowledgeError(getAlarmeActionErrorMessage(error));
+    } finally {
+      setAcknowledgingId(null);
     }
   }
 
@@ -268,11 +143,6 @@ export function AlarmesPage() {
         </button>
       </header>
 
-      <AlarmeRealtimeToast
-        alarm={visibleRealtimeAlarm}
-        onClose={handleCloseRealtimeAlarm}
-      />
-
       {error ? (
         <section className={styles.errorState} role="alert">
           <strong>Nao foi possivel carregar os alarmes.</strong>
@@ -284,6 +154,25 @@ export function AlarmesPage() {
         <section className={styles.warningState} role="status">
           <strong>Resumo indisponivel.</strong>
           <span>{partialErrors.summary}</span>
+        </section>
+      ) : null}
+
+      {acknowledgeError ? (
+        <section className={styles.errorState} role="alert">
+          <strong>Reconhecimento nao registrado.</strong>
+          <span>{acknowledgeError}</span>
+          <button type="button" onClick={() => setAcknowledgeError(null)}>
+            Dispensar
+          </button>
+        </section>
+      ) : null}
+
+      {acknowledgeSuccess ? (
+        <section className={styles.successState} role="status">
+          <strong>{acknowledgeSuccess}</strong>
+          <button type="button" onClick={() => setAcknowledgeSuccess(null)}>
+            Dispensar
+          </button>
         </section>
       ) : null}
 
@@ -370,8 +259,10 @@ export function AlarmesPage() {
           isLoading={isLoading}
           selectedId={data.selectedAlarme?.id_alarme}
           generatingReportId={generatingAlarmeReportId}
+          acknowledgingId={acknowledgingId}
           permissions={permissions}
           onSelect={(idAlarme) => void selectAlarme(idAlarme)}
+          onAcknowledge={(alarme) => void handleAcknowledge(alarme)}
           onResolve={setResolveTarget}
           onGenerateReport={(alarme) => void gerarRelatorioAlarme(alarme.id_alarme)}
           onPageChange={setPage}
@@ -382,7 +273,9 @@ export function AlarmesPage() {
           isLoading={isDetailLoading}
           error={partialErrors.detail}
           generatingReportId={generatingAlarmeReportId}
+          acknowledgingId={acknowledgingId}
           permissions={permissions}
+          onAcknowledge={(alarme) => void handleAcknowledge(alarme)}
           onResolve={setResolveTarget}
           onGenerateReport={(alarme) => void gerarRelatorioAlarme(alarme.id_alarme)}
         />

@@ -14,6 +14,7 @@ import type {
   HistoricoFiltersState,
   HistoricoPageData,
   HistoricoPartialErrors,
+  HistoricoProcessoResponse,
   HistoricoProcessoListResponse,
   ProcessoEventResponse,
 } from '../types';
@@ -67,6 +68,37 @@ function getTotal(response: HistoricoProcessoListResponse): number {
   return Array.isArray(response) ? response.length : response.meta.total;
 }
 
+function getProcessoTimestamp(processo: HistoricoProcessoResponse): number {
+  const rawTimestamp = processo.finalizado_em ?? processo.iniciado_em;
+
+  if (!rawTimestamp) {
+    return 0;
+  }
+
+  const timestamp = new Date(rawTimestamp).getTime();
+
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function mergeHistoricoProcessos(
+  responses: HistoricoProcessoListResponse[],
+  page: number,
+): { processos: HistoricoProcessoResponse[]; total: number } {
+  const uniqueProcessos = new Map<number, HistoricoProcessoResponse>();
+  const total = responses.reduce((currentTotal, response) => currentTotal + getTotal(response), 0);
+
+  responses.flatMap(getListData<HistoricoProcessoResponse>).forEach((processo) => {
+    uniqueProcessos.set(processo.id_processo, processo);
+  });
+
+  const start = (page - 1) * PAGE_LIMIT;
+  const processos = Array.from(uniqueProcessos.values())
+    .sort((current, next) => getProcessoTimestamp(next) - getProcessoTimestamp(current))
+    .slice(start, start + PAGE_LIMIT);
+
+  return { processos, total };
+}
+
 export function useHistoricoPage(): UseHistoricoPageResult {
   const [data, setData] = useState<HistoricoPageData>(initialData);
   const [filters, setFiltersState] = useState<HistoricoFiltersState>(initialFilters);
@@ -82,9 +114,8 @@ export function useHistoricoPage(): UseHistoricoPageResult {
 
     const query = {
       page: data.page,
-      limit: PAGE_LIMIT,
+      limit: filters.apenas_falha ? PAGE_LIMIT * data.page : PAGE_LIMIT,
       busca: filters.busca || undefined,
-      status_processo: filters.apenas_falha ? 'FALHA' : filters.status_processo || undefined,
       data_inicio: filters.data_inicio || undefined,
       data_fim: filters.data_fim || undefined,
       order_by: 'criado_em',
@@ -93,7 +124,15 @@ export function useHistoricoPage(): UseHistoricoPageResult {
 
     const [summaryResult, listResult] = await Promise.allSettled([
       getHistoricoDashboard({ data_inicio: query.data_inicio, data_fim: query.data_fim }),
-      listHistoricoProcessos(query),
+      filters.apenas_falha
+        ? Promise.all([
+            listHistoricoProcessos({ ...query, page: 1, status_processo: 'FALHA' }),
+            listHistoricoProcessos({ ...query, page: 1, status_processo: 'INTERROMPIDO' }),
+          ])
+        : listHistoricoProcessos({
+            ...query,
+            status_processo: filters.status_processo || undefined,
+          }),
     ]);
 
     const nextErrors: HistoricoPartialErrors = {};
@@ -108,12 +147,20 @@ export function useHistoricoPage(): UseHistoricoPageResult {
       nextErrors.list = getAuthErrorMessage(listResult.reason);
     }
 
+    const historicoList =
+      list && filters.apenas_falha
+        ? mergeHistoricoProcessos(list as HistoricoProcessoListResponse[], data.page)
+        : {
+            processos: list ? getListData(list as HistoricoProcessoListResponse) : [],
+            total: list ? getTotal(list as HistoricoProcessoListResponse) : 0,
+          };
+
     setPartialErrors(nextErrors);
     setData((currentData) => ({
       ...currentData,
       summary,
-      processos: list ? getListData(list) : [],
-      total: list ? getTotal(list) : 0,
+      processos: historicoList.processos,
+      total: historicoList.total,
       limit: PAGE_LIMIT,
     }));
 

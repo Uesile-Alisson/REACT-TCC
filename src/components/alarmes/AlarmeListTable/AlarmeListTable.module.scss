@@ -66,9 +66,46 @@
 
 .tableWrap table {
   width: 100%;
-  min-width: 900px;
+  min-width: 1648px;
   table-layout: fixed;
   border-collapse: collapse;
+}
+
+.alarmColumn {
+  width: 280px;
+}
+
+.severityColumn {
+  width: 130px;
+}
+
+.statusColumn {
+  width: 128px;
+}
+
+.ackColumn {
+  width: 160px;
+}
+
+.originColumn {
+  width: 140px;
+}
+
+.processColumn {
+  width: 108px;
+}
+
+.flagsColumn,
+.recoveryColumn {
+  width: 132px;
+}
+
+.datesColumn {
+  width: 218px;
+}
+
+.actionsColumn {
+  width: 220px;
 }
 
 .tableWrap th,
@@ -86,6 +123,7 @@
   font-weight: 820;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .tableWrap td {
@@ -95,18 +133,8 @@
   text-overflow: ellipsis;
 }
 
-.tableWrap th:first-child {
-  width: 24%;
-}
-
-.tableWrap th:nth-child(2),
-.tableWrap th:nth-child(3) {
-  width: 14%;
-}
-
 .tableWrap th:last-child,
 .tableWrap td:last-child {
-  width: 94px;
   padding-right: 6px;
   padding-left: 6px;
   overflow: visible;
@@ -152,6 +180,7 @@
 }
 
 .actions button,
+.actions a,
 .pagination button {
   display: inline-flex;
   min-height: 34px;
@@ -168,9 +197,11 @@
   font-weight: 820;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  text-decoration: none;
 }
 
-.actions button {
+.actions button,
+.actions a {
   width: 34px;
   min-width: 34px;
   padding: 0;

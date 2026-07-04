@@ -240,3 +240,95 @@
     grid-template-columns: 1fr;
   }
 }
+
+:global(html[data-theme="light"]) .page {
+  color: var(--color-text);
+}
+
+:global(html[data-theme="light"]) .header h1 {
+  color: var(--color-text);
+}
+
+:global(html[data-theme="light"]) .header p:not(.overline),
+:global(html[data-theme="light"]) .diagnosticPanel p,
+:global(html[data-theme="light"]) .diagnosticPanel header span {
+  color: var(--color-text-muted);
+}
+
+:global(html[data-theme="light"]) .headerActions button,
+:global(html[data-theme="light"]) .errorState button {
+  border-color: var(--color-border-strong);
+  background:
+    linear-gradient(180deg, var(--color-surface-raised), var(--color-surface-soft)),
+    var(--color-surface);
+  color: var(--color-text-secondary);
+  box-shadow: var(--shadow-control);
+}
+
+:global(html[data-theme="light"]) .headerActions button:last-child {
+  border-color: rgba(8, 127, 214, 0.5);
+  background: linear-gradient(180deg, #32aef5, #087fd6);
+  color: #ffffff;
+}
+
+:global(html[data-theme="light"]) .emptyState,
+:global(html[data-theme="light"]) .realtimeState {
+  border: 1px solid var(--color-border-strong);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(8, 127, 214, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(250, 253, 255, 0.98), rgba(229, 240, 249, 0.96)),
+    #f8fbff;
+  color: var(--color-text-muted);
+  box-shadow: var(--shadow-card);
+}
+
+:global(html[data-theme="light"]) .emptyState strong,
+:global(html[data-theme="light"]) .realtimeState strong {
+  color: var(--color-text);
+}
+
+:global(html[data-theme="light"]) .realtimeState span {
+  color: var(--color-text-secondary);
+  font-weight: 780;
+}
+
+:global(html[data-theme="light"]) .diagnosticPanel {
+  border-color: var(--color-border);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(8, 127, 214, 0.1), transparent 36%),
+    linear-gradient(180deg, rgba(250, 253, 255, 0.98), rgba(229, 240, 249, 0.96)),
+    #f8fbff;
+  box-shadow: var(--shadow-card);
+}
+
+:global(html[data-theme="light"]) .diagnosticPanel h2,
+:global(html[data-theme="light"]) .diagnosticGrid strong {
+  color: var(--color-text);
+}
+
+:global(html[data-theme="light"]) .diagnosticGrid article {
+  border-color: var(--color-border);
+  background:
+    radial-gradient(circle at 8% 0%, var(--color-accent-muted), transparent 38%),
+    var(--color-surface-muted);
+  box-shadow: var(--shadow-control);
+}
+
+:global(html[data-theme="light"]) .diagnosticGrid span {
+  color: var(--color-text-secondary);
+}
+
+:global(html[data-theme="light"]) .diagnosticGrid .success {
+  border-color: var(--color-success-border);
+  background: var(--color-success-surface);
+}
+
+:global(html[data-theme="light"]) .diagnosticGrid .warning {
+  border-color: var(--color-warning-border);
+  background: var(--color-warning-surface);
+}
+
+:global(html[data-theme="light"]) .diagnosticGrid .danger {
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-surface);
+}

@@ -214,3 +214,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+:global(html[data-theme="light"]) .contextPanel .overline,
+:global(html[data-theme="light"]) .contextPanel h2 {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}

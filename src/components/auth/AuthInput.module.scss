@@ -5,7 +5,14 @@
 }
 
 .label {
-  color: #c8d9ec;
+  width: max-content;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 18% 50%, rgba(91, 200, 255, 0.18), transparent 72%),
+    linear-gradient(90deg, rgba(91, 200, 255, 0), rgba(91, 200, 255, 0.12) 22%, rgba(91, 200, 255, 0.1) 72%, rgba(91, 200, 255, 0));
+  box-shadow: 0 14px 38px rgba(91, 200, 255, 0.08);
+  color: var(--color-text-secondary);
   font-size: 0.78rem;
   font-weight: 760;
   letter-spacing: 0.09em;
@@ -17,9 +24,14 @@
   display: flex;
   align-items: center;
   min-height: 52px;
-  border: 1px solid rgba(128, 184, 240, 0.22);
+  border: 1px solid transparent;
   border-radius: 7px;
-  background: rgba(5, 13, 24, 0.78);
+  background:
+    radial-gradient(circle at 4% 50%, rgba(91, 200, 255, 0.14), transparent 34%),
+    var(--color-input-bg);
+  box-shadow:
+    0 18px 42px rgba(0, 132, 255, 0.12),
+    0 6px 16px rgba(0, 0, 0, 0.16);
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease,
@@ -27,11 +39,9 @@
 }
 
 .control:focus-within {
-  border-color: rgba(79, 194, 255, 0.86);
-  background: rgba(6, 18, 33, 0.94);
-  box-shadow:
-    0 0 0 3px rgba(29, 155, 255, 0.14),
-    0 0 28px rgba(29, 155, 255, 0.16);
+  border-color: transparent;
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-focus), var(--glow-accent);
 }
 
 .icon {
@@ -39,7 +49,10 @@
   width: 46px;
   flex: 0 0 46px;
   place-items: center;
-  color: #68bff2;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-accent);
+  filter: drop-shadow(0 10px 18px rgba(91, 200, 255, 0.2));
 }
 
 .control input {
@@ -48,22 +61,133 @@
   padding-right: 12px;
   border: 0;
   outline: 0;
-  background: transparent;
-  color: #eff7ff;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--color-text);
   font-size: 0.98rem;
   line-height: 1;
 }
 
 .control input::placeholder {
-  color: #5d748c;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--color-text-subtle);
 }
 
 .control input:-webkit-autofill {
-  box-shadow: 0 0 0 1000px #081625 inset;
-  -webkit-text-fill-color: #eff7ff;
+  box-shadow: 0 0 0 1000px var(--color-bg-elevated) inset;
+  -webkit-text-fill-color: var(--color-text);
 }
 
 .control input:disabled {
   cursor: not-allowed;
   opacity: 0.68;
+}
+
+:global(html[data-theme="light"]) .label {
+  border-color: transparent !important;
+  background:
+    radial-gradient(circle at 18% 50%, rgba(8, 127, 214, 0.16), transparent 72%),
+    linear-gradient(90deg, rgba(223, 240, 252, 0), rgba(223, 240, 252, 0.74) 22%, rgba(223, 240, 252, 0.68) 72%, rgba(223, 240, 252, 0)) !important;
+  box-shadow: 0 14px 38px rgba(8, 127, 214, 0.08) !important;
+  color: #263f59 !important;
+}
+
+:global(html[data-theme="light"]) .control {
+  border-color: transparent !important;
+  background:
+    radial-gradient(circle at 4% 50%, rgba(8, 127, 214, 0.14), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(238, 246, 252, 0.94)),
+    #ffffff !important;
+  box-shadow:
+    0 18px 42px rgba(8, 127, 214, 0.12),
+    0 6px 16px rgba(31, 69, 101, 0.055) !important;
+}
+
+:global(html[data-theme="light"]) .control:hover {
+  border-color: transparent !important;
+  box-shadow:
+    0 22px 50px rgba(8, 127, 214, 0.16),
+    0 8px 18px rgba(31, 69, 101, 0.055) !important;
+}
+
+:global(html[data-theme="light"]) .control:focus-within {
+  border-color: transparent !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 0 0 3px rgba(8, 127, 214, 0.14),
+    0 24px 58px rgba(8, 127, 214, 0.2) !important;
+}
+
+:global(html[data-theme="light"]) .icon {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #087fd6 !important;
+  filter: drop-shadow(0 10px 18px rgba(8, 127, 214, 0.22));
+}
+
+:global(html[data-theme="light"]) .control input {
+  border-color: transparent !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: #0e1b2a !important;
+}
+
+:global(html[data-theme="light"]) .control input::placeholder {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #7890a6;
+}
+
+:global(html[data-theme="light"]) .control input:-webkit-autofill {
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  -webkit-text-fill-color: #0e1b2a;
+}
+
+:global(html[data-theme="light"]) :global([class*="card"]) label .label {
+  border-color: transparent !important;
+  background:
+    radial-gradient(circle at 18% 50%, rgba(8, 127, 214, 0.16), transparent 72%),
+    linear-gradient(90deg, rgba(223, 240, 252, 0), rgba(223, 240, 252, 0.74) 22%, rgba(223, 240, 252, 0.68) 72%, rgba(223, 240, 252, 0)) !important;
+  box-shadow: 0 14px 38px rgba(8, 127, 214, 0.08) !important;
+  color: #263f59 !important;
+}
+
+:global(html[data-theme="light"]) :global([class*="card"]) label .control {
+  border-color: transparent !important;
+  background:
+    radial-gradient(circle at 4% 50%, rgba(8, 127, 214, 0.14), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(238, 246, 252, 0.94)),
+    #ffffff !important;
+  box-shadow:
+    0 18px 42px rgba(8, 127, 214, 0.12),
+    0 6px 16px rgba(31, 69, 101, 0.055) !important;
+  color: #0e1b2a !important;
+}
+
+:global(html[data-theme="light"]) :global([class*="card"]) label .icon {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #087fd6 !important;
+  filter: drop-shadow(0 10px 18px rgba(8, 127, 214, 0.22));
+}
+
+:global(html[data-theme="light"]) :global([class*="card"]) label .control input {
+  border-color: transparent !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #0e1b2a !important;
+}
+
+:global(html[data-theme="light"]) :global([class*="card"]) label .control input::placeholder {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #7890a6;
 }

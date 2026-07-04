@@ -11,10 +11,12 @@
   justify-content: center;
   gap: 7px;
   padding: 0 12px;
-  border: 1px solid rgba(122, 185, 244, 0.22);
+  border: 1px solid var(--color-border-strong);
   border-radius: 7px;
-  background: rgba(13, 30, 49, 0.92);
-  color: #dcecff;
+  background:
+    linear-gradient(180deg, var(--color-surface-raised), var(--color-surface-soft)),
+    var(--color-surface);
+  color: var(--color-text-secondary);
   cursor: pointer;
   font-size: 0.72rem;
   font-weight: 820;
@@ -34,31 +36,31 @@
 }
 
 .danger {
-  border-color: rgba(255, 139, 152, 0.36) !important;
-  background: rgba(255, 78, 101, 0.1) !important;
-  color: #ffadb8 !important;
+  border-color: rgba(255, 93, 108, 0.38) !important;
+  background: rgba(255, 93, 108, 0.12) !important;
+  color: var(--color-danger) !important;
 }
 
 .featured {
   justify-content: space-between;
   gap: 14px;
   padding: 14px;
-  border: 1px solid rgba(122, 185, 244, 0.16);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   background:
-    linear-gradient(180deg, rgba(13, 35, 58, 0.74), rgba(6, 15, 27, 0.82)),
-    rgba(6, 15, 27, 0.72);
+    radial-gradient(circle at 10% 0%, var(--color-accent-muted), transparent 36%),
+    var(--color-surface-muted);
 }
 
 .featured button {
   flex: 1 1 155px;
   min-height: 54px;
   padding: 0 18px;
-  border-color: rgba(122, 185, 244, 0.28);
+  border-color: var(--color-border-strong);
   background:
-    linear-gradient(180deg, rgba(25, 58, 91, 0.96), rgba(9, 24, 42, 0.98)),
-    #0b1829;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    linear-gradient(180deg, var(--color-surface-raised), var(--color-surface-soft)),
+    var(--color-surface);
+  box-shadow: var(--shadow-control);
   font-size: 0.78rem;
 }
 
@@ -69,10 +71,10 @@
 
 .featured button:hover,
 .featured button:focus-visible {
-  border-color: rgba(91, 200, 255, 0.52);
+  border-color: var(--color-accent-strong);
   background:
-    linear-gradient(180deg, rgba(34, 86, 130, 0.98), rgba(10, 34, 60, 0.98)),
-    #0e2238;
+    linear-gradient(180deg, var(--color-surface-raised), var(--color-accent-muted)),
+    var(--color-surface);
 }
 
 .featured .danger {

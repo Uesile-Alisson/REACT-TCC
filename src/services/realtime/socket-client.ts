@@ -28,35 +28,59 @@ const realtimeSocket: RealtimeSocket = io(createSocketUrl(SOCKET_NAMESPACES.MQTT
   transports: ['websocket', 'polling'],
   auth: {},
 });
+
+const alarmesSocket: RealtimeSocket = io(createSocketUrl(SOCKET_NAMESPACES.ALARMES), {
+  autoConnect: false,
+  transports: ['websocket', 'polling'],
+  auth: {},
+});
+
 let currentToken: string | null = null;
+
+const managedSockets: RealtimeSocket[] = [realtimeSocket, alarmesSocket];
 
 export function connectRealtime(token?: string | null): void {
   const nextToken = token ?? null;
-  realtimeSocket.auth = nextToken ? { token: nextToken } : {};
 
-  if (realtimeSocket.connected && currentToken !== nextToken) {
-    realtimeSocket.disconnect();
-  }
+  managedSockets.forEach((socket) => {
+    socket.auth = nextToken ? { token: nextToken } : {};
+
+    if (socket.connected && currentToken !== nextToken) {
+      socket.disconnect();
+    }
+  });
 
   currentToken = nextToken;
 
-  if (!realtimeSocket.connected) {
-    realtimeSocket.connect();
-  }
+  managedSockets.forEach((socket) => {
+    if (!socket.connected) {
+      socket.connect();
+    }
+  });
 }
 
 export function disconnectRealtime(): void {
   currentToken = null;
-  realtimeSocket.removeAllListeners();
-  realtimeSocket.disconnect();
+  managedSockets.forEach((socket) => {
+    socket.removeAllListeners();
+    socket.disconnect();
+  });
 }
 
 export function getRealtimeSocket(): RealtimeSocket {
   return realtimeSocket;
 }
 
+export function getAlarmesSocket(): RealtimeSocket {
+  return alarmesSocket;
+}
+
 export function isRealtimeSocketConnected(): boolean {
   return realtimeSocket.connected;
+}
+
+export function isAlarmesSocketConnected(): boolean {
+  return alarmesSocket.connected;
 }
 
 export function onRealtimeEvent<TPayload>(
@@ -67,6 +91,17 @@ export function onRealtimeEvent<TPayload>(
 
   return () => {
     realtimeSocket.off(eventName, listener);
+  };
+}
+
+export function onAlarmesRealtimeEvent<TPayload>(
+  eventName: string,
+  listener: (payload: TPayload) => void,
+): () => void {
+  alarmesSocket.on(eventName, listener);
+
+  return () => {
+    alarmesSocket.off(eventName, listener);
   };
 }
 

@@ -18,6 +18,10 @@
   justify-content: space-between;
 }
 
+.titleBlock {
+  min-width: 0;
+}
+
 .overline {
   margin: 0 0 8px;
   color: #5bc8ff;
@@ -87,4 +91,12 @@
   .grid {
     display: grid;
   }
+}
+
+:global(html[data-theme="light"]) .overline,
+:global(html[data-theme="light"]) .header h2,
+:global(html[data-theme="light"]) .titleBlock {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }

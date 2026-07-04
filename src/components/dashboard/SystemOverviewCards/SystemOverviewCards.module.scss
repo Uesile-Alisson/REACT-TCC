@@ -10,12 +10,10 @@
   gap: 13px;
   min-height: 142px;
   padding: 18px;
-  border: 1px solid rgba(122, 185, 244, 0.16);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(13, 30, 49, 0.92), rgba(7, 15, 27, 0.96)),
-    #0a1422;
-  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.22);
+  background: var(--gradient-card);
+  box-shadow: var(--shadow-card);
 }
 
 .iconBox {
@@ -23,10 +21,14 @@
   width: 42px;
   height: 42px;
   place-items: center;
-  border: 1px solid rgba(83, 197, 255, 0.22);
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
-  background: rgba(29, 155, 255, 0.1);
-  color: #8bd9ff;
+  background: var(--color-accent-muted);
+  color: var(--color-accent);
+}
+
+.textContent {
+  min-width: 0;
 }
 
 .card p,
@@ -38,7 +40,7 @@
 
 .card p {
   margin: 0 0 8px;
-  color: #5bc8ff;
+  color: var(--color-accent);
   font-size: 0.68rem;
   font-weight: 820;
   letter-spacing: 0.12em;
@@ -47,20 +49,40 @@
 
 .card strong {
   overflow-wrap: anywhere;
-  color: #f5f9ff;
+  color: var(--color-text);
   font-size: 1.25rem;
   line-height: 1.2;
 }
 
 .card span {
   margin-top: 8px;
-  color: #9cb4cf;
+  color: var(--color-text-muted);
   font-size: 0.82rem;
   line-height: 1.45;
 }
 
 .card :global(.badge) {
   margin-top: 10px;
+}
+
+:global(html[data-theme="light"]) .card p {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+:global(html[data-theme="light"]) .textContent {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+:global(html[data-theme="light"]) .textContent p,
+:global(html[data-theme="light"]) .textContent strong,
+:global(html[data-theme="light"]) .textContent span {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 @media (max-width: 1180px) {

@@ -60,7 +60,7 @@ export type StatusProcesso =
 
 export type SeveridadeAlarme = 'INFO' | 'MEDIO' | 'CRITICO';
 
-export type StatusAlarme = 'ATIVO' | 'RESOLVIDO';
+export type StatusAlarme = 'ATIVO' | 'NORMALIZADO' | 'RESOLVIDO';
 
 export type FormatoRelatorio = 'PDF' | 'XLSX';
 

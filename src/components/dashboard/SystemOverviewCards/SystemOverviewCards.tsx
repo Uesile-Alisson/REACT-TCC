@@ -43,7 +43,7 @@ export function SystemOverviewCards({
         <div className={styles.iconBox}>
           <Activity size={20} aria-hidden="true" />
         </div>
-        <div>
+        <div className={styles.textContent}>
           <p>Processo</p>
           <strong>{processLabel}</strong>
           <span>{data.activeProcess?.nome_processo ?? data.lastProcess?.nome_processo ?? 'Aguardando dados'}</span>
@@ -61,7 +61,7 @@ export function SystemOverviewCards({
         <div className={styles.iconBox}>
           <Bell size={20} aria-hidden="true" />
         </div>
-        <div>
+        <div className={styles.textContent}>
           <p>Alarmes ativos</p>
           <strong>{data.alarmsSummary?.ativos ?? 'Pendente'}</strong>
           <span>Criticos: {data.alarmsSummary?.criticos ?? 'Pendente'}</span>
@@ -79,7 +79,7 @@ export function SystemOverviewCards({
         <div className={styles.iconBox}>
           <RadioTower size={20} aria-hidden="true" />
         </div>
-        <div>
+        <div className={styles.textContent}>
           <p>Comunicacao</p>
           <strong>{formatBoolean(esp32Online)}</strong>
           <span>MQTT: {mqttStatus}</span>
@@ -98,7 +98,7 @@ export function SystemOverviewCards({
         <div className={styles.iconBox}>
           <FileText size={20} aria-hidden="true" />
         </div>
-        <div>
+        <div className={styles.textContent}>
           <p>Relatorios</p>
           <strong>{data.reportsCount ?? 'Pendente'}</strong>
           <span>Consulta simples pelo service existente</span>

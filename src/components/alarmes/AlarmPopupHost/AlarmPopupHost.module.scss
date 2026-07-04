@@ -1,0 +1,20 @@
+.host {
+  position: fixed;
+  z-index: 92;
+  right: clamp(14px, 2vw, 28px);
+  bottom: clamp(16px, 2.3vw, 30px);
+  display: grid;
+  max-width: calc(100vw - 28px);
+  pointer-events: none;
+}
+
+.host > * {
+  pointer-events: auto;
+}
+
+@media (max-width: 940px) {
+  .host {
+    right: 14px;
+    bottom: 14px;
+  }
+}

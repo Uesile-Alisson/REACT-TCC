@@ -12,12 +12,12 @@
   align-items: center;
   gap: 9px;
   padding: 4px 11px 4px 5px;
-  border: 1px solid rgba(122, 185, 244, 0.24);
+  border: 1px solid var(--color-border-strong);
   border-radius: 7px;
   background:
-    linear-gradient(180deg, rgba(14, 34, 56, 0.92), rgba(8, 21, 36, 0.9)),
-    rgba(13, 30, 49, 0.82);
-  color: #eaf5ff;
+    linear-gradient(180deg, var(--color-surface-raised), var(--color-surface-soft)),
+    var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
   transition:
     border-color 160ms ease,
@@ -27,7 +27,7 @@
 
 .profileChip:hover,
 .profileChip:focus-visible {
-  border-color: rgba(83, 197, 255, 0.58);
+  border-color: var(--color-accent-strong);
   outline: 0;
   box-shadow:
     0 0 0 3px rgba(29, 155, 255, 0.16),
@@ -65,6 +65,25 @@
   box-shadow: 0 0 24px rgba(83, 197, 255, 0.18);
 }
 
+:global(html[data-theme="light"]) .avatar,
+:global(html[data-theme="light"]) .largeAvatar {
+  border-color: rgba(8, 127, 214, 0.34);
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.96), transparent 32%),
+    radial-gradient(circle at 74% 78%, rgba(14, 165, 233, 0.18), transparent 42%),
+    linear-gradient(135deg, #e8f6ff 0%, #cfeafc 52%, #f8fcff 100%);
+  color: #075f9e;
+  box-shadow:
+    0 12px 28px rgba(8, 127, 214, 0.16),
+    0 1px 0 rgba(255, 255, 255, 0.85) inset;
+}
+
+:global(html[data-theme="light"]) .largeAvatar {
+  box-shadow:
+    0 18px 42px rgba(8, 127, 214, 0.18),
+    0 1px 0 rgba(255, 255, 255, 0.86) inset;
+}
+
 .identity {
   display: grid;
   min-width: 0;
@@ -79,14 +98,14 @@
 }
 
 .identity strong {
-  color: #f8fbff;
+  color: var(--color-text);
   font-size: 0.78rem;
   font-weight: 860;
   line-height: 1.2;
 }
 
 .identity small {
-  color: #7ccfff;
+  color: var(--color-accent);
   font-size: 0.66rem;
   font-weight: 820;
   letter-spacing: 0.08em;
@@ -101,14 +120,12 @@
   z-index: 100;
   width: min(360px, calc(100vw - 28px));
   padding: 14px;
-  border: 1px solid rgba(122, 185, 244, 0.22);
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
   background:
-    linear-gradient(180deg, rgba(9, 23, 39, 0.98), rgba(5, 13, 24, 0.98)),
-    #07111f;
-  box-shadow:
-    0 22px 60px rgba(0, 0, 0, 0.46),
-    0 0 0 1px rgba(83, 197, 255, 0.06);
+    linear-gradient(180deg, var(--color-surface-raised), var(--color-surface-soft)),
+    var(--color-bg-elevated);
+  box-shadow: var(--shadow-shell), 0 0 0 1px var(--color-border);
 }
 
 .popoverHeader {
@@ -117,7 +134,7 @@
   gap: 12px;
   align-items: center;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(122, 185, 244, 0.14);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .popoverHeader p,
@@ -126,7 +143,7 @@
 }
 
 .popoverHeader p {
-  color: #5bc8ff;
+  color: var(--color-accent);
   font-size: 0.66rem;
   font-weight: 860;
   letter-spacing: 0.12em;
@@ -136,7 +153,7 @@
 .popoverHeader h2 {
   margin-top: 3px;
   overflow-wrap: anywhere;
-  color: #f5f9ff;
+  color: var(--color-text);
   font-size: 1rem;
   line-height: 1.2;
 }
@@ -150,10 +167,10 @@
   margin-top: 8px;
   padding: 5px 8px;
   overflow: hidden;
-  border: 1px solid rgba(122, 185, 244, 0.2);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background: rgba(13, 30, 49, 0.74);
-  color: #dcecff;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   font-size: 0.66rem;
   font-weight: 860;
   letter-spacing: 0.08em;
@@ -187,9 +204,9 @@
   gap: 10px;
   align-items: center;
   padding: 8px;
-  border: 1px solid rgba(122, 185, 244, 0.1);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background: rgba(13, 30, 49, 0.42);
+  background: var(--color-surface-muted);
 }
 
 .details dt,
@@ -202,7 +219,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #7ccfff;
+  color: var(--color-accent);
   font-size: 0.67rem;
   font-weight: 850;
   letter-spacing: 0.06em;
@@ -211,7 +228,7 @@
 
 .details dd {
   overflow-wrap: anywhere;
-  color: #eef7ff;
+  color: var(--color-text);
   font-size: 0.78rem;
   font-weight: 720;
   text-align: right;
@@ -222,7 +239,7 @@
   gap: 8px;
   justify-content: flex-end;
   padding-top: 12px;
-  border-top: 1px solid rgba(122, 185, 244, 0.14);
+  border-top: 1px solid var(--color-border);
 }
 
 .secondaryAction,
@@ -246,9 +263,9 @@
 
 .secondaryAction {
   padding: 0 11px;
-  border: 1px solid rgba(122, 185, 244, 0.24);
-  background: rgba(13, 30, 49, 0.74);
-  color: #dcecff;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
 }
 
 .logoutAction {

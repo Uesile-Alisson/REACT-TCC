@@ -3,12 +3,10 @@
   gap: 14px;
   min-height: 280px;
   padding: 18px;
-  border: 1px solid rgba(122, 185, 244, 0.16);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(13, 30, 49, 0.9), rgba(7, 15, 27, 0.94)),
-    #0a1422;
-  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.22);
+  background: var(--gradient-card);
+  box-shadow: var(--shadow-card);
 }
 
 .header {
@@ -18,14 +16,14 @@
 
 .header h2 {
   margin: 0;
-  color: #f5f9ff;
+  color: var(--color-text);
   font-size: 1.02rem;
   line-height: 1.25;
 }
 
 .header p {
   margin: 0;
-  color: #9cb4cf;
+  color: var(--color-text-muted);
   font-size: 0.82rem;
   line-height: 1.45;
 }
@@ -38,9 +36,9 @@
   display: grid;
   min-height: 190px;
   place-items: center;
-  border: 1px dashed rgba(122, 185, 244, 0.18);
+  border: 1px dashed var(--color-border);
   border-radius: 8px;
-  color: #9cb4cf;
+  color: var(--color-text-muted);
   font-size: 0.84rem;
   text-align: center;
 }
@@ -49,11 +47,11 @@
   display: grid;
   gap: 4px;
   padding: 9px 11px;
-  border: 1px solid rgba(122, 185, 244, 0.24);
+  border: 1px solid var(--color-border-strong);
   border-radius: 7px;
-  background: rgba(5, 14, 25, 0.96);
-  color: #f5f9ff;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  box-shadow: var(--shadow-control);
 }
 
 .tooltip strong,
