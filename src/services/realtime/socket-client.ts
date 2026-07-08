@@ -35,9 +35,15 @@ const alarmesSocket: RealtimeSocket = io(createSocketUrl(SOCKET_NAMESPACES.ALARM
   auth: {},
 });
 
+const processosSocket: RealtimeSocket = io(createSocketUrl(SOCKET_NAMESPACES.PROCESSOS), {
+  autoConnect: false,
+  transports: ['websocket', 'polling'],
+  auth: {},
+});
+
 let currentToken: string | null = null;
 
-const managedSockets: RealtimeSocket[] = [realtimeSocket, alarmesSocket];
+const managedSockets: RealtimeSocket[] = [realtimeSocket, alarmesSocket, processosSocket];
 
 export function connectRealtime(token?: string | null): void {
   const nextToken = token ?? null;
@@ -75,12 +81,20 @@ export function getAlarmesSocket(): RealtimeSocket {
   return alarmesSocket;
 }
 
+export function getProcessosSocket(): RealtimeSocket {
+  return processosSocket;
+}
+
 export function isRealtimeSocketConnected(): boolean {
   return realtimeSocket.connected;
 }
 
 export function isAlarmesSocketConnected(): boolean {
   return alarmesSocket.connected;
+}
+
+export function isProcessosSocketConnected(): boolean {
+  return processosSocket.connected;
 }
 
 export function onRealtimeEvent<TPayload>(
@@ -102,6 +116,17 @@ export function onAlarmesRealtimeEvent<TPayload>(
 
   return () => {
     alarmesSocket.off(eventName, listener);
+  };
+}
+
+export function onProcessosRealtimeEvent<TPayload>(
+  eventName: string,
+  listener: (payload: TPayload) => void,
+): () => void {
+  processosSocket.on(eventName, listener);
+
+  return () => {
+    processosSocket.off(eventName, listener);
   };
 }
 

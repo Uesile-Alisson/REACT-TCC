@@ -1,4 +1,5 @@
 import { CheckCheck, ExternalLink, FilePlus2, Wrench } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { AlarmeResponse, AlarmesPermissions } from '../../../types';
 import { formatAlarmeDate, getUnknownNumber, getUnknownString } from '../alarmes.utils';
 import { AlarmeSeverityBadge } from '../AlarmeSeverityBadge';
@@ -144,10 +145,10 @@ export function AlarmeDetailPanel({
 
       <footer className={styles.actions}>
         {typeof alarme.id_processo === 'number' ? (
-          <a href="/processos">
+          <Link to="/processos">
             <ExternalLink size={15} aria-hidden="true" />
             Ver processos
-          </a>
+          </Link>
         ) : null}
         {permissions.canAcknowledgeAlarme ? (
           <button

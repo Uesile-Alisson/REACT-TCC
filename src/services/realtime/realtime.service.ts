@@ -1,5 +1,10 @@
 import { ALARMES_EVENTS, MQTT_HARDWARE_EVENTS, PROCESSOS_EVENTS, SOCKET_SYSTEM_EVENTS } from './socket-events';
-import { getRealtimeSocket, onAlarmesRealtimeEvent, onRealtimeEvent } from './socket-client';
+import {
+  getRealtimeSocket,
+  onAlarmesRealtimeEvent,
+  onProcessosRealtimeEvent,
+  onRealtimeEvent,
+} from './socket-client';
 import type {
   AlarmAcknowledgedPayload,
   AlarmCreatedPayload,
@@ -112,7 +117,7 @@ export function onSensorAcoplamentoUpdated(
 export function onProcessPrecheckResult(
   listener: RealtimeListener<ProcessPrecheckResultPayload>,
 ): () => void {
-  return onRealtimeEvent(PROCESSOS_EVENTS.PRECHECK_RESULT, listener);
+  return onProcessosRealtimeEvent(PROCESSOS_EVENTS.PRECHECK_RESULT, listener);
 }
 
 export const realtimeService = {

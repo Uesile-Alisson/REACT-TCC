@@ -7,6 +7,7 @@ import styles from './AlarmPopup.module.scss';
 type AlarmPopupCounts = {
   critical: number;
   medium: number;
+  info: number;
 };
 
 type AlarmPopupProps = {
@@ -19,7 +20,7 @@ type AlarmPopupProps = {
   isResolving: boolean;
   onViewDetails: (alarm: AlarmeResponse) => void;
   onViewAll: () => void;
-  onClose: () => void;
+  onClose?: () => void;
   onAcknowledge: (alarm: AlarmeResponse) => void;
   onResolve: (alarm: AlarmeResponse) => void;
 };
@@ -65,9 +66,34 @@ function getCounterText(counts: AlarmPopupCounts): string {
   const parts = [
     counts.critical > 0 ? `${counts.critical} alarme${counts.critical > 1 ? 's' : ''} critico${counts.critical > 1 ? 's' : ''} ativo${counts.critical > 1 ? 's' : ''}` : null,
     counts.medium > 0 ? `${counts.medium} alarme${counts.medium > 1 ? 's' : ''} medio${counts.medium > 1 ? 's' : ''} ativo${counts.medium > 1 ? 's' : ''}` : null,
+    counts.info > 0 ? `${counts.info} informativo${counts.info > 1 ? 's' : ''} ativo${counts.info > 1 ? 's' : ''}` : null,
   ].filter((part): part is string => Boolean(part));
 
   return parts.join(' / ');
+}
+
+function getPopupToneClass(alarm: AlarmeResponse): string {
+  if (alarm.severidade === 'CRITICO') {
+    return styles.critical;
+  }
+
+  if (alarm.severidade === 'INFO') {
+    return styles.info;
+  }
+
+  return styles.medium;
+}
+
+function getPopupHeading(alarm: AlarmeResponse): string {
+  if (alarm.severidade === 'CRITICO') {
+    return 'Alarme critico ativo';
+  }
+
+  if (alarm.severidade === 'INFO') {
+    return 'Alarme informativo ativo';
+  }
+
+  return 'Alarme medio ativo';
 }
 
 export function AlarmPopup({
@@ -90,7 +116,7 @@ export function AlarmPopup({
 
   return (
     <motion.aside
-      className={`${styles.popup} ${isCritical ? styles.critical : styles.medium}`}
+      className={`${styles.popup} ${getPopupToneClass(alarm)}`}
       role="status"
       aria-live={isCritical ? 'assertive' : 'polite'}
       initial={{ opacity: 0, y: 18, scale: 0.98 }}
@@ -103,18 +129,20 @@ export function AlarmPopup({
           {isCritical ? <ShieldAlert size={22} /> : <AlertTriangle size={22} />}
         </span>
         <div>
-          <p>{isCritical ? 'Alarme critico ativo' : 'Alarme medio ativo'}</p>
+          <p>{getPopupHeading(alarm)}</p>
           <strong>{getAlarmTitle(alarm)}</strong>
         </div>
-        <button
-          type="button"
-          className={styles.closeButton}
-          onClick={onClose}
-          aria-label="Ocultar popup deste alarme por 5 segundos"
-          title="Ocultar por 5 segundos"
-        >
-          <X size={17} aria-hidden="true" />
-        </button>
+        {onClose ? (
+          <button
+            type="button"
+            className={styles.closeButton}
+            onClick={onClose}
+            aria-label={alarm.severidade === 'INFO' ? 'Fechar aviso informativo' : 'Ocultar popup deste alarme'}
+            title={alarm.severidade === 'INFO' ? 'Fechar' : 'Ocultar temporariamente'}
+          >
+            <X size={17} aria-hidden="true" />
+          </button>
+        ) : null}
       </header>
 
       <p className={styles.description}>{getAlarmDescription(alarm)}</p>

@@ -1,5 +1,6 @@
 import { RefreshCw } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { GerarRelatorioHistoricoModal } from '../../components/historico/GerarRelatorioHistoricoModal';
 import { HistoricoDetailPanel } from '../../components/historico/HistoricoDetailPanel';
 import { HistoricoFilters } from '../../components/historico/HistoricoFilters';
@@ -93,7 +94,7 @@ export function HistoricoPage() {
       {reportSuccess ? (
         <section className={styles.successState} role="status">
           <strong>{reportSuccess}</strong>
-          <a href="/relatorios">Abrir Relatorios</a>
+          <Link to="/relatorios">Abrir Relatorios</Link>
         </section>
       ) : null}
 

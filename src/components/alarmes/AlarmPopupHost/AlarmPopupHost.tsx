@@ -8,11 +8,26 @@ import { useAlarmePermissions } from '../../../hooks/useAlarmePermissions';
 import { AlarmPopup } from '../AlarmPopup';
 import styles from './AlarmPopupHost.module.scss';
 
-const VISIBLE_INTERVAL_MS = 10000;
-const HIDDEN_INTERVAL_MS = 5000;
+const INFO_VISIBLE_INTERVAL_MS = 5000;
+const MEDIUM_VISIBLE_INTERVAL_MS = 9000;
+const MEDIUM_REAPPEAR_INTERVAL_MS = 12000;
+const CRITICAL_REAPPEAR_INTERVAL_MS = 5000;
+
+type AlarmVisibilityRegistry = Record<string, number>;
+type DismissedInfoRegistry = Record<string, true>;
+
+const SEVERITY_PRIORITY: Record<AlarmeResponse['severidade'], number> = {
+  CRITICO: 0,
+  MEDIO: 1,
+  INFO: 2,
+};
 
 function isPopupEligible(alarm: AlarmeResponse): boolean {
-  return alarm.status_alarme === 'ATIVO' && (alarm.severidade === 'MEDIO' || alarm.severidade === 'CRITICO');
+  return alarm.status_alarme === 'ATIVO' && !alarm.excluido_em;
+}
+
+function getAlarmKey(alarm: AlarmeResponse): string {
+  return String(alarm.id_alarme);
 }
 
 function getAlarmTime(alarm: AlarmeResponse): number {
@@ -29,10 +44,22 @@ function getAlarmTime(alarm: AlarmeResponse): number {
 
 function sortPopupAlarms(a: AlarmeResponse, b: AlarmeResponse): number {
   if (a.severidade !== b.severidade) {
-    return a.severidade === 'CRITICO' ? -1 : 1;
+    return SEVERITY_PRIORITY[a.severidade] - SEVERITY_PRIORITY[b.severidade];
   }
 
   return getAlarmTime(b) - getAlarmTime(a);
+}
+
+function getVisibleInterval(alarm: AlarmeResponse): number | null {
+  if (alarm.severidade === 'CRITICO') {
+    return null;
+  }
+
+  return alarm.severidade === 'INFO' ? INFO_VISIBLE_INTERVAL_MS : MEDIUM_VISIBLE_INTERVAL_MS;
+}
+
+function getHiddenInterval(alarm: AlarmeResponse): number {
+  return alarm.severidade === 'CRITICO' ? CRITICAL_REAPPEAR_INTERVAL_MS : MEDIUM_REAPPEAR_INTERVAL_MS;
 }
 
 export function AlarmPopupHost() {
@@ -43,24 +70,136 @@ export function AlarmPopupHost() {
   } = useAlarmContext();
   const permissions = useAlarmePermissions();
   const navigate = useNavigate();
-  const [isVisible, setIsVisible] = useState<boolean>(true);
+  const [hiddenUntilById, setHiddenUntilById] = useState<AlarmVisibilityRegistry>({});
+  const [dismissedInfoById, setDismissedInfoById] = useState<DismissedInfoRegistry>({});
+  const [clock, setClock] = useState<number>(() => Date.now());
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [acknowledgingId, setAcknowledgingId] = useState<number | null>(null);
   const [resolvingId, setResolvingId] = useState<number | null>(null);
 
-  const popupAlarms = useMemo(
+  const activePopupAlarms = useMemo(
     () => activeAlarms.filter(isPopupEligible).slice().sort(sortPopupAlarms),
     [activeAlarms],
   );
+  const popupAlarms = useMemo(
+    () =>
+      activePopupAlarms.filter((alarm) => {
+        const key = getAlarmKey(alarm);
+        const hiddenUntil = hiddenUntilById[key] ?? 0;
+
+        if (alarm.severidade === 'INFO' && dismissedInfoById[key]) {
+          return false;
+        }
+
+        return hiddenUntil <= clock;
+      }),
+    [activePopupAlarms, clock, dismissedInfoById, hiddenUntilById],
+  );
   const primaryAlarm = popupAlarms[0] ?? null;
+  const primaryAlarmKey = primaryAlarm ? getAlarmKey(primaryAlarm) : null;
   const counts = useMemo(
     () => ({
-      critical: popupAlarms.filter((alarm) => alarm.severidade === 'CRITICO').length,
-      medium: popupAlarms.filter((alarm) => alarm.severidade === 'MEDIO').length,
+      critical: activePopupAlarms.filter((alarm) => alarm.severidade === 'CRITICO').length,
+      medium: activePopupAlarms.filter((alarm) => alarm.severidade === 'MEDIO').length,
+      info: activePopupAlarms.filter((alarm) => alarm.severidade === 'INFO').length,
     }),
-    [popupAlarms],
+    [activePopupAlarms],
   );
+
+  const hideAlarmForCycle = useCallback((alarm: AlarmeResponse): void => {
+    const key = getAlarmKey(alarm);
+
+    if (alarm.severidade === 'INFO') {
+      setDismissedInfoById((currentDismissed) => ({ ...currentDismissed, [key]: true }));
+      setHiddenUntilById((currentHidden) => {
+        if (!currentHidden[key]) {
+          return currentHidden;
+        }
+
+        const nextHidden = { ...currentHidden };
+        delete nextHidden[key];
+        return nextHidden;
+      });
+      return;
+    }
+
+    const hiddenUntil = Date.now() + getHiddenInterval(alarm);
+
+    setHiddenUntilById((currentHidden) => ({ ...currentHidden, [key]: hiddenUntil }));
+    setClock(Date.now());
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    queueMicrotask(() => {
+      if (!isActive) {
+        return;
+      }
+
+      const activeKeys = new Set(activePopupAlarms.map(getAlarmKey));
+      const now = Date.now();
+
+      setHiddenUntilById((currentHidden) => {
+        let changed = false;
+        const nextHidden: AlarmVisibilityRegistry = {};
+
+        Object.entries(currentHidden).forEach(([key, hiddenUntil]) => {
+          if (activeKeys.has(key) && hiddenUntil > now) {
+            nextHidden[key] = hiddenUntil;
+            return;
+          }
+
+          changed = true;
+        });
+
+        return changed ? nextHidden : currentHidden;
+      });
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, [activePopupAlarms]);
+
+  useEffect(() => {
+    const nextExpiration = Object.values(hiddenUntilById)
+      .filter((hiddenUntil) => hiddenUntil > clock)
+      .sort((current, next) => current - next)[0];
+
+    if (!nextExpiration) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setClock(Date.now());
+    }, Math.max(nextExpiration - clock, 0));
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [clock, hiddenUntilById]);
+
+  useEffect(() => {
+    if (!primaryAlarm) {
+      return undefined;
+    }
+
+    const visibleInterval = getVisibleInterval(primaryAlarm);
+
+    if (visibleInterval === null) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      hideAlarmForCycle(primaryAlarm);
+    }, visibleInterval);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [hideAlarmForCycle, primaryAlarm]);
 
   useEffect(() => {
     let isActive = true;
@@ -72,28 +211,12 @@ export function AlarmPopupHost() {
 
       setFeedback(null);
       setError(null);
-      setIsVisible(true);
     });
 
     return () => {
       isActive = false;
     };
-  }, [primaryAlarm?.id_alarme]);
-
-  useEffect(() => {
-    if (!primaryAlarm) {
-      return undefined;
-    }
-
-    const delay = isVisible ? VISIBLE_INTERVAL_MS : HIDDEN_INTERVAL_MS;
-    const timer = window.setTimeout(() => {
-      setIsVisible((currentVisibility) => !currentVisibility);
-    }, delay);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [isVisible, primaryAlarm]);
+  }, [primaryAlarmKey]);
 
   const handleViewDetails = useCallback(
     (alarm: AlarmeResponse): void => {
@@ -111,8 +234,12 @@ export function AlarmPopupHost() {
   }, [navigate]);
 
   const handleCloseCurrentCycle = useCallback((): void => {
-    setIsVisible(false);
-  }, []);
+    if (!primaryAlarm) {
+      return;
+    }
+
+    hideAlarmForCycle(primaryAlarm);
+  }, [hideAlarmForCycle, primaryAlarm]);
 
   const handleAcknowledge = useCallback(
     async (alarm: AlarmeResponse): Promise<void> => {
@@ -153,7 +280,7 @@ export function AlarmPopupHost() {
   return (
     <div className={styles.host} aria-live="polite">
       <AnimatePresence>
-        {primaryAlarm && isVisible ? (
+        {primaryAlarm ? (
           <AlarmPopup
             key={primaryAlarm.id_alarme}
             alarm={primaryAlarm}
@@ -165,7 +292,7 @@ export function AlarmPopupHost() {
             isResolving={resolvingId === primaryAlarm.id_alarme}
             onViewDetails={handleViewDetails}
             onViewAll={handleViewAll}
-            onClose={handleCloseCurrentCycle}
+            onClose={primaryAlarm.severidade === 'CRITICO' ? undefined : handleCloseCurrentCycle}
             onAcknowledge={(alarm) => void handleAcknowledge(alarm)}
             onResolve={(alarm) => void handleResolve(alarm)}
           />
