@@ -20,6 +20,7 @@ import type {
   ProcessoAction,
   ProcessoActionState,
   ProcessoFormState,
+  MqttHardwareStatusResponse,
   SensorReadingPayload,
 } from '../../types';
 import { countBy, toNumber } from '../../utils/chartData';
@@ -59,11 +60,13 @@ function getMqttStatusLabel(status?: string | null): string {
     return 'pendente';
   }
 
-  if (status === 'CONNECTED' || status === 'CONECTADO') {
+  const normalizedStatus = status.toUpperCase();
+
+  if (normalizedStatus === 'CONNECTED' || normalizedStatus === 'CONECTADO') {
     return 'conectado';
   }
 
-  if (status === 'DISCONNECTED' || status === 'DESCONECTADO') {
+  if (normalizedStatus === 'DISCONNECTED' || normalizedStatus === 'DESCONECTADO') {
     return 'desconectado';
   }
 
@@ -71,11 +74,21 @@ function getMqttStatusLabel(status?: string | null): string {
 }
 
 function isMqttConnected(status?: string | null): boolean {
-  return status === 'CONNECTED' || status === 'CONECTADO';
+  const normalizedStatus = status?.toUpperCase();
+
+  return normalizedStatus === 'CONNECTED' || normalizedStatus === 'CONECTADO';
 }
 
 function getHardwareMqttStatus(value: unknown): string | null {
   return typeof value === 'string' ? value : null;
+}
+
+function getHttpMqttStatus(status?: MqttHardwareStatusResponse | null): string | null {
+  return (
+    status?.status_conexao ??
+    status?.mqtt?.status_conexao ??
+    (status?.mqtt?.connected === true || status?.hardware?.mqttConnected === true ? 'CONECTADO' : null)
+  );
 }
 
 function getReadingTimestamp(reading: SensorReadingPayload): number {
@@ -105,7 +118,9 @@ export function ProcessosPage() {
   } = useProcessosPage();
   const permissions = useProcessPermissions();
   const { lastSensorReading } = useSensorReadingsRealtime();
-  const { esp32Online, mqttConnectionStatus, hardwareState } = useMqttHardwareRealtime();
+  const { esp32Online, mqttConnectionStatus, hardwareState, httpStatus } = useMqttHardwareRealtime({
+    includeHttpStatus: true,
+  });
   const precheckProcess = data.selectedProcess ?? data.activeProcess;
   const detailsResetKey =
     precheckProcess?.id_processo ?? data.selectedProcess?.id_processo ?? data.activeProcess?.id_processo ?? null;
@@ -131,6 +146,7 @@ export function ProcessosPage() {
   const acoplamentoStatus = getAcoplamentoStatusSummary(currentProcessPrecheck);
   const mqttStatus =
     mqttConnectionStatus?.status_conexao ??
+    getHttpMqttStatus(httpStatus) ??
     getHardwareMqttStatus(hardwareState?.mqttStatus) ??
     (hardwareState?.mqttConnected === true ? 'CONECTADO' : null);
   const activeProcessId = data.activeProcess?.id_processo ?? null;
