@@ -7,6 +7,7 @@ import type {
   ProcessoReadingResponse,
   ProcessoResponse,
 } from './processos.types';
+import type { TanqueHardwareCodigo } from './mqtt-hardware.types';
 
 export type ProcessoAction =
   | 'start'
@@ -35,7 +36,10 @@ export type ProcessoFormState = {
   tanques: ProcessoTanqueFormState[];
 };
 
-export type ProcessoTanqueFormErrors = Partial<Record<keyof ProcessoTanqueFormState, string>>;
+export type ProcessoTanqueHardwareError = 'codigo_hardware' | 'valvula_principal';
+export type ProcessoTanqueFormErrors = Partial<
+  Record<keyof ProcessoTanqueFormState | ProcessoTanqueHardwareError, string>
+>;
 
 export type ProcessoFormErrors = Partial<
   Record<'nome_processo' | 'tempo_maximo' | 'quantidade_tanques', string>
@@ -48,6 +52,7 @@ export type ProcessoTanqueOption = {
   label: string;
   description: string;
   status_tanque?: string | null;
+  codigo_hardware?: TanqueHardwareCodigo | string | null;
 };
 
 export type ProcessoSensorOption = {

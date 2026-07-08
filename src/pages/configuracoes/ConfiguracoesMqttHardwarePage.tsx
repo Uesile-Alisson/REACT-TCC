@@ -246,7 +246,12 @@ export function ConfiguracoesMqttHardwarePage() {
           hardwareStatus={hardwareStatus}
           heartbeat={effectiveHeartbeat}
         />
-        <HardwareReadingsCard reading={lastSensorReading} acoplamento={lastAcoplamento} />
+        <HardwareReadingsCard
+          reading={lastSensorReading}
+          acoplamento={lastAcoplamento}
+          status={status}
+          hardwareStatus={hardwareStatus}
+        />
       </section>
 
       <section className={styles.contentGrid}>

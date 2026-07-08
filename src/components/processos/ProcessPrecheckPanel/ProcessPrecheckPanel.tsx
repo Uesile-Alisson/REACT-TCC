@@ -175,7 +175,10 @@ function formatDetails(details: ProcessoPrecheckItem['detalhes']): string | null
 }
 
 function getValveLabel(valve: ProcessoValvulaResumo): string {
-  return formatDisplayValue(valve.nome_valvula ?? valve.nome, `Valvula #${valve.id_valvula}`);
+  return formatDisplayValue(
+    valve.nome_valvula ?? valve.nome ?? valve.codigo_hardware,
+    `Valvula #${valve.id_valvula}`,
+  );
 }
 
 function getValveRelation(value?: number | string | null, fallback?: unknown): string {
@@ -186,6 +189,18 @@ function getValveRelation(value?: number | string | null, fallback?: unknown): s
   }
 
   return value ? `#${value}` : 'Nao vinculado';
+}
+
+function getValveTypeLabel(valve: ProcessoValvulaResumo): string {
+  if (valve.tipo === 'PRINCIPAL') {
+    return 'Linha principal';
+  }
+
+  if (valve.tipo === 'AUXILIAR') {
+    return 'Linha auxiliar';
+  }
+
+  return 'Linha nao classificada';
 }
 
 function StatusBadge({ status }: { status?: ProcessoPrecheckStatus | string | null }) {
@@ -421,7 +436,7 @@ export function ProcessPrecheckPanel({
         <header>
           <div>
             <Wrench size={16} aria-hidden="true" />
-            <strong>Valvulas do processo</strong>
+            <strong>Valvulas vinculadas ao processo</strong>
           </div>
           <span>{valves.length} item(ns)</span>
         </header>
@@ -436,9 +451,18 @@ export function ProcessPrecheckPanel({
                 <article key={valve.id_valvula}>
                   <div>
                     <strong>{getValveLabel(valve)}</strong>
-                    <span>ID #{valve.id_valvula}</span>
-                    <small>Tanque {getValveRelation(valve.id_tanque, valve.tanque)}</small>
-                    <small>Bomba {getValveRelation(valve.id_bomba, valve.bomba)}</small>
+                    <span>{getValveTypeLabel(valve)} / ID #{valve.id_valvula}</span>
+                    <small>Codigo: {formatDisplayValue(valve.codigo_hardware, 'Nao informado')}</small>
+                    <small>Tanque {getValveRelation(valve.tanque_codigo_hardware ?? valve.id_tanque, valve.tanque)}</small>
+                    <small>Bomba {getValveRelation(valve.bomba_codigo_hardware ?? valve.id_bomba, valve.bomba)}</small>
+                    <small>
+                      Estado fisico:{' '}
+                      {typeof valve.aberta === 'boolean' ? (valve.aberta ? 'Aberta' : 'Fechada') : 'Sem status'} /
+                      {' '}
+                      {typeof valve.disponivel === 'boolean'
+                        ? valve.disponivel ? 'Disponivel' : 'Indisponivel'
+                        : 'Sem status'}
+                    </small>
                     <small>Ultimo acionamento: {formatProcessDate(valve.ultimo_acionamento)}</small>
                   </div>
                   <div className={styles.valveStatus}>
@@ -472,7 +496,7 @@ export function ProcessPrecheckPanel({
             })}
           </div>
         ) : (
-          <p className={styles.emptyInline}>Nenhuma valvula retornada pelo endpoint do processo.</p>
+          <p className={styles.emptyInline}>Nenhuma valvula vinculada foi retornada pelo endpoint do processo.</p>
         )}
       </section>
     </motion.section>

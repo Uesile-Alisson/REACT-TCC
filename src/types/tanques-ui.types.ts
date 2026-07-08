@@ -9,6 +9,8 @@ export type TanqueConfigResponse = {
   unidade_volume: string;
   vacuo_padrao: number;
   status_tanque: StatusTanque;
+  codigo_hardware?: string | null;
+  tanque_codigo_hardware?: string | null;
   criado_em: DateString;
   atualizado_em: DateString;
 };

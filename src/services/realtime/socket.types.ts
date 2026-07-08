@@ -1,4 +1,11 @@
-import type { DateString, Id, SeveridadeAlarme, StatusAlarme, StatusProcesso } from '../../types';
+import type {
+  DateString,
+  Id,
+  SeveridadeAlarme,
+  StatusAlarme,
+  StatusProcesso,
+  ValvulaHardware,
+} from '../../types';
 import type { ProcessoPrecheckResponse } from '../../types/processos.types';
 
 export type RealtimeConnectionState = {
@@ -55,7 +62,7 @@ export type SensorReadingPayload = {
 export type HardwareStatusPayload = {
   esp32_online?: boolean;
   bombas?: Record<string, unknown>;
-  valvulas?: Record<string, unknown>;
+  valvulas?: Record<string, unknown> | ValvulaHardware[];
   processo?: Record<string, unknown>;
   status?: string;
   mensagem?: string;

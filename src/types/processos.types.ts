@@ -5,6 +5,7 @@ import type {
   QueryParams,
   StatusProcesso,
 } from './common.types';
+import type { TipoValvulaHardware, TanqueHardwareCodigo } from './mqtt-hardware.types';
 
 export type CreateProcessoSensorRequest = {
   id_sensor: Id;
@@ -182,12 +183,19 @@ export type ProcessoPrecheckResponse = {
 
 export type ProcessoValvulaResumo = {
   id_valvula: Id;
+  id?: Id;
+  codigo_hardware?: string;
   nome?: string;
   nome_valvula?: string;
   id_tanque?: Id | null;
+  tanque_codigo_hardware?: TanqueHardwareCodigo | string | null;
   tanque?: unknown;
   id_bomba?: Id | null;
+  bomba_codigo_hardware?: string | null;
   bomba?: unknown;
+  tipo?: TipoValvulaHardware | string | null;
+  aberta?: boolean | null;
+  disponivel?: boolean | null;
   status_atual?: string | null;
   status_valvula?: string | null;
   ultimo_acionamento?: DateString | null;

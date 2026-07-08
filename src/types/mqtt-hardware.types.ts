@@ -1,5 +1,37 @@
 import type { DateString } from './common.types';
 
+export type TipoValvulaHardware = 'PRINCIPAL' | 'AUXILIAR' | 'OUTRA';
+
+export type TanqueHardwareCodigo = 'TANQUE_1' | 'TANQUE_2' | 'TANQUE_3';
+
+export type ValvulaHardware = {
+  id_valvula?: number;
+  id?: number;
+  codigo_hardware: string;
+  id_tanque?: number;
+  tanque_codigo_hardware?: TanqueHardwareCodigo | string;
+  id_bomba?: number;
+  bomba_codigo_hardware?: string;
+  tipo?: TipoValvulaHardware;
+  aberta?: boolean;
+  disponivel?: boolean;
+  nome?: string;
+  descricao?: string;
+};
+
+export type ValvulasAgrupadasTanque = {
+  principal?: ValvulaHardware;
+  auxiliar?: ValvulaHardware;
+};
+
+export type ValvulasPorTanque = Record<TanqueHardwareCodigo, ValvulasAgrupadasTanque>;
+
+export type TanqueHardwareComValvulas = {
+  tanque: TanqueHardwareCodigo;
+  valvulaPrincipal?: ValvulaHardware;
+  valvulaAuxiliar?: ValvulaHardware;
+};
+
 export type MqttConnectionStatus =
   | 'CONNECTED'
   | 'DISCONNECTED'
@@ -26,6 +58,7 @@ export type MqttHardwareStatusResponse = {
   mqtt?: MqttStatusSummary;
   status_conexao?: MqttConnectionStatus | string;
   esp32_online?: boolean;
+  valvulas?: ValvulaHardware[] | Record<string, unknown>;
   hardware?: {
     mqttConnected?: boolean;
     esp32Online?: boolean;
@@ -36,6 +69,7 @@ export type MqttHardwareStatusResponse = {
     lastError?: string | null;
     updatedAt?: DateString;
     enviado_em?: DateString;
+    valvulas?: ValvulaHardware[] | Record<string, unknown>;
     [key: string]: unknown;
   };
   consultado_em?: DateString;
