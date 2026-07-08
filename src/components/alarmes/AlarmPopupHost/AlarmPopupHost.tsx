@@ -65,6 +65,7 @@ function getHiddenInterval(alarm: AlarmeResponse): number {
 export function AlarmPopupHost() {
   const {
     activeAlarms,
+    transientInfoAlarms,
     acknowledgeAlarm,
     resolveAlarm,
   } = useAlarmContext();
@@ -79,8 +80,12 @@ export function AlarmPopupHost() {
   const [resolvingId, setResolvingId] = useState<number | null>(null);
 
   const activePopupAlarms = useMemo(
-    () => activeAlarms.filter(isPopupEligible).slice().sort(sortPopupAlarms),
-    [activeAlarms],
+    () =>
+      [...activeAlarms, ...transientInfoAlarms]
+        .filter(isPopupEligible)
+        .slice()
+        .sort(sortPopupAlarms),
+    [activeAlarms, transientInfoAlarms],
   );
   const popupAlarms = useMemo(
     () =>

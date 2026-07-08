@@ -160,7 +160,8 @@ export function AlarmeDetailPanel({
             {acknowledgingId === alarme.id_alarme ? 'Registrando' : 'Reconhecer'}
           </button>
         ) : null}
-        {permissions.canResolveAlarme(alarme.status_alarme) ? (
+        {alarme.severidade !== 'INFO' &&
+        permissions.canResolveAlarme(alarme.status_alarme) ? (
           <button type="button" onClick={() => onResolve(alarme)}>
             <Wrench size={15} aria-hidden="true" />
             Resolver alarme

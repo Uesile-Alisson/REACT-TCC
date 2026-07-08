@@ -12,9 +12,13 @@ function countByList(alarmes: AlarmeResponse[], predicate: (alarme: AlarmeRespon
   return alarmes.filter(predicate).length;
 }
 
+function isOperationalActiveAlarm(alarme: AlarmeResponse): boolean {
+  return alarme.status_alarme === 'ATIVO' && alarme.severidade !== 'INFO';
+}
+
 export function AlarmeSummaryCards({ summary, alarmes }: AlarmeSummaryCardsProps) {
   const total = summary?.total ?? alarmes.length;
-  const ativos = summary?.ativos ?? countByList(alarmes, (alarme) => alarme.status_alarme === 'ATIVO');
+  const ativos = summary?.ativos ?? countByList(alarmes, isOperationalActiveAlarm);
   const criticos = summary?.criticos ?? countByList(alarmes, (alarme) => alarme.severidade === 'CRITICO');
   const medios = summary?.por_severidade?.MEDIO ?? countByList(alarmes, (alarme) => alarme.severidade === 'MEDIO');
   const infos = summary?.por_severidade?.INFO ?? countByList(alarmes, (alarme) => alarme.severidade === 'INFO');

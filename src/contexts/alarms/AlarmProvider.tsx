@@ -32,8 +32,24 @@ function getAlarmKey(idAlarme: number): string {
   return String(idAlarme);
 }
 
-function isActiveAlarm(alarme: Pick<AlarmeResponse, 'status_alarme' | 'excluido_em'>): boolean {
-  return alarme.status_alarme === 'ATIVO' && !alarme.excluido_em;
+function isActiveAlarm(
+  alarme: Pick<AlarmeResponse, 'status_alarme' | 'excluido_em' | 'severidade'>,
+): boolean {
+  return (
+    alarme.status_alarme === 'ATIVO' &&
+    !alarme.excluido_em &&
+    alarme.severidade !== 'INFO'
+  );
+}
+
+function isTransientInfoAlarm(
+  alarme: Pick<AlarmeResponse, 'status_alarme' | 'excluido_em' | 'severidade'>,
+): boolean {
+  return (
+    alarme.status_alarme === 'ATIVO' &&
+    !alarme.excluido_em &&
+    alarme.severidade === 'INFO'
+  );
 }
 
 function getListItems(response: AlarmeListResponse): AlarmeResponse[] {
@@ -86,12 +102,25 @@ function getPayloadAlarmId(
 
 export function AlarmProvider({ children }: AlarmProviderProps) {
   const [activeAlarmsById, setActiveAlarmsById] = useState<AlarmRegistry>({});
+  const [transientInfoAlarmsById, setTransientInfoAlarmsById] = useState<AlarmRegistry>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [lastError, setLastError] = useState<string | null>(null);
   const isMountedRef = useRef<boolean>(false);
 
   const removeAlarm = useCallback((idAlarme: number): void => {
     setActiveAlarmsById((currentAlarms) => {
+      const key = getAlarmKey(idAlarme);
+
+      if (!currentAlarms[key]) {
+        return currentAlarms;
+      }
+
+      const nextAlarms = { ...currentAlarms };
+      delete nextAlarms[key];
+
+      return nextAlarms;
+    });
+    setTransientInfoAlarmsById((currentAlarms) => {
       const key = getAlarmKey(idAlarme);
 
       if (!currentAlarms[key]) {
@@ -112,6 +141,21 @@ export function AlarmProvider({ children }: AlarmProviderProps) {
     }
 
     setActiveAlarmsById((currentAlarms) => ({
+      ...currentAlarms,
+      [getAlarmKey(alarme.id_alarme)]: {
+        ...currentAlarms[getAlarmKey(alarme.id_alarme)],
+        ...alarme,
+      },
+    }));
+  }, [removeAlarm]);
+
+  const upsertTransientInfoAlarm = useCallback((alarme: AlarmeResponse): void => {
+    if (!isTransientInfoAlarm(alarme)) {
+      removeAlarm(alarme.id_alarme);
+      return;
+    }
+
+    setTransientInfoAlarmsById((currentAlarms) => ({
       ...currentAlarms,
       [getAlarmKey(alarme.id_alarme)]: {
         ...currentAlarms[getAlarmKey(alarme.id_alarme)],
@@ -165,6 +209,7 @@ export function AlarmProvider({ children }: AlarmProviderProps) {
           return registry;
         }, {}),
       );
+      setTransientInfoAlarmsById({});
     } catch (error: unknown) {
       if (isMountedRef.current) {
         setLastError(getAlarmeActionErrorMessage(error));
@@ -217,6 +262,11 @@ export function AlarmProvider({ children }: AlarmProviderProps) {
         return;
       }
 
+      if (alarm.severidade === 'INFO') {
+        upsertTransientInfoAlarm(alarm);
+        return;
+      }
+
       upsertAlarm(alarm);
       void syncAlarmById(alarm.id_alarme);
     });
@@ -259,16 +309,21 @@ export function AlarmProvider({ children }: AlarmProviderProps) {
       unsubscribeAlarmNormalized();
       unsubscribeAlarmResolved();
     };
-  }, [refreshActiveAlarms, removeAlarm, syncAlarmById, upsertAlarm]);
+  }, [refreshActiveAlarms, removeAlarm, syncAlarmById, upsertAlarm, upsertTransientInfoAlarm]);
 
   const activeAlarms = useMemo(
     () => Object.values(activeAlarmsById),
     [activeAlarmsById],
   );
+  const transientInfoAlarms = useMemo(
+    () => Object.values(transientInfoAlarmsById),
+    [transientInfoAlarmsById],
+  );
 
   const value = useMemo<AlarmContextData>(
     () => ({
       activeAlarms,
+      transientInfoAlarms,
       isLoading,
       lastError,
       acknowledgeAlarm,
@@ -278,6 +333,7 @@ export function AlarmProvider({ children }: AlarmProviderProps) {
     [
       acknowledgeAlarm,
       activeAlarms,
+      transientInfoAlarms,
       isLoading,
       lastError,
       refreshActiveAlarms,

@@ -152,7 +152,8 @@ export function AlarmeListTable({
                           <CheckCheck size={15} aria-hidden="true" />
                         </button>
                       ) : null}
-                      {permissions.canResolveAlarme(alarme.status_alarme) ? (
+                      {alarme.severidade !== 'INFO' &&
+                      permissions.canResolveAlarme(alarme.status_alarme) ? (
                         <button
                           type="button"
                           onClick={() => onResolve(alarme)}

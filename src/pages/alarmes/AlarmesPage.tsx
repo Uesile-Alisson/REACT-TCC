@@ -20,6 +20,10 @@ type AlarmesLocationState = {
   selectedAlarmeId?: number;
 };
 
+function isOperationalActiveAlarm(alarme: AlarmeResponse): boolean {
+  return alarme.status_alarme === 'ATIVO' && alarme.severidade !== 'INFO';
+}
+
 function getAlarmDate(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value : null;
 }
@@ -67,7 +71,7 @@ export function AlarmesPage() {
   );
   const statusChartData = useMemo(
     () => [
-      { name: 'Ativo', value: data.alarmes.filter((alarme) => alarme.status_alarme === 'ATIVO').length },
+      { name: 'Ativo', value: data.alarmes.filter(isOperationalActiveAlarm).length },
       {
         name: 'Normalizado',
         value: data.alarmes.filter((alarme) => alarme.status_alarme === 'NORMALIZADO').length,

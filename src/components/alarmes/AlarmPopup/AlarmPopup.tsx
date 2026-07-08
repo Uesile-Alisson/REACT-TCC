@@ -47,6 +47,10 @@ function getRelatedLabel(alarm: AlarmeResponse): string {
 }
 
 function getRecommendedAction(alarm: AlarmeResponse): string {
+  if (alarm.severidade === 'INFO') {
+    return 'Evento informativo registrado. Nenhuma resolucao operacional e necessaria.';
+  }
+
   if (alarm.bloqueante) {
     return 'Falha bloqueante: valide o equipamento antes de prosseguir.';
   }
@@ -66,7 +70,7 @@ function getCounterText(counts: AlarmPopupCounts): string {
   const parts = [
     counts.critical > 0 ? `${counts.critical} alarme${counts.critical > 1 ? 's' : ''} critico${counts.critical > 1 ? 's' : ''} ativo${counts.critical > 1 ? 's' : ''}` : null,
     counts.medium > 0 ? `${counts.medium} alarme${counts.medium > 1 ? 's' : ''} medio${counts.medium > 1 ? 's' : ''} ativo${counts.medium > 1 ? 's' : ''}` : null,
-    counts.info > 0 ? `${counts.info} informativo${counts.info > 1 ? 's' : ''} ativo${counts.info > 1 ? 's' : ''}` : null,
+    counts.info > 0 ? `${counts.info} informativo${counts.info > 1 ? 's' : ''}` : null,
   ].filter((part): part is string => Boolean(part));
 
   return parts.join(' / ');
@@ -90,7 +94,7 @@ function getPopupHeading(alarm: AlarmeResponse): string {
   }
 
   if (alarm.severidade === 'INFO') {
-    return 'Alarme informativo ativo';
+    return 'Evento informativo';
   }
 
   return 'Alarme medio ativo';
@@ -111,7 +115,9 @@ export function AlarmPopup({
   onResolve,
 }: AlarmPopupProps) {
   const isCritical = alarm.severidade === 'CRITICO';
-  const canResolve = permissions.canResolveAlarme(alarm.status_alarme);
+  const canResolve =
+    alarm.severidade !== 'INFO' &&
+    permissions.canResolveAlarme(alarm.status_alarme);
   const counterText = getCounterText(counts);
 
   return (
