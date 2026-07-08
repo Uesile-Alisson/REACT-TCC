@@ -94,15 +94,15 @@ export function useConfiguracoesSistema(): UseConfiguracoesSistemaResult {
 
   useEffect(() => {
     let shouldRun = true;
-
-    queueMicrotask(() => {
+    const timeoutId = window.setTimeout(() => {
       if (shouldRun) {
         void refresh();
       }
-    });
+    }, 0);
 
     return () => {
       shouldRun = false;
+      window.clearTimeout(timeoutId);
     };
   }, [refresh]);
 

@@ -136,7 +136,13 @@ export function useTanquesPage(): UseTanquesPageResult {
   }, []);
 
   useEffect(() => {
-    queueMicrotask(() => void loadTanques());
+    const timeoutId = window.setTimeout(() => {
+      void loadTanques();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [loadTanques]);
 
   const selectTanque = useCallback(async (id_tanque: number | null): Promise<void> => {

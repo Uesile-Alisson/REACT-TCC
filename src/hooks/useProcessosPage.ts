@@ -99,6 +99,14 @@ export function useProcessosPage(): UseProcessosPageResult {
       }));
     } catch (loadError: unknown) {
       setError(getAuthErrorMessage(loadError));
+      setData((currentData) => ({
+        ...currentData,
+        activeProcess: null,
+        activeReadings: [],
+        processes: [],
+        total: 0,
+        limit: PAGE_LIMIT,
+      }));
     } finally {
       setIsLoading(false);
     }
@@ -154,9 +162,13 @@ export function useProcessosPage(): UseProcessosPageResult {
   }, []);
 
   useEffect(() => {
-    queueMicrotask(() => {
+    const timeoutId = window.setTimeout(() => {
       void loadData();
-    });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [loadData]);
 
   return {

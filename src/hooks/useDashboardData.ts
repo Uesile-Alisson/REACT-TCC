@@ -31,11 +31,15 @@ function countRelatorios(response: RelatorioListResponse): number {
     return response.length;
   }
 
-  return response.meta.total;
+  return response.meta?.total ?? response.data?.length ?? 0;
 }
 
-function getListData<TItem>(response: { data: TItem[] } | TItem[]): TItem[] {
-  return Array.isArray(response) ? response : response.data;
+function getListData<TItem>(response: { data?: TItem[] } | TItem[] | null | undefined): TItem[] {
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  return Array.isArray(response?.data) ? response.data : [];
 }
 
 function getLastProcess(response: HistoricoProcessoListResponse): HistoricoProcessoResponse | null {
@@ -75,77 +79,87 @@ export function useDashboardData(): DashboardLoadState {
     setError(null);
     setPartialErrors({});
 
-    const results = await Promise.allSettled([
-      getActiveProcesso(),
-      listHistoricoProcessos({
-        limit: 1,
-        order_by: 'finalizado_em',
-        order_direction: 'desc',
-      }),
-      getAlarmesDashboard({ limit: 5 }),
-      listAlarmes({ limit: 5, order_by: 'ocorrido_em', order_direction: 'desc' }),
-      getHistoricoDashboard(),
-      getMqttHardwareStatus(),
-      listRelatorios({ limit: 1 }),
-    ]);
-
-    const nextPartialErrors: DashboardPartialErrors = {};
-    const activeProcess = getSettledValue(results[0], 'activeProcess', nextPartialErrors);
-    const lastProcessResponse = getSettledValue(results[1], 'lastProcess', nextPartialErrors);
-    const alarmsSummary = getSettledValue(results[2], 'alarms', nextPartialErrors);
-    const recentAlarmsResponse = getSettledValue(results[3], 'alarms', nextPartialErrors);
-    const historySummary = getSettledValue(results[4], 'history', nextPartialErrors);
-    const hardwareStatus = getSettledValue(results[5], 'hardware', nextPartialErrors);
-    const reports = getSettledValue(results[6], 'reports', nextPartialErrors);
-    let activePrecheck: ProcessoPrecheckResponse | null = null;
-    let precheckProcess = activeProcess;
-
-    if (!precheckProcess) {
-      try {
-        const configuredProcesses = await listProcessos({
-          status_processo: 'CONFIGURADO',
+    try {
+      const results = await Promise.allSettled([
+        getActiveProcesso(),
+        listHistoricoProcessos({
           limit: 1,
-        });
-        precheckProcess = getFirstProcess(configuredProcesses);
-      } catch (precheckProcessError: unknown) {
-        nextPartialErrors.activePrecheck = getAuthErrorMessage(precheckProcessError);
+          order_by: 'finalizado_em',
+          order_direction: 'desc',
+        }),
+        getAlarmesDashboard({ limit: 5 }),
+        listAlarmes({ limit: 5, order_by: 'ocorrido_em', order_direction: 'desc' }),
+        getHistoricoDashboard(),
+        getMqttHardwareStatus(),
+        listRelatorios({ limit: 1 }),
+      ]);
+
+      const nextPartialErrors: DashboardPartialErrors = {};
+      const activeProcess = getSettledValue(results[0], 'activeProcess', nextPartialErrors);
+      const lastProcessResponse = getSettledValue(results[1], 'lastProcess', nextPartialErrors);
+      const alarmsSummary = getSettledValue(results[2], 'alarms', nextPartialErrors);
+      const recentAlarmsResponse = getSettledValue(results[3], 'alarms', nextPartialErrors);
+      const historySummary = getSettledValue(results[4], 'history', nextPartialErrors);
+      const hardwareStatus = getSettledValue(results[5], 'hardware', nextPartialErrors);
+      const reports = getSettledValue(results[6], 'reports', nextPartialErrors);
+      let activePrecheck: ProcessoPrecheckResponse | null = null;
+      let precheckProcess = activeProcess;
+
+      if (!precheckProcess) {
+        try {
+          const configuredProcesses = await listProcessos({
+            status_processo: 'CONFIGURADO',
+            limit: 1,
+          });
+          precheckProcess = getFirstProcess(configuredProcesses);
+        } catch (precheckProcessError: unknown) {
+          nextPartialErrors.activePrecheck = getAuthErrorMessage(precheckProcessError);
+        }
       }
-    }
 
-    if (precheckProcess?.id_processo) {
-      try {
-        activePrecheck = await getPrechecagem(precheckProcess.id_processo);
-      } catch (precheckError: unknown) {
-        nextPartialErrors.activePrecheck = getAuthErrorMessage(precheckError);
+      if (precheckProcess?.id_processo) {
+        try {
+          activePrecheck = await getPrechecagem(precheckProcess.id_processo);
+        } catch (precheckError: unknown) {
+          nextPartialErrors.activePrecheck = getAuthErrorMessage(precheckError);
+        }
       }
+
+      setPartialErrors(nextPartialErrors);
+      setData({
+        activeProcess,
+        activePrecheck,
+        lastProcess: lastProcessResponse ? getLastProcess(lastProcessResponse) : null,
+        recentAlarms: recentAlarmsResponse ? getListData(recentAlarmsResponse) : [],
+        alarmsSummary,
+        historySummary,
+        hardwareStatus,
+        reportsCount: reports ? countRelatorios(reports) : null,
+        updatedAt: new Date().toISOString(),
+      });
+
+      const failedRequests = results.filter((result) => result.status === 'rejected').length;
+
+      if (failedRequests === results.length) {
+        setError('Nao foi possivel carregar os dados do dashboard.');
+      }
+    } catch (loadError: unknown) {
+      setData({ ...initialData, updatedAt: new Date().toISOString() });
+      setPartialErrors({});
+      setError(getAuthErrorMessage(loadError) || 'Nao foi possivel carregar os dados do dashboard.');
+    } finally {
+      setIsLoading(false);
     }
-
-    setPartialErrors(nextPartialErrors);
-    setData({
-      activeProcess,
-      activePrecheck,
-      lastProcess: lastProcessResponse ? getLastProcess(lastProcessResponse) : null,
-      recentAlarms: recentAlarmsResponse ? getListData(recentAlarmsResponse) : [],
-      alarmsSummary,
-      historySummary,
-      hardwareStatus,
-      reportsCount: reports ? countRelatorios(reports) : null,
-      updatedAt: new Date().toISOString(),
-    });
-
-    const failedRequests = results.filter((result) => result.status === 'rejected').length;
-
-    if (failedRequests === results.length) {
-      setError('Nao foi possivel carregar os dados do dashboard.');
-    }
-
-    setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    queueMicrotask(() => {
+    const timeoutId = window.setTimeout(() => {
       void loadDashboardData();
-    });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [loadDashboardData]);
 
   return {

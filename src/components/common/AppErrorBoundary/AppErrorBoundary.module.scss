@@ -1,0 +1,74 @@
+.fallback {
+  display: grid;
+  min-height: min(620px, 100%);
+  place-items: center;
+  padding: clamp(20px, 4vw, 48px);
+}
+
+.content {
+  width: min(720px, 100%);
+  border: 1px solid color-mix(in srgb, var(--color-border), transparent 18%);
+  border-radius: 20px;
+  padding: clamp(22px, 3vw, 34px);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-surface-elevated), transparent 4%), transparent 140%),
+    var(--color-surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.overline {
+  display: inline-flex;
+  margin-bottom: 12px;
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content h1 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: clamp(1.45rem, 2.8vw, 2rem);
+  letter-spacing: 0;
+}
+
+.content p {
+  margin: 12px 0 0;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.content code {
+  display: block;
+  margin-top: 16px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  overflow: auto;
+  background: color-mix(in srgb, var(--color-danger), transparent 88%);
+  color: var(--color-danger);
+  font-size: 0.82rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.actions button {
+  min-height: 42px;
+  border: 1px solid color-mix(in srgb, var(--color-primary), transparent 35%);
+  border-radius: 12px;
+  padding: 0 16px;
+  background: color-mix(in srgb, var(--color-primary), transparent 84%);
+  color: var(--color-primary);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.actions button:first-child {
+  background: var(--color-primary);
+  color: #ffffff;
+}

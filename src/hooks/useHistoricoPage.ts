@@ -60,12 +60,20 @@ const initialData: HistoricoPageData = {
   limit: PAGE_LIMIT,
 };
 
-function getListData<TItem>(response: { data: TItem[] } | TItem[]): TItem[] {
-  return Array.isArray(response) ? response : response.data;
+function getListData<TItem>(response: { data?: TItem[] } | TItem[] | null | undefined): TItem[] {
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  return Array.isArray(response?.data) ? response.data : [];
 }
 
-function getTotal(response: HistoricoProcessoListResponse): number {
-  return Array.isArray(response) ? response.length : response.meta.total;
+function getTotal(response: HistoricoProcessoListResponse | null | undefined): number {
+  if (Array.isArray(response)) {
+    return response.length;
+  }
+
+  return response?.meta?.total ?? getListData(response).length;
 }
 
 function getProcessoTimestamp(processo: HistoricoProcessoResponse): number {
@@ -122,53 +130,65 @@ export function useHistoricoPage(): UseHistoricoPageResult {
       order_direction: 'desc',
     } as const;
 
-    const [summaryResult, listResult] = await Promise.allSettled([
-      getHistoricoDashboard({ data_inicio: query.data_inicio, data_fim: query.data_fim }),
-      filters.apenas_falha
-        ? Promise.all([
-            listHistoricoProcessos({ ...query, page: 1, status_processo: 'FALHA' }),
-            listHistoricoProcessos({ ...query, page: 1, status_processo: 'INTERROMPIDO' }),
-          ])
-        : listHistoricoProcessos({
-            ...query,
-            status_processo: filters.status_processo || undefined,
-          }),
-    ]);
+    try {
+      const [summaryResult, listResult] = await Promise.allSettled([
+        getHistoricoDashboard({ data_inicio: query.data_inicio, data_fim: query.data_fim }),
+        filters.apenas_falha
+          ? Promise.all([
+              listHistoricoProcessos({ ...query, page: 1, status_processo: 'FALHA' }),
+              listHistoricoProcessos({ ...query, page: 1, status_processo: 'INTERROMPIDO' }),
+            ])
+          : listHistoricoProcessos({
+              ...query,
+              status_processo: filters.status_processo || undefined,
+            }),
+      ]);
 
-    const nextErrors: HistoricoPartialErrors = {};
-    const summary = summaryResult.status === 'fulfilled' ? summaryResult.value : null;
-    const list = listResult.status === 'fulfilled' ? listResult.value : null;
+      const nextErrors: HistoricoPartialErrors = {};
+      const summary = summaryResult.status === 'fulfilled' ? summaryResult.value : null;
+      const list = listResult.status === 'fulfilled' ? listResult.value : null;
 
-    if (summaryResult.status === 'rejected') {
-      nextErrors.summary = getAuthErrorMessage(summaryResult.reason);
+      if (summaryResult.status === 'rejected') {
+        nextErrors.summary = getAuthErrorMessage(summaryResult.reason);
+      }
+
+      if (listResult.status === 'rejected') {
+        nextErrors.list = getAuthErrorMessage(listResult.reason);
+      }
+
+      const historicoList =
+        list && filters.apenas_falha
+          ? mergeHistoricoProcessos(list as HistoricoProcessoListResponse[], data.page)
+          : {
+              processos: getListData(list as HistoricoProcessoListResponse | null),
+              total: getTotal(list as HistoricoProcessoListResponse | null),
+            };
+
+      setPartialErrors(nextErrors);
+      setData((currentData) => ({
+        ...currentData,
+        summary,
+        processos: historicoList.processos,
+        total: historicoList.total,
+        limit: PAGE_LIMIT,
+      }));
+
+      if (!summary && !list) {
+        setError('Nao foi possivel carregar o historico.');
+      }
+    } catch (loadError: unknown) {
+      setError(getAuthErrorMessage(loadError));
+      setPartialErrors({});
+      setData((currentData) => ({
+        ...currentData,
+        summary: null,
+        processos: [],
+        total: 0,
+        limit: PAGE_LIMIT,
+      }));
+    } finally {
+      setIsLoading(false);
     }
-
-    if (listResult.status === 'rejected') {
-      nextErrors.list = getAuthErrorMessage(listResult.reason);
-    }
-
-    const historicoList =
-      list && filters.apenas_falha
-        ? mergeHistoricoProcessos(list as HistoricoProcessoListResponse[], data.page)
-        : {
-            processos: list ? getListData(list as HistoricoProcessoListResponse) : [],
-            total: list ? getTotal(list as HistoricoProcessoListResponse) : 0,
-          };
-
-    setPartialErrors(nextErrors);
-    setData((currentData) => ({
-      ...currentData,
-      summary,
-      processos: historicoList.processos,
-      total: historicoList.total,
-      limit: PAGE_LIMIT,
-    }));
-
-    if (!summary && !list) {
-      setError('Nao foi possivel carregar o historico.');
-    }
-
-    setIsLoading(false);
   }, [
     data.page,
     filters.apenas_falha,
@@ -182,57 +202,64 @@ export function useHistoricoPage(): UseHistoricoPageResult {
     setIsDetailLoading(true);
     setPartialErrors((currentErrors) => ({ ...currentErrors, detail: undefined }));
 
-    const [processoResult, tanquesResult, alarmesResult, eventosResult, relatoriosResult] =
-      await Promise.allSettled([
-        getHistoricoProcessoById(idProcesso),
-        listHistoricoTanques(idProcesso),
-        listHistoricoAlarmes(idProcesso, { limit: 8 }),
-        listHistoricoEventos(idProcesso, { limit: 8 }),
-        listHistoricoRelatorios(idProcesso),
-      ]);
+    try {
+      const [processoResult, tanquesResult, alarmesResult, eventosResult, relatoriosResult] =
+        await Promise.allSettled([
+          getHistoricoProcessoById(idProcesso),
+          listHistoricoTanques(idProcesso),
+          listHistoricoAlarmes(idProcesso, { limit: 8 }),
+          listHistoricoEventos(idProcesso, { limit: 8 }),
+          listHistoricoRelatorios(idProcesso),
+        ]);
 
-    const nextErrors: HistoricoPartialErrors = {};
-    const processo = processoResult.status === 'fulfilled' ? processoResult.value : null;
+      const nextErrors: HistoricoPartialErrors = {};
+      const processo = processoResult.status === 'fulfilled' ? processoResult.value : null;
 
-    if (processoResult.status === 'rejected') {
-      nextErrors.detail = getAuthErrorMessage(processoResult.reason);
+      if (processoResult.status === 'rejected') {
+        nextErrors.detail = getAuthErrorMessage(processoResult.reason);
+      }
+
+      if (tanquesResult.status === 'rejected') {
+        nextErrors.tanques = getAuthErrorMessage(tanquesResult.reason);
+      }
+
+      if (alarmesResult.status === 'rejected') {
+        nextErrors.alarmes = getAuthErrorMessage(alarmesResult.reason);
+      }
+
+      if (eventosResult.status === 'rejected') {
+        nextErrors.eventos = getAuthErrorMessage(eventosResult.reason);
+      }
+
+      if (relatoriosResult.status === 'rejected') {
+        nextErrors.relatorios = getAuthErrorMessage(relatoriosResult.reason);
+      }
+
+      setPartialErrors((currentErrors) => ({ ...currentErrors, ...nextErrors }));
+      setData((currentData) => ({
+        ...currentData,
+        detail: {
+          processo,
+          tanques: tanquesResult.status === 'fulfilled' ? tanquesResult.value : [],
+          alarmes:
+            alarmesResult.status === 'fulfilled'
+              ? getListData<AlarmeResponse>(alarmesResult.value)
+              : [],
+          eventos:
+            eventosResult.status === 'fulfilled'
+              ? getListData<ProcessoEventResponse>(eventosResult.value)
+              : [],
+          relatorios: relatoriosResult.status === 'fulfilled' ? relatoriosResult.value : [],
+        },
+      }));
+    } catch (detailError: unknown) {
+      setPartialErrors((currentErrors) => ({
+        ...currentErrors,
+        detail: getAuthErrorMessage(detailError),
+      }));
+    } finally {
+      setIsDetailLoading(false);
     }
-
-    if (tanquesResult.status === 'rejected') {
-      nextErrors.tanques = getAuthErrorMessage(tanquesResult.reason);
-    }
-
-    if (alarmesResult.status === 'rejected') {
-      nextErrors.alarmes = getAuthErrorMessage(alarmesResult.reason);
-    }
-
-    if (eventosResult.status === 'rejected') {
-      nextErrors.eventos = getAuthErrorMessage(eventosResult.reason);
-    }
-
-    if (relatoriosResult.status === 'rejected') {
-      nextErrors.relatorios = getAuthErrorMessage(relatoriosResult.reason);
-    }
-
-    setPartialErrors((currentErrors) => ({ ...currentErrors, ...nextErrors }));
-    setData((currentData) => ({
-      ...currentData,
-      detail: {
-        processo,
-        tanques: tanquesResult.status === 'fulfilled' ? tanquesResult.value : [],
-        alarmes:
-          alarmesResult.status === 'fulfilled'
-            ? getListData<AlarmeResponse>(alarmesResult.value)
-            : [],
-        eventos:
-          eventosResult.status === 'fulfilled'
-            ? getListData<ProcessoEventResponse>(eventosResult.value)
-            : [],
-        relatorios: relatoriosResult.status === 'fulfilled' ? relatoriosResult.value : [],
-      },
-    }));
-
-    setIsDetailLoading(false);
   }, []);
 
   const setFilters = useCallback((nextFilters: HistoricoFiltersState) => {
@@ -245,9 +272,13 @@ export function useHistoricoPage(): UseHistoricoPageResult {
   }, []);
 
   useEffect(() => {
-    queueMicrotask(() => {
+    const timeoutId = window.setTimeout(() => {
       void loadData();
-    });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [loadData]);
 
   return {

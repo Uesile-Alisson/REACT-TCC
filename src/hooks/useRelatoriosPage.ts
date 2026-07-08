@@ -43,12 +43,14 @@ function normalizeRelatoriosResponse(
     };
   }
 
+  const relatorios = Array.isArray(response.data) ? response.data : [];
+
   return {
-    relatorios: response.data,
+    relatorios,
     selectedRelatorio: null,
-    total: response.meta.total,
-    page: response.meta.page,
-    limit: response.meta.limit,
+    total: response.meta?.total ?? relatorios.length,
+    page: response.meta?.page ?? fallbackPage,
+    limit: response.meta?.limit ?? fallbackLimit,
   };
 }
 
@@ -153,9 +155,13 @@ export function useRelatoriosPage(): UseRelatoriosPageResult {
   }, []);
 
   useEffect(() => {
-    queueMicrotask(() => {
+    const timeoutId = window.setTimeout(() => {
       void loadRelatorios();
-    });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [loadRelatorios]);
 
   return {

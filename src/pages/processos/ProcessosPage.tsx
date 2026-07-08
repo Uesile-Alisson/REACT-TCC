@@ -187,9 +187,13 @@ export function ProcessosPage() {
       : null;
 
   useEffect(() => {
-    queueMicrotask(() => {
+    const timeoutId = window.setTimeout(() => {
       setLiveVacuumReadings([]);
-    });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [activeProcessId]);
 
   useEffect(() => {
@@ -205,9 +209,13 @@ export function ProcessosPage() {
       return;
     }
 
-    queueMicrotask(() => {
+    const timeoutId = window.setTimeout(() => {
       setLiveVacuumReadings((currentReadings) => [...currentReadings, lastSensorReading].slice(-30));
-    });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [activeProcessId, lastSensorReading]);
 
   async function handleCreateProcess(form: ProcessoFormState): Promise<void> {

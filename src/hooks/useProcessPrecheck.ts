@@ -290,9 +290,10 @@ export function useProcessPrecheck(idProcesso?: number | null): UseProcessPreche
 
   useEffect(() => {
     let isActive = true;
+    let timeoutId: number | null = null;
 
     if (!idProcesso) {
-      queueMicrotask(() => {
+      timeoutId = window.setTimeout(() => {
         if (!isActive) {
           return;
         }
@@ -301,14 +302,17 @@ export function useProcessPrecheck(idProcesso?: number | null): UseProcessPreche
         setValves([]);
         setError(null);
         setIsLoading(false);
-      });
+      }, 0);
 
       return () => {
         isActive = false;
+        if (timeoutId !== null) {
+          window.clearTimeout(timeoutId);
+        }
       };
     }
 
-    queueMicrotask(() => {
+    timeoutId = window.setTimeout(() => {
       if (!isActive) {
         return;
       }
@@ -340,10 +344,13 @@ export function useProcessPrecheck(idProcesso?: number | null): UseProcessPreche
             setIsLoading(false);
           }
         });
-    });
+    }, 0);
 
     return () => {
       isActive = false;
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
     };
   }, [idProcesso]);
 
@@ -352,10 +359,14 @@ export function useProcessPrecheck(idProcesso?: number | null): UseProcessPreche
       return;
     }
 
-    queueMicrotask(() => {
+    const timeoutId = window.setTimeout(() => {
       setPrecheck(normalizePrecheck(lastPrecheckResult));
       setSocketFeedback('Resultado de pre-checagem recebido via Socket.IO.');
-    });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [idProcesso, lastPrecheckResult]);
 
   const tanks = useMemo(

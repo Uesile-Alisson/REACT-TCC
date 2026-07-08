@@ -187,7 +187,13 @@ export function useProcessoConfiguracaoOptions(
       return;
     }
 
-    queueMicrotask(() => void reloadTanques());
+    const timeoutId = window.setTimeout(() => {
+      void reloadTanques();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [enabled, reloadTanques]);
 
   const loadSensoresForTanque = useCallback(async (id_tanque: number): Promise<void> => {

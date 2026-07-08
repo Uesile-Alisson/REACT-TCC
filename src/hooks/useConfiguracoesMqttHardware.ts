@@ -76,26 +76,33 @@ export function useConfiguracoesMqttHardware(): UseConfiguracoesMqttHardwareResu
     setConfigError(null);
     setStatusError(null);
 
-    const [configResult, statusResult] = await Promise.allSettled([
-      getMqttHardwareConfig(),
-      getMqttHardwareStatus(),
-    ]);
+    try {
+      const [configResult, statusResult] = await Promise.allSettled([
+        getMqttHardwareConfig(),
+        getMqttHardwareStatus(),
+      ]);
 
-    if (configResult.status === 'fulfilled') {
-      setConfig(configResult.value);
-    } else {
+      if (configResult.status === 'fulfilled') {
+        setConfig(configResult.value);
+      } else {
+        setConfig(null);
+        setConfigError(getMqttConfigErrorMessage(configResult.reason));
+      }
+
+      if (statusResult.status === 'fulfilled') {
+        setStatus(statusResult.value);
+      } else {
+        setStatus(null);
+        setStatusError(getMqttStatusErrorMessage(statusResult.reason));
+      }
+    } catch (error: unknown) {
       setConfig(null);
-      setConfigError(getMqttConfigErrorMessage(configResult.reason));
-    }
-
-    if (statusResult.status === 'fulfilled') {
-      setStatus(statusResult.value);
-    } else {
       setStatus(null);
-      setStatusError(getMqttStatusErrorMessage(statusResult.reason));
+      setConfigError(getMqttConfigErrorMessage(error));
+      setStatusError(getMqttStatusErrorMessage(error));
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   }, []);
 
   const refreshStatus = useCallback(async (): Promise<void> => {
@@ -111,12 +118,11 @@ export function useConfiguracoesMqttHardware(): UseConfiguracoesMqttHardwareResu
 
   useEffect(() => {
     let isActive = true;
-
-    queueMicrotask(() => {
+    const timeoutId = window.setTimeout(() => {
       if (isActive) {
         void refresh();
       }
-    });
+    }, 0);
 
     const intervalId = window.setInterval(() => {
       void refreshStatus();
@@ -124,6 +130,7 @@ export function useConfiguracoesMqttHardware(): UseConfiguracoesMqttHardwareResu
 
     return () => {
       isActive = false;
+      window.clearTimeout(timeoutId);
       window.clearInterval(intervalId);
     };
   }, [refresh, refreshStatus]);

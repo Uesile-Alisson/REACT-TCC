@@ -223,7 +223,13 @@ export function useBackups(options: UseBackupsOptions = {}): UseBackupsResult {
       return;
     }
 
-    queueMicrotask(() => void refresh());
+    const timeoutId = window.setTimeout(() => {
+      void refresh();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [autoLoad, refresh]);
 
   const setFilters = useCallback((nextFilters: BackupFiltersState): void => {

@@ -47,12 +47,20 @@ const initialData: AlarmesPageData = {
   limit: PAGE_LIMIT,
 };
 
-function getListData(response: AlarmeListResponse): AlarmeResponse[] {
-  return Array.isArray(response) ? response : response.data;
+function getListData(response: AlarmeListResponse | null | undefined): AlarmeResponse[] {
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  return Array.isArray(response?.data) ? response.data : [];
 }
 
-function getTotal(response: AlarmeListResponse): number {
-  return Array.isArray(response) ? response.length : response.meta.total;
+function getTotal(response: AlarmeListResponse | null | undefined): number {
+  if (Array.isArray(response)) {
+    return response.length;
+  }
+
+  return response?.meta?.total ?? getListData(response).length;
 }
 
 function parseOptionalNumber(value: string): number | undefined {
@@ -92,37 +100,49 @@ export function useAlarmesPage(): UseAlarmesPageResult {
       order_direction: 'desc',
     } as const;
 
-    const [summaryResult, listResult] = await Promise.allSettled([
-      getAlarmesDashboard(query),
-      listAlarmes(query),
-    ]);
+    try {
+      const [summaryResult, listResult] = await Promise.allSettled([
+        getAlarmesDashboard(query),
+        listAlarmes(query),
+      ]);
 
-    const nextErrors: AlarmesPartialErrors = {};
-    const summary = summaryResult.status === 'fulfilled' ? summaryResult.value : null;
-    const list = listResult.status === 'fulfilled' ? listResult.value : null;
+      const nextErrors: AlarmesPartialErrors = {};
+      const summary = summaryResult.status === 'fulfilled' ? summaryResult.value : null;
+      const list = listResult.status === 'fulfilled' ? listResult.value : null;
 
-    if (summaryResult.status === 'rejected') {
-      nextErrors.summary = getAuthErrorMessage(summaryResult.reason);
+      if (summaryResult.status === 'rejected') {
+        nextErrors.summary = getAuthErrorMessage(summaryResult.reason);
+      }
+
+      if (listResult.status === 'rejected') {
+        nextErrors.list = getAuthErrorMessage(listResult.reason);
+      }
+
+      setPartialErrors(nextErrors);
+      setData((currentData) => ({
+        ...currentData,
+        summary,
+        alarmes: getListData(list),
+        total: getTotal(list),
+        limit: PAGE_LIMIT,
+      }));
+
+      if (!summary && !list) {
+        setError('Nao foi possivel carregar os alarmes.');
+      }
+    } catch (loadError: unknown) {
+      setError(getAuthErrorMessage(loadError));
+      setPartialErrors({});
+      setData((currentData) => ({
+        ...currentData,
+        summary: null,
+        alarmes: [],
+        total: 0,
+        limit: PAGE_LIMIT,
+      }));
+    } finally {
+      setIsLoading(false);
     }
-
-    if (listResult.status === 'rejected') {
-      nextErrors.list = getAuthErrorMessage(listResult.reason);
-    }
-
-    setPartialErrors(nextErrors);
-    setData((currentData) => ({
-      ...currentData,
-      summary,
-      alarmes: list ? getListData(list) : [],
-      total: list ? getTotal(list) : 0,
-      limit: PAGE_LIMIT,
-    }));
-
-    if (!summary && !list) {
-      setError('Nao foi possivel carregar os alarmes.');
-    }
-
-    setIsLoading(false);
   }, [
     data.page,
     filters.apenas_criticos,
@@ -162,9 +182,13 @@ export function useAlarmesPage(): UseAlarmesPageResult {
   }, []);
 
   useEffect(() => {
-    queueMicrotask(() => {
+    const timeoutId = window.setTimeout(() => {
       void loadData();
-    });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [loadData]);
 
   return {

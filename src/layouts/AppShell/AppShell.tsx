@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AlarmPopupHost } from '../../components/alarmes/AlarmPopupHost';
+import { AppErrorBoundary } from '../../components/common/AppErrorBoundary/AppErrorBoundary';
 import { MobileNavigation } from '../../components/navigation/MobileNavigation';
 import { Sidebar } from '../../components/navigation/Sidebar';
 import { Topbar } from '../../components/navigation/Topbar';
@@ -83,18 +84,16 @@ export function AppShell() {
             onOpenMenu={() => setIsMobileMenuOpen(true)}
             user={user}
           />
-          <AnimatePresence mode="wait">
-            <motion.main
-              key={location.pathname}
-              className={styles.content}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            >
+          <motion.main
+            className={styles.content}
+            initial={false}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <AppErrorBoundary resetKey={`${location.pathname}${location.search}`}>
               <Outlet />
-            </motion.main>
-          </AnimatePresence>
+            </AppErrorBoundary>
+          </motion.main>
           <AlarmPopupHost />
         </div>
 

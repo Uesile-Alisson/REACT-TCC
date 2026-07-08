@@ -135,7 +135,13 @@ export function useBombasPage(): UseBombasPageResult {
   }, []);
 
   useEffect(() => {
-    queueMicrotask(() => void loadBombas());
+    const timeoutId = window.setTimeout(() => {
+      void loadBombas();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [loadBombas]);
 
   const selectBomba = useCallback(async (id_bomba: number | null): Promise<void> => {
