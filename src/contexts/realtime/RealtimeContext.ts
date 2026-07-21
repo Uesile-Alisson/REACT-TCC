@@ -7,6 +7,13 @@ import type {
   MqttConnectionStatusPayload,
   MqttErrorPayload,
   ProcessPrecheckResultPayload,
+  ProcessAuxiliaryStateUpdatedPayload,
+  ProcessDashboardUpdatedPayload,
+  ProcessEmergencyStopPayload,
+  ProcessGeneralClosureUpdatedPayload,
+  ProcessStatusChangedPayload,
+  ProcessTankClosureUpdatedPayload,
+  ProcessTankUpdatedPayload,
   SensorAcoplamentoPayload,
   SensorReadingPayload,
 } from '../../services/realtime';
@@ -25,6 +32,13 @@ export type RealtimeContextData = {
   lastAlarm: AlarmCreatedPayload | null;
   lastAcoplamento: SensorAcoplamentoPayload | null;
   lastPrecheckResult: ProcessPrecheckResultPayload | null;
+  lastProcessStatus: ProcessStatusChangedPayload | null;
+  lastProcessEmergencyStop: ProcessEmergencyStopPayload | null;
+  lastProcessDashboard: ProcessDashboardUpdatedPayload | null;
+  lastProcessAuxiliaryState: ProcessAuxiliaryStateUpdatedPayload | null;
+  lastProcessTank: ProcessTankUpdatedPayload | null;
+  lastProcessTankClosure: ProcessTankClosureUpdatedPayload | null;
+  lastProcessGeneralClosure: ProcessGeneralClosureUpdatedPayload | null;
   eventsCount: number;
   connect: () => void;
   disconnect: () => void;

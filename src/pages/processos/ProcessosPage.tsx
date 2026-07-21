@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Plus, RefreshCw } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActiveProcessPanel } from '../../components/processos/ActiveProcessPanel';
 import { RealDataChartPanel } from '../../components/charts/RealDataChartPanel';
 import { ConfirmProcessActionModal } from '../../components/processos/ConfirmProcessActionModal';
@@ -8,13 +8,18 @@ import { NewProcessModal } from '../../components/processos/NewProcessModal';
 import { ProcessDetailPanel } from '../../components/processos/ProcessDetailPanel';
 import { ProcessDetailsErrorBoundary } from '../../components/processos/ProcessDetailsErrorBoundary';
 import { ProcessPrecheckPanel } from '../../components/processos/ProcessPrecheckPanel';
+import { SensorCalibrationModal } from '../../components/processos/SensorCalibrationModal/SensorCalibrationModal';
 import { ProcessListTable, STATUS_OPTIONS } from '../../components/processos/ProcessListTable';
+import { ProcessOperationalPanel } from '../../components/processos/ProcessOperationalPanel/ProcessOperationalPanel';
 import { ProcessStatusBadge } from '../../components/processos/ProcessStatusBadge';
+import { useAuth } from '../../hooks/useAuth';
 import { useMqttHardwareRealtime } from '../../hooks/useMqttHardwareRealtime';
 import { useProcessActions } from '../../hooks/useProcessActions';
 import { useProcessPermissions } from '../../hooks/useProcessPermissions';
+import { useProcessOperationalState } from '../../hooks/useProcessOperationalState';
 import { useProcessPrecheck } from '../../hooks/useProcessPrecheck';
 import { useProcessosPage } from '../../hooks/useProcessosPage';
+import { useRealtime } from '../../hooks/useRealtime';
 import { useSensorReadingsRealtime } from '../../hooks/useSensorReadingsRealtime';
 import type {
   ProcessoAction,
@@ -92,7 +97,7 @@ function getHttpMqttStatus(status?: MqttHardwareStatusResponse | null): string |
 }
 
 function getReadingTimestamp(reading: SensorReadingPayload): number {
-  const rawTimestamp = reading.registrado_em ?? reading.enviado_em ?? reading.criado_em;
+  const rawTimestamp = reading.leitura_em ?? reading.registrado_em ?? reading.enviado_em ?? reading.criado_em;
 
   if (typeof rawTimestamp !== 'string' || !rawTimestamp) {
     return 0;
@@ -116,7 +121,9 @@ export function ProcessosPage() {
     refresh,
     selectProcess,
   } = useProcessosPage();
+  const { user } = useAuth();
   const permissions = useProcessPermissions();
+  const { lastProcessStatus, lastProcessEmergencyStop } = useRealtime();
   const { lastSensorReading } = useSensorReadingsRealtime();
   const { esp32Online, mqttConnectionStatus, hardwareState, httpStatus } = useMqttHardwareRealtime({
     includeHttpStatus: true,
@@ -125,6 +132,14 @@ export function ProcessosPage() {
   const detailsResetKey =
     precheckProcess?.id_processo ?? data.selectedProcess?.id_processo ?? data.activeProcess?.id_processo ?? null;
   const precheck = useProcessPrecheck(precheckProcess?.id_processo ?? null);
+  const operational = useProcessOperationalState(
+    data.activeProcess?.id_processo ?? null,
+    Boolean(data.activeProcess),
+  );
+  const refreshOperational = operational.refresh;
+  const refreshAll = useCallback(async (): Promise<void> => {
+    await Promise.all([refresh(), refreshOperational()]);
+  }, [refresh, refreshOperational]);
   const {
     actionLoading,
     actionError,
@@ -132,12 +147,16 @@ export function ProcessosPage() {
     clearFeedback,
     createConfiguredProcess,
     runProcessAction,
-  } = useProcessActions(refresh, {
+  } = useProcessActions(refreshAll, {
     onPrecheckBlocked: precheck.setPrecheckFromBackend,
   });
   const [isNewProcessOpen, setIsNewProcessOpen] = useState<boolean>(false);
   const [actionState, setActionState] = useState<ProcessoActionState | null>(null);
   const [liveVacuumReadings, setLiveVacuumReadings] = useState<SensorReadingPayload[]>([]);
+  const [operationalReason, setOperationalReason] = useState<string>(
+    'Intervencao tecnica supervisionada pelo painel de processos.',
+  );
+  const [leaseDuration, setLeaseDuration] = useState<number>(120);
   const processosPorStatus = countBy(data.processes, (processo) => processo.status_processo);
   const currentProcessPrecheck =
     precheckProcess && precheck.precheck?.id_processo === precheckProcess.id_processo
@@ -169,7 +188,7 @@ export function ProcessosPage() {
 
       const key =
         String(reading.id_leitura_sensor ?? '') ||
-        `${reading.registrado_em ?? reading.enviado_em ?? 'live'}-${index}`;
+        `${reading.leitura_em ?? reading.registrado_em ?? reading.enviado_em ?? 'live'}-${index}`;
 
       uniqueReadings.set(key, reading);
     });
@@ -185,11 +204,11 @@ export function ProcessosPage() {
     liveVacuumReadings,
   ]);
   const activeVacuumChartData = activeVacuumReadings.map((reading) => ({
-    name: formatShortTime(reading.registrado_em ?? reading.enviado_em),
+    name: formatShortTime(reading.leitura_em ?? reading.registrado_em ?? reading.enviado_em),
     value: toNumber(reading.valor_vacuo) ?? 0,
   }));
   const selectedVacuumChartData = data.selectedReadings.map((reading) => ({
-    name: formatShortTime(reading.registrado_em ?? reading.criado_em),
+    name: formatShortTime(reading.leitura_em ?? reading.registrado_em ?? reading.criado_em),
     value: toNumber(reading.valor_vacuo) ?? 0,
   })).reverse();
   const shouldShowRealtimeVacuumChart = Boolean(data.activeProcess);
@@ -211,6 +230,34 @@ export function ProcessosPage() {
       window.clearTimeout(timeoutId);
     };
   }, [activeProcessId]);
+
+  useEffect(() => {
+    if (!lastProcessStatus) return;
+
+    void refresh();
+    if (data.selectedProcess?.id_processo === lastProcessStatus.id_processo) {
+      void selectProcess(lastProcessStatus.id_processo);
+    }
+  }, [
+    data.selectedProcess?.id_processo,
+    lastProcessStatus,
+    refresh,
+    selectProcess,
+  ]);
+
+  useEffect(() => {
+    if (!lastProcessEmergencyStop) return;
+
+    void refresh();
+    if (data.selectedProcess?.id_processo === lastProcessEmergencyStop.id_processo) {
+      void selectProcess(lastProcessEmergencyStop.id_processo);
+    }
+  }, [
+    data.selectedProcess?.id_processo,
+    lastProcessEmergencyStop,
+    refresh,
+    selectProcess,
+  ]);
 
   useEffect(() => {
     if (!activeProcessId || !lastSensorReading) {
@@ -264,7 +311,7 @@ export function ProcessosPage() {
               Novo processo
             </button>
           ) : null}
-          <button type="button" onClick={() => void refresh()} disabled={isLoading}>
+          <button type="button" onClick={() => void refreshAll()} disabled={isLoading}>
             <RefreshCw size={16} aria-hidden="true" />
             {isLoading ? 'Atualizando' : 'Atualizar'}
           </button>
@@ -287,7 +334,7 @@ export function ProcessosPage() {
         <ProcessStatusBadge
           label={`Ultima leitura ${
             typeof lastSensorReading?.valor_vacuo === 'number'
-              ? `${lastSensorReading.valor_vacuo} mbar`
+              ? `${lastSensorReading.valor_vacuo} ${lastSensorReading.unidade_medida ?? 'kPa'}`
               : 'pendente'
           }`}
           tone="info"
@@ -332,6 +379,51 @@ export function ProcessosPage() {
         onCreate={() => setIsNewProcessOpen(true)}
       />
 
+      {data.activeProcess ? (
+        <ProcessOperationalPanel
+          dashboard={operational.dashboard}
+          generalClosure={operational.generalClosure}
+          auxiliaryState={operational.auxiliaryState}
+          currentUserId={user?.id ?? null}
+          canControlAuxiliary={permissions.canControlAuxiliary}
+          canStartClosures={permissions.canStartClosures}
+          isLoading={operational.isLoading}
+          actionLoading={operational.actionLoading}
+          error={operational.error}
+          feedback={operational.feedback}
+          reason={operationalReason}
+          leaseDuration={leaseDuration}
+          onReasonChange={setOperationalReason}
+          onLeaseDurationChange={setLeaseDuration}
+          onRefresh={() => void refreshOperational()}
+          onClearFeedback={operational.clearFeedback}
+          onAcquirePump={() => void operational.acquirePump(operationalReason, leaseDuration)}
+          onReleasePump={() => void operational.releasePump(operationalReason)}
+          onAcquireValve={(idProcessoTanque) => (
+            void operational.acquireValve(idProcessoTanque, operationalReason, leaseDuration)
+          )}
+          onReleaseValve={(idProcessoTanque) => (
+            void operational.releaseValve(idProcessoTanque, operationalReason)
+          )}
+          onTurnOnPump={(idProcessoTanque) => (
+            void operational.turnOnPump(idProcessoTanque, operationalReason)
+          )}
+          onTurnOffPump={() => void operational.turnOffPump(operationalReason)}
+          onOpenValve={(idProcessoTanque) => (
+            void operational.openValve(idProcessoTanque, operationalReason)
+          )}
+          onCloseValve={(idProcessoTanque) => (
+            void operational.closeValve(idProcessoTanque, operationalReason)
+          )}
+          onStartTankClosure={(idProcessoTanque) => (
+            void operational.startTankClosure(idProcessoTanque, operationalReason)
+          )}
+          onFinalizeGeneralClosure={() => (
+            void operational.finalizeGeneralClosure(operationalReason)
+          )}
+        />
+      ) : null}
+
       <section className={styles.chartGrid} aria-label="Graficos de processos">
         <RealDataChartPanel
           title="Processos por status"
@@ -345,7 +437,7 @@ export function ProcessosPage() {
             subtitle="Leituras recebidas por Socket.IO para o processo ativo."
             data={activeVacuumChartData}
             variant="line"
-            valueLabel="Vacuo"
+            valueLabel="Vacuo (kPa)"
             emptyMessage="Aguardando leituras em tempo real do processo ativo."
           />
         ) : null}
@@ -355,7 +447,7 @@ export function ProcessosPage() {
             subtitle="Leituras de valor_vacuo carregadas pela API para o processo selecionado."
             data={selectedVacuumChartData}
             variant="line"
-            valueLabel="Vacuo"
+            valueLabel="Vacuo (kPa)"
             emptyMessage="Nenhuma leitura de vacuo retornada para o processo selecionado."
           />
         ) : null}
@@ -397,6 +489,7 @@ export function ProcessosPage() {
         <ProcessPrecheckPanel
           precheck={precheck.precheck}
           valves={precheck.valves}
+          valveTestResults={precheck.valveTestResults}
           tanks={precheck.tanks}
           sensors={precheck.sensors}
           processStatus={precheckProcess?.status_processo}
@@ -419,8 +512,7 @@ export function ProcessosPage() {
               : undefined
           }
           onValidateTank={(idTanque) => void precheck.validateTankCoupling(idTanque)}
-          onValidateSensor={(idSensor) => void precheck.validateSensor(idSensor)}
-          onValidateValve={(idValvula) => void precheck.validateValve(idValvula)}
+          onCorrectiveAction={(item) => void precheck.runCorrectiveAction(item)}
           onOpenValve={(idValvula) => void precheck.openValve(idValvula)}
           onCloseValve={(idValvula) => void precheck.closeValve(idValvula)}
           onClearFeedback={precheck.clearFeedback}
@@ -447,6 +539,15 @@ export function ProcessosPage() {
           />
         </section>
       </ProcessDetailsErrorBoundary>
+
+      <SensorCalibrationModal
+        isOpen={Boolean(precheck.sensorCorrectiveContext)}
+        initialSensorId={precheck.sensorCorrectiveContext?.idSensor ?? null}
+        correctiveActionCode={precheck.sensorCorrectiveContext?.action.codigo ?? null}
+        correctiveActionTitle={precheck.sensorCorrectiveContext?.action.titulo ?? null}
+        onClose={precheck.closeSensorCorrectiveFlow}
+        onSensorMutated={precheck.reexecuteAfterSensorMutation}
+      />
 
       <NewProcessModal
         key={isNewProcessOpen ? 'new-process-open' : 'new-process-closed'}

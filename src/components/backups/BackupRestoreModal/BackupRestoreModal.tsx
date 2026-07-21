@@ -1,9 +1,7 @@
-import { Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import type { BackupListItem, BackupType, RestoreBackupRequest } from '../../../types';
 import {
-  backupRequiresMqttPassword,
   formatBackupBytes,
   formatBackupDate,
   getBackupStatusLabel,
@@ -39,8 +37,6 @@ export function BackupRestoreModal({
   const [selectedId, setSelectedId] = useState<string>('');
   const [motivo, setMotivo] = useState<string>('');
   const [confirmed, setConfirmed] = useState<boolean>(false);
-  const [novaSenhaMqtt, setNovaSenhaMqtt] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const availableBackups = useMemo(
     () => backups.filter((backup) => allowedTypes.includes(backup.tipo_backup)),
@@ -48,7 +44,8 @@ export function BackupRestoreModal({
   );
   const effectiveSelectedId = selectedId || (isOpen && initialSelectedId ? String(initialSelectedId) : '');
   const selectedBackup = availableBackups.find((backup) => backup.id_backup === Number(effectiveSelectedId)) ?? null;
-  const requiresMqttPassword = backupRequiresMqttPassword(selectedBackup?.tipo_backup);
+  const restoresMqttConfiguration =
+    selectedBackup?.tipo_backup === 'MQTT' || selectedBackup?.tipo_backup === 'COMPLETO';
 
   if (!isOpen) {
     return null;
@@ -58,8 +55,6 @@ export function BackupRestoreModal({
     setSelectedId('');
     setMotivo('');
     setConfirmed(false);
-    setNovaSenhaMqtt('');
-    setShowPassword(false);
     setLocalError(null);
   }
 
@@ -79,19 +74,11 @@ export function BackupRestoreModal({
       return;
     }
 
-    if (requiresMqttPassword && novaSenhaMqtt.trim().length < 6) {
-      setLocalError('Nova senha MQTT e obrigatoria e deve ter no minimo 6 caracteres.');
-      return;
-    }
-
     const payload: RestoreBackupRequest = {
       confirmar_restauracao: true,
       motivo: motivo.trim() || undefined,
-      nova_senha_mqtt: requiresMqttPassword ? novaSenhaMqtt : undefined,
     };
     const success = await onConfirm(selectedBackup.id_backup, payload);
-
-    setNovaSenhaMqtt('');
 
     if (success) {
       resetState();
@@ -180,25 +167,11 @@ export function BackupRestoreModal({
 
         <section className={styles.warning}>
           Restaurar altera configuracoes atuais. Processos, relatorios, alarmes e historico nao sao
-          restaurados. Para MQTT/Hardware, teste a conexao ou reinicie a comunicacao depois.
+          restaurados.
+          {restoresMqttConfiguration
+            ? ' Credenciais MQTT nao fazem parte do backup; configure-as novamente pela rota segura e teste a conexao depois da restauracao.'
+            : null}
         </section>
-
-        {requiresMqttPassword ? (
-          <label>
-            Nova senha MQTT
-            <div className={styles.passwordField}>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={novaSenhaMqtt}
-                onChange={(event) => setNovaSenhaMqtt(event.target.value)}
-                autoComplete="new-password"
-              />
-              <button type="button" onClick={() => setShowPassword((current) => !current)}>
-                {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
-              </button>
-            </div>
-          </label>
-        ) : null}
 
         <label>
           Motivo

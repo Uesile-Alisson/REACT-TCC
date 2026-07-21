@@ -82,7 +82,7 @@ export function ProcessListTable({
                   </td>
                   <td>{formatProcessDate(process.iniciado_em ?? process.criado_em)}</td>
                   <td>{formatProcessDate(process.finalizado_em)}</td>
-                  <td>{formatProcessNumber(process.vacuo_alvo, 'mbar')}</td>
+                  <td>{formatProcessNumber(process.vacuo_alvo, 'kPa')}</td>
                   <td>
                     <button
                       type="button"

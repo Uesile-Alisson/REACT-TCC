@@ -6,6 +6,8 @@ type MqttConfigFormProps = {
   errors: MqttConfigFormErrors;
   permissions: MqttHardwarePermissions;
   isSaving: boolean;
+  credentialsConfigured: boolean;
+  credentialsVerified: boolean;
   onChange: (field: keyof MqttConfigFormState, value: string | boolean) => void;
 };
 
@@ -19,9 +21,12 @@ type TextField = {
 const connectionFields: TextField[] = [
   { field: 'broker_url', label: 'Broker MQTT' },
   { field: 'porta', label: 'Porta', type: 'number' },
-  { field: 'usuario_mqtt', label: 'Usuario MQTT' },
-  { field: 'senha_mqtt', label: 'Senha MQTT', type: 'password', placeholder: 'Manter senha atual' },
   { field: 'timeout_comunicacao', label: 'Timeout comunicacao', type: 'number' },
+];
+
+const credentialFields: TextField[] = [
+  { field: 'usuario_mqtt', label: 'Novo usuario MQTT', placeholder: 'Informe para alterar' },
+  { field: 'senha_mqtt', label: 'Nova senha MQTT', type: 'password', placeholder: 'Informe para alterar' },
 ];
 
 const topicFields: TextField[] = [
@@ -31,6 +36,8 @@ const topicFields: TextField[] = [
   { field: 'topico_alarmes', label: 'Topico alarmes' },
   { field: 'topico_heartbeat', label: 'Topico heartbeat' },
   { field: 'topico_acoplamentos', label: 'Topico acoplamentos' },
+  { field: 'topico_configuracoes', label: 'Topico configuracoes' },
+  { field: 'topico_acks', label: 'Topico ACKs' },
 ];
 
 function getFieldValue(formState: MqttConfigFormState, field: keyof MqttConfigFormState): string {
@@ -44,6 +51,8 @@ export function MqttConfigForm({
   errors,
   permissions,
   isSaving,
+  credentialsConfigured,
+  credentialsVerified,
   onChange,
 }: MqttConfigFormProps) {
   const readOnly = !permissions.canEditMqttHardwareConfig;
@@ -93,6 +102,39 @@ export function MqttConfigForm({
           Configuracao ativa
         </label>
       </div>
+
+      <p className={styles.note}>
+        O retain padrao nao e editavel com seguranca nesta versao: a API aceita o campo no DTO,
+        mas ainda nao o persiste nem o devolve na configuracao ativa.
+      </p>
+
+      <section className={styles.topics} aria-label="Credenciais MQTT">
+        <h3>
+          Credenciais externas — {credentialsConfigured
+            ? credentialsVerified ? 'configuradas e verificadas' : 'configuradas'
+            : 'nao configuradas'}
+        </h3>
+        <p className={styles.note}>
+          Usuario e senha nao sao retornados pela API. Para altera-los, informe ambos; eles serao
+          enviados somente pela rota segura de credenciais.
+        </p>
+        <div className={styles.grid}>
+          {credentialFields.map((item) => (
+            <label key={item.field}>
+              {item.label}
+              <input
+                type={item.type ?? 'text'}
+                value={getFieldValue(formState, item.field)}
+                placeholder={item.placeholder}
+                onChange={(event) => onChange(item.field, event.target.value)}
+                disabled={readOnly || isSaving}
+                autoComplete={item.field === 'senha_mqtt' ? 'new-password' : 'off'}
+              />
+              {errors[item.field] ? <strong>{errors[item.field]}</strong> : null}
+            </label>
+          ))}
+        </div>
+      </section>
 
       <section className={styles.topics}>
         <h3>Topicos editaveis</h3>

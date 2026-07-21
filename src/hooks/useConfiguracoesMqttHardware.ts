@@ -4,11 +4,13 @@ import {
   getMqttHardwareConfig,
   getMqttHardwareStatus,
   updateMqttHardwareConfig,
+  updateMqttHardwareCredentials,
 } from '../services/mqtt-hardware.service';
 import type {
   MqttHardwareConfigResponse,
   MqttHardwareStatusResponse,
   UpdateMqttConfigRequest,
+  UpdateMqttCredentialsRequest,
 } from '../types';
 
 type UseConfiguracoesMqttHardwareResult = {
@@ -20,7 +22,10 @@ type UseConfiguracoesMqttHardwareResult = {
   statusError: string | null;
   success: string | null;
   refresh: () => Promise<void>;
-  saveConfig: (payload: UpdateMqttConfigRequest) => Promise<boolean>;
+  saveConfig: (
+    configPayload: UpdateMqttConfigRequest | null,
+    credentialsPayload: UpdateMqttCredentialsRequest | null,
+  ) => Promise<boolean>;
   clearFeedback: () => void;
 };
 
@@ -135,23 +140,55 @@ export function useConfiguracoesMqttHardware(): UseConfiguracoesMqttHardwareResu
     };
   }, [refresh, refreshStatus]);
 
-  const saveConfig = useCallback(async (payload: UpdateMqttConfigRequest): Promise<boolean> => {
+  const saveConfig = useCallback(async (
+    configPayload: UpdateMqttConfigRequest | null,
+    credentialsPayload: UpdateMqttCredentialsRequest | null,
+  ): Promise<boolean> => {
     setIsSaving(true);
     setConfigError(null);
     setSuccess(null);
+    let updatedConfig = config;
+    let configUpdated = false;
 
     try {
-      const updatedConfig = await updateMqttHardwareConfig(payload);
+      if (configPayload) {
+        updatedConfig = await updateMqttHardwareConfig(configPayload);
+        configUpdated = true;
+        setConfig(updatedConfig);
+      }
+
+      if (credentialsPayload) {
+        await updateMqttHardwareCredentials(credentialsPayload);
+        try {
+          updatedConfig = await getMqttHardwareConfig();
+        } catch {
+          // A credencial ja foi verificada e aplicada. Uma falha ao recarregar
+          // os indicadores nao deve transformar a operacao concluida em erro.
+        }
+      }
+
       setConfig(updatedConfig);
-      setSuccess('Configuracao MQTT atualizada com sucesso.');
+      setSuccess(
+        configPayload && credentialsPayload
+          ? 'Configuracao e credenciais MQTT atualizadas pelas rotas seguras.'
+          : credentialsPayload
+            ? 'Credenciais MQTT atualizadas e verificadas com sucesso.'
+            : 'Configuracao MQTT atualizada com sucesso.',
+      );
       return true;
     } catch (error: unknown) {
-      setConfigError(getMqttConfigErrorMessage(error));
+      const errorMessage = getMqttConfigErrorMessage(error);
+
+      setConfigError(
+        configUpdated && credentialsPayload
+          ? `A configuracao nao sensivel foi atualizada, mas as credenciais anteriores foram preservadas: ${errorMessage}`
+          : errorMessage,
+      );
       return false;
     } finally {
       setIsSaving(false);
     }
-  }, []);
+  }, [config]);
 
   const clearFeedback = useCallback((): void => {
     setSuccess(null);

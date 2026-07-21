@@ -2,9 +2,11 @@ import { api } from '../api/axios';
 import type {
   MqttCommandRequest,
   MqttCommandResponse,
+  MqttCredentialsUpdateResponse,
   MqttHardwareConfigResponse,
   MqttHardwareStatusResponse,
   UpdateMqttConfigRequest,
+  UpdateMqttCredentialsRequest,
 } from '../types/mqtt-hardware.types';
 
 type MqttCommandPath =
@@ -53,6 +55,17 @@ export async function updateMqttHardwareConfig(
   return data;
 }
 
+export async function updateMqttHardwareCredentials(
+  payload: UpdateMqttCredentialsRequest,
+): Promise<MqttCredentialsUpdateResponse> {
+  const { data } = await api.put<MqttCredentialsUpdateResponse>(
+    '/mqtt-hardware/credentials',
+    payload,
+  );
+
+  return data;
+}
+
 export function testMqttConnection(): Promise<MqttCommandResponse> {
   return sendMqttCommand('test');
 }
@@ -93,6 +106,7 @@ export const mqttHardwareService = {
   getMqttHardwareStatus,
   getMqttHardwareConfig,
   updateMqttHardwareConfig,
+  updateMqttHardwareCredentials,
   testMqttConnection,
   reconnectMqtt,
   disconnectMqtt,

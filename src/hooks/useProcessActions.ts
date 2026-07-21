@@ -43,8 +43,14 @@ function buildCreatePayload(form: ProcessoFormState): CreateProcessoRequest {
   return {
     nome_processo: form.nome_processo.trim() || undefined,
     tempo_maximo: Number(form.tempo_maximo),
+    modo_operacao_auxiliar: form.modo_operacao_auxiliar,
+    encerramento_automatico: form.encerramento_automatico,
     tanques: form.tanques.map((tanque) => ({
       id_tanque: Number(tanque.id_tanque),
+      prioridade:
+        form.modo_operacao_auxiliar !== 'MANUAL' && form.tanques.length > 1
+          ? Number(tanque.prioridade)
+          : undefined,
       vacuo_alvo: toOptionalNumber(tanque.vacuo_alvo_tanque),
       sensores: [
         {
@@ -118,8 +124,8 @@ export function useProcessActions(
       setActionSuccess(null);
 
       try {
-        await createProcesso(buildCreatePayload(form));
-        setActionSuccess('Processo configurado com sucesso.');
+        const result = await createProcesso(buildCreatePayload(form));
+        setActionSuccess(result.message);
         await onDone();
       } catch (error: unknown) {
         setActionError(getAuthErrorMessage(error));
@@ -138,37 +144,37 @@ export function useProcessActions(
 
       try {
         if (action === 'start') {
-          await startProcesso(idProcesso);
-          setActionSuccess('Processo iniciado com sucesso.');
+          const result = await startProcesso(idProcesso);
+          setActionSuccess(result.message);
         }
 
         if (action === 'pause') {
-          await pauseProcesso(idProcesso);
-          setActionSuccess('Processo pausado com sucesso.');
+          const result = await pauseProcesso(idProcesso);
+          setActionSuccess(result.message);
         }
 
         if (action === 'resume') {
-          await resumeProcesso(idProcesso);
-          setActionSuccess('Processo retomado com sucesso.');
+          const result = await resumeProcesso(idProcesso);
+          setActionSuccess(result.message);
         }
 
         if (action === 'finish') {
-          await finishProcesso(idProcesso, { observacao: reason || undefined });
-          setActionSuccess('Processo finalizado com sucesso.');
+          const result = await finishProcesso(idProcesso, { observacao: reason || undefined });
+          setActionSuccess(result.message);
         }
 
         if (action === 'interrupt') {
-          await interruptProcesso(idProcesso, {
+          const result = await interruptProcesso(idProcesso, {
             motivo: reason || 'Interrompido pela tela de Processos.',
           });
-          setActionSuccess('Processo interrompido com sucesso.');
+          setActionSuccess(result.message);
         }
 
         if (action === 'emergency-stop') {
-          await emergencyStopProcesso(idProcesso, {
+          const result = await emergencyStopProcesso(idProcesso, {
             motivo: reason || 'Parada de emergencia solicitada pela tela de Processos.',
           });
-          setActionSuccess('Parada de emergencia enviada com sucesso.');
+          setActionSuccess(result.message);
         }
 
         await onDone();

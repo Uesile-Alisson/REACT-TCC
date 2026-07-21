@@ -66,8 +66,8 @@ function validateForm(form: TanqueConfigFormState): TanqueConfigFormErrors {
     errors.volume = 'Informe volume maior que zero.';
   }
 
-  if (vacuoPadrao === null) {
-    errors.vacuo_padrao = 'Informe um vacuo numerico valido.';
+  if (vacuoPadrao === null || vacuoPadrao >= 0) {
+    errors.vacuo_padrao = 'Informe pressao manometrica negativa em kPa.';
   }
 
   if (!STATUS_OPTIONS.includes(form.status_tanque)) {
@@ -194,10 +194,14 @@ export function TanqueConfigModal({
             {submitted && errors.unidade_volume ? <span>{errors.unidade_volume}</span> : null}
           </label>
           <label>
-            Vacuo padrao
+            Vacuo padrao (kPa manometrico)
             <input
+              type="number"
+              max="-0.001"
+              step="0.001"
               value={form.vacuo_padrao}
               onChange={(event) => updateField('vacuo_padrao', event.target.value)}
+              placeholder="Ex.: -80.000"
             />
             {submitted && errors.vacuo_padrao ? <span>{errors.vacuo_padrao}</span> : null}
           </label>

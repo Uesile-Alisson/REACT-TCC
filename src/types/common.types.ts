@@ -22,6 +22,23 @@ export type ApiErrorPayload = {
   statusCode?: number;
   error?: string;
   errors?: ApiValidationError[];
+  code?: string;
+  bloqueios_operacionais?: string[];
+  id_processo?: number;
+  status_processo?: string;
+  status_partida?: string;
+  status_encerramento_geral?: string;
+  operacao?: string;
+  etapa?: string;
+  estagio?: string;
+  expected_version?: number;
+  current_version?: number;
+  versao_esperada?: number;
+  versao_atual?: number;
+  expected_subsystem_version?: number;
+  current_subsystem_version?: number;
+  expected_tank_version?: number;
+  current_tank_version?: number;
 };
 
 export type ApiMessageResponse = {

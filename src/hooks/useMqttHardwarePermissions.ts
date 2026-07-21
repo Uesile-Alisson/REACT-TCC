@@ -14,6 +14,11 @@ export function useMqttHardwarePermissions(): MqttHardwarePermissions {
       canEditMqttHardwareConfig: canAdministerMqtt,
       canRestartCommunication: canUseTechnicalScreen,
       canSyncHardware: canUseTechnicalScreen,
+      canTestConnection: canUseTechnicalScreen,
+      canReconnect: canUseTechnicalScreen,
+      canDisconnect: canAdministerMqtt,
+      canSendGlobalCommands: canUseTechnicalScreen,
+      canEmergencyStop: canUseTechnicalScreen,
     }),
     [canAdministerMqtt, canUseTechnicalScreen],
   );

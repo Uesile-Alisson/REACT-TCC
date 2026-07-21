@@ -1,4 +1,5 @@
 .panel {
+  position: relative;
   display: grid;
   gap: 16px;
   min-width: 0;
@@ -285,6 +286,52 @@
   color: var(--color-text);
 }
 
+.correctiveAction {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(255, 198, 87, 0.3);
+  border-radius: 7px;
+  background: rgba(255, 198, 87, 0.08);
+}
+
+.correctiveAction > div > strong,
+.correctiveAction > div > small {
+  display: block;
+}
+
+.correctiveAction > div > strong {
+  color: #ffe1a4;
+}
+
+.correctiveAction button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 11px;
+  border: 1px solid rgba(255, 198, 87, 0.42);
+  border-radius: 7px;
+  background: rgba(255, 198, 87, 0.12);
+  color: #ffe1a4;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 820;
+}
+
+.correctiveAction button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.unavailableReason {
+  margin-top: 5px;
+  color: #ffadb8 !important;
+}
+
 .itemMeta span {
   font-size: 0.68rem;
   font-weight: 780;
@@ -305,6 +352,131 @@
   display: grid;
   gap: 9px;
   margin-top: 12px;
+}
+
+.resourceDescription {
+  margin: 7px 0 0;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+.valveTestResult {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(91, 200, 255, 0.22);
+  border-radius: 8px;
+  background: rgba(91, 200, 255, 0.06);
+}
+
+.valveTestResult header {
+  align-items: center;
+}
+
+.valveTestResult p {
+  margin: 7px 0;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+.valveTestResult dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin: 9px 0;
+}
+
+.valveTestResult dl > div {
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+}
+
+.valveTestResult dt,
+.valveTestResult dd {
+  margin: 0;
+}
+
+.valveTestResult dt {
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+}
+
+.valveTestResult dd {
+  margin-top: 4px;
+  color: var(--color-text);
+  font-weight: 750;
+}
+
+.valveTestResult details {
+  margin-top: 7px;
+  color: var(--color-text-muted);
+}
+
+.valveTestResult summary {
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-weight: 750;
+}
+
+.valveTestResult ul {
+  display: grid;
+  gap: 4px;
+  margin: 7px 0 0;
+  padding-left: 18px;
+  list-style: disc;
+}
+
+.confirmOverlay {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  border-radius: inherit;
+  background: rgba(2, 8, 18, 0.82);
+  backdrop-filter: blur(5px);
+}
+
+.confirmDialog {
+  width: min(470px, 100%);
+  padding: 20px;
+  border: 1px solid rgba(255, 198, 87, 0.34);
+  border-radius: 9px;
+  background: var(--gradient-card);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+}
+
+.confirmDialog > svg {
+  color: #ffd789;
+}
+
+.confirmDialog h3 {
+  margin: 9px 0 0;
+  color: var(--color-text);
+}
+
+.confirmDialog p {
+  margin: 9px 0 16px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.confirmDialog > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirmDialog button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 7px;
+  background: var(--color-surface-soft);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-weight: 800;
 }
 
 @media (max-width: 1180px) {
@@ -343,5 +515,19 @@
 
   .summaryGrid {
     grid-template-columns: 1fr;
+  }
+
+  .correctiveAction,
+  .valveTestResult dl {
+    grid-template-columns: 1fr;
+  }
+
+  .correctiveAction button,
+  .confirmDialog button {
+    width: 100%;
+  }
+
+  .confirmDialog > div {
+    display: grid;
   }
 }

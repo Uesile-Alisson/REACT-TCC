@@ -8,12 +8,6 @@ import type {
 
 export const TANQUES_HARDWARE: TanqueHardwareCodigo[] = ['TANQUE_1', 'TANQUE_2', 'TANQUE_3'];
 
-const VALVULAS_OFICIAIS: Record<TanqueHardwareCodigo, { principal: string; auxiliar: string }> = {
-  TANQUE_1: { principal: 'VP_T1', auxiliar: 'VA_T1' },
-  TANQUE_2: { principal: 'VP_T2', auxiliar: 'VA_T2' },
-  TANQUE_3: { principal: 'VP_T3', auxiliar: 'VA_T3' },
-};
-
 const BOMBAS_POR_TIPO: Record<Extract<TipoValvulaHardware, 'PRINCIPAL' | 'AUXILIAR'>, string> = {
   PRINCIPAL: 'BOMBA_VACUO_PRINCIPAL',
   AUXILIAR: 'BOMBA_VACUO_AUXILIAR',
@@ -80,19 +74,10 @@ function normalizeTipo(value: unknown, codigoHardware?: string): TipoValvulaHard
 }
 
 export function getTanqueHardwareCodeFromId(idTanque?: number | null): TanqueHardwareCodigo | null {
-  if (idTanque === 1) {
-    return 'TANQUE_1';
-  }
-
-  if (idTanque === 2) {
-    return 'TANQUE_2';
-  }
-
-  if (idTanque === 3) {
-    return 'TANQUE_3';
-  }
-
-  return null;
+  const normalizedId = Number(idTanque);
+  return Number.isInteger(normalizedId) && normalizedId > 0
+    ? `TANQUE_${normalizedId}`
+    : null;
 }
 
 export function normalizeTanqueHardwareCode(value: unknown): TanqueHardwareCodigo | null {
@@ -105,13 +90,7 @@ export function normalizeTanqueHardwareCode(value: unknown): TanqueHardwareCodig
   }
 
   const normalized = value.trim().toUpperCase().replace(/\s+/g, '_').replace(/-/g, '_');
-  const direct = TANQUES_HARDWARE.find((tanque) => tanque === normalized);
-
-  if (direct) {
-    return direct;
-  }
-
-  const match = normalized.match(/(?:TANQUE_?|T)([123])$/);
+  const match = normalized.match(/(?:TANQUE_?|T)(\d+)$/);
 
   return match ? getTanqueHardwareCodeFromId(Number(match[1])) : null;
 }
@@ -266,11 +245,11 @@ export function groupValvulasByTanque(input: unknown): ValvulasPorTanque {
     const tipo = normalizeTipo(valvula.tipo, valvula.codigo_hardware);
 
     if (tipo === 'PRINCIPAL') {
-      grouped[tanque].principal = valvula;
+      grouped[tanque] = { ...(grouped[tanque] ?? {}), principal: valvula };
     }
 
     if (tipo === 'AUXILIAR') {
-      grouped[tanque].auxiliar = valvula;
+      grouped[tanque] = { ...(grouped[tanque] ?? {}), auxiliar: valvula };
     }
 
     return grouped;
@@ -283,8 +262,8 @@ export function getTanqueHardwareComValvulas(
 ): TanqueHardwareComValvulas {
   return {
     tanque,
-    valvulaPrincipal: grouped[tanque].principal,
-    valvulaAuxiliar: grouped[tanque].auxiliar,
+    valvulaPrincipal: grouped[tanque]?.principal,
+    valvulaAuxiliar: grouped[tanque]?.auxiliar,
   };
 }
 
@@ -292,7 +271,8 @@ export function getExpectedValveCode(
   tanque: TanqueHardwareCodigo,
   tipo: Extract<TipoValvulaHardware, 'PRINCIPAL' | 'AUXILIAR'>,
 ): string {
-  return VALVULAS_OFICIAIS[tanque][tipo === 'PRINCIPAL' ? 'principal' : 'auxiliar'];
+  const suffix = tanque.replace('TANQUE_', '');
+  return `${tipo === 'PRINCIPAL' ? 'VP' : 'VA'}_T${suffix}`;
 }
 
 export function getTanqueHardwareLabel(tanque: TanqueHardwareCodigo): string {

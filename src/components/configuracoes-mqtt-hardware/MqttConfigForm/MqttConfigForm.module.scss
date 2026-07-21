@@ -110,9 +110,17 @@
   accent-color: #5bc8ff;
 }
 
+
 .topics {
   display: grid;
   gap: 12px;
+}
+
+.note {
+  margin: 0;
+  color: #8ba7c4;
+  font-size: 0.76rem;
+  line-height: 1.5;
 }
 
 :global(html[data-theme="light"]) .form {
@@ -141,6 +149,7 @@
   color: var(--color-text-secondary);
 }
 
+
 :global(html[data-theme="light"]) .grid label {
   color: var(--color-text-muted);
 }
@@ -157,6 +166,10 @@
 }
 
 :global(html[data-theme="light"]) .switches {
+  color: var(--color-text-secondary);
+}
+
+:global(html[data-theme="light"]) .note {
   color: var(--color-text-secondary);
 }
 

@@ -1,5 +1,5 @@
 import { io, type Socket } from 'socket.io-client';
-import { SOCKET_NAMESPACES } from './socket-events';
+import { PROCESSOS_EVENTS, SOCKET_NAMESPACES, SOCKET_SYSTEM_EVENTS } from './socket-events';
 
 type RealtimeSocket = Socket;
 
@@ -127,6 +127,24 @@ export function onProcessosRealtimeEvent<TPayload>(
 
   return () => {
     processosSocket.off(eventName, listener);
+  };
+}
+
+export function joinProcessRoom(idProcesso: number): () => void {
+  const join = (): void => {
+    processosSocket.emit(PROCESSOS_EVENTS.JOIN, { id_processo: idProcesso });
+  };
+
+  processosSocket.on(SOCKET_SYSTEM_EVENTS.CONNECT, join);
+  if (processosSocket.connected) {
+    join();
+  }
+
+  return () => {
+    processosSocket.off(SOCKET_SYSTEM_EVENTS.CONNECT, join);
+    if (processosSocket.connected) {
+      processosSocket.emit(PROCESSOS_EVENTS.LEAVE, { id_processo: idProcesso });
+    }
   };
 }
 

@@ -30,11 +30,12 @@ export function ConfiguracoesSistemaVacuoCard({
           <div>
             <input
               type="number"
+              max="-0.001"
               step="0.001"
               value={formState.vacuo_padrao}
               onChange={(event) => onChange('vacuo_padrao', event.target.value)}
               disabled={readOnly}
-              placeholder="Indisponivel"
+              placeholder="Ex.: -80.000"
             />
             <span>kPa</span>
           </div>

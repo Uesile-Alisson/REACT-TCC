@@ -30,7 +30,7 @@ export function TanquesListTable({
             <tr>
               <th>Nome</th>
               <th>Capacidade</th>
-              <th>Vacuo padrao</th>
+              <th>Vacuo padrao (kPa)</th>
               <th>Status</th>
               <th>Atualizacao</th>
             </tr>
@@ -49,7 +49,7 @@ export function TanquesListTable({
                 <td>
                   {tanque.volume.toLocaleString('pt-BR')} {tanque.unidade_volume}
                 </td>
-                <td>{tanque.vacuo_padrao.toLocaleString('pt-BR')}</td>
+                <td>{tanque.vacuo_padrao.toLocaleString('pt-BR')} kPa</td>
                 <td>
                   <TanqueStatusBadge status={tanque.status_tanque} />
                 </td>

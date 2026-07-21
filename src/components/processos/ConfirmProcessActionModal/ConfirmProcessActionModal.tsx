@@ -14,7 +14,7 @@ function getActionLabel(action: ProcessoAction): string {
     start: 'Iniciar processo',
     pause: 'Pausar processo',
     resume: 'Retomar processo',
-    finish: 'Finalizar processo',
+    finish: 'Iniciar encerramento seguro',
     interrupt: 'Interromper processo',
     'emergency-stop': 'Parada de emergencia',
   };
@@ -24,6 +24,18 @@ function getActionLabel(action: ProcessoAction): string {
 
 function requiresReason(action: ProcessoAction): boolean {
   return action === 'finish' || action === 'interrupt' || action === 'emergency-stop';
+}
+
+function getActionNotice(action: ProcessoAction): string | null {
+  if (action === 'finish') {
+    return 'A confirmacao apenas inicia o encerramento geral seguro. O processo sera concluido depois que o backend confirmar o estado seguro do hardware.';
+  }
+
+  if (action === 'emergency-stop') {
+    return 'A resposta HTTP 202 confirma o registro da solicitacao, nao a parada fisica. A confirmacao do latch e das saidas do controlador pode permanecer pendente.';
+  }
+
+  return null;
 }
 
 export function ConfirmProcessActionModal({
@@ -39,6 +51,7 @@ export function ConfirmProcessActionModal({
   }
 
   const requireReason = requiresReason(actionState.type);
+  const actionNotice = getActionNotice(actionState.type);
   const processName =
     actionState.process.nome_processo ?? `Processo #${actionState.process.id_processo}`;
 
@@ -54,6 +67,8 @@ export function ConfirmProcessActionModal({
           Confirme a acao para <strong>{processName}</strong>. O backend continua validando regras
           de permissao e pre-condicao.
         </p>
+
+        {actionNotice ? <p role="status">{actionNotice}</p> : null}
 
         {requireReason ? (
           <label>

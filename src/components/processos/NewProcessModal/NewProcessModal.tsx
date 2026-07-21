@@ -25,11 +25,10 @@ type NewProcessModalProps = {
   onSubmit: (form: ProcessoFormState) => Promise<void>;
 };
 
-const MAX_TANKS_PER_PROCESS = 3;
-
 function createEmptyTankForm(): ProcessoTanqueFormState {
   return {
     id_tanque: '',
+    prioridade: '',
     vacuo_alvo_tanque: '',
     id_sensor: '',
     observacoes_sensor: '',
@@ -40,6 +39,8 @@ const initialForm: ProcessoFormState = {
   nome_processo: '',
   tempo_maximo: '',
   quantidade_tanques: '1',
+  modo_operacao_auxiliar: 'AUTOMATICO',
+  encerramento_automatico: true,
   tanques: [createEmptyTankForm()],
 };
 
@@ -86,20 +87,29 @@ function validateForm(
   form: ProcessoFormState,
   tanqueOptions: ProcessoTanqueOption[],
   valvulasByTanque: ValvulasPorTanque,
+  maxTanksPerProcess: number,
 ): ProcessoFormErrors {
   const errors: ProcessoFormErrors = {};
   const quantidadeTanques = Number(form.quantidade_tanques);
 
-  if (!form.tempo_maximo.trim() || Number(form.tempo_maximo) <= 0) {
-    errors.tempo_maximo = 'Informe tempo maximo positivo.';
+  if (
+    !form.tempo_maximo.trim() ||
+    !Number.isInteger(Number(form.tempo_maximo)) ||
+    Number(form.tempo_maximo) <= 0
+  ) {
+    errors.tempo_maximo = 'Informe o tempo maximo em segundos inteiros positivos.';
+  }
+
+  if (!['AUTOMATICO', 'ASSISTIDO', 'MANUAL'].includes(form.modo_operacao_auxiliar)) {
+    errors.modo_operacao_auxiliar = 'Selecione um modo de operacao auxiliar valido.';
   }
 
   if (
     !Number.isInteger(quantidadeTanques) ||
     quantidadeTanques < 1 ||
-    quantidadeTanques > MAX_TANKS_PER_PROCESS
+    quantidadeTanques > maxTanksPerProcess
   ) {
-    errors.quantidade_tanques = 'Informe entre 1 e 3 tanques.';
+    errors.quantidade_tanques = `Informe entre 1 e ${maxTanksPerProcess} tanques.`;
   }
 
   const tankErrors = form.tanques.map((tanque) => {
@@ -113,8 +123,8 @@ function validateForm(
       const tanqueHardwareCode = getTanqueHardwareCode(tanque, tanqueOptions);
 
       if (!tanqueHardwareCode) {
-        currentErrors.codigo_hardware = 'Tanque sem codigo de hardware TANQUE_1, TANQUE_2 ou TANQUE_3.';
-      } else if (!valvulasByTanque[tanqueHardwareCode].principal) {
+        currentErrors.codigo_hardware = 'Tanque sem codigo de hardware no formato TANQUE_N.';
+      } else if (!valvulasByTanque[tanqueHardwareCode]?.principal) {
         currentErrors.valvula_principal =
           `Nao foi possivel iniciar o processo: a valvula principal do ${getTanqueHardwareLabel(tanqueHardwareCode)} nao foi encontrada no hardware cadastrado.`;
       }
@@ -124,12 +134,31 @@ function validateForm(
       currentErrors.id_sensor = 'Selecione um sensor de vacuo.';
     }
 
-    if (tanque.vacuo_alvo_tanque.trim() && Number(tanque.vacuo_alvo_tanque) <= 0) {
-      currentErrors.vacuo_alvo_tanque = 'Use valor positivo.';
+    if (tanque.vacuo_alvo_tanque.trim()) {
+      const vacuoAlvo = Number(tanque.vacuo_alvo_tanque);
+
+      if (!Number.isFinite(vacuoAlvo) || vacuoAlvo >= 0) {
+        currentErrors.vacuo_alvo_tanque = 'Use pressao manometrica negativa em kPa.';
+      }
     }
 
     return currentErrors;
   });
+
+  if (form.modo_operacao_auxiliar !== 'MANUAL' && quantidadeTanques > 1) {
+    const priorities = form.tanques.map((tanque) => Number(tanque.prioridade));
+    const expectedPriorities = Array.from({ length: quantidadeTanques }, (_, index) => index + 1);
+    const hasCompleteOrder =
+      priorities.every((priority) => Number.isInteger(priority)) &&
+      new Set(priorities).size === quantidadeTanques &&
+      expectedPriorities.every((priority) => priorities.includes(priority));
+
+    if (!hasCompleteOrder) {
+      tankErrors.forEach((tankError) => {
+        tankError.prioridade = `Defina uma ordem unica de 1 a ${quantidadeTanques}.`;
+      });
+    }
+  }
 
   if (tankErrors.some((tankError) => Object.keys(tankError).length > 0)) {
     errors.tanques = tankErrors;
@@ -139,7 +168,10 @@ function validateForm(
 }
 
 function resizeTankForms(currentTanks: ProcessoTanqueFormState[], quantity: number): ProcessoTanqueFormState[] {
-  return Array.from({ length: quantity }, (_, index) => currentTanks[index] ?? createEmptyTankForm());
+  return Array.from({ length: quantity }, (_, index) => ({
+    ...(currentTanks[index] ?? createEmptyTankForm()),
+    prioridade: String(quantity - index),
+  }));
 }
 
 type TankHardwarePreviewProps = {
@@ -161,7 +193,7 @@ function TankHardwarePreview({
     return (
       <section className={styles.hardwareBox} aria-label="Hardware vinculado ao tanque">
         <strong>Hardware vinculado</strong>
-        <p>Selecione um tanque TANQUE_1, TANQUE_2 ou TANQUE_3 para visualizar as valvulas fixas.</p>
+        <p>Selecione um tanque com codigo TANQUE_N para visualizar as valvulas vinculadas.</p>
       </section>
     );
   }
@@ -220,18 +252,25 @@ export function NewProcessModal({
     loadingTanques,
     loadingSensores,
     loadingHardware,
+    loadingSystemConfig,
     loadingSensoresByTanque,
     errorTanques,
     errorSensores,
     errorHardware,
+    errorSystemConfig,
     errorSensoresByTanque,
     valvulasByTanque,
+    maxTanksPerProcess,
     setSelectedTanqueId,
     loadSensoresForTanque,
   } = useProcessoConfiguracaoOptions(isOpen);
+  const availableMaxTanks = Math.max(
+    1,
+    Math.min(maxTanksPerProcess ?? 1, tanqueOptions.length || maxTanksPerProcess || 1),
+  );
   const errors = useMemo(
-    () => validateForm(form, tanqueOptions, valvulasByTanque),
-    [form, tanqueOptions, valvulasByTanque],
+    () => validateForm(form, tanqueOptions, valvulasByTanque, availableMaxTanks),
+    [availableMaxTanks, form, tanqueOptions, valvulasByTanque],
   );
   const hasErrors = Object.keys(errors).length > 0;
   const canSubmit =
@@ -239,9 +278,11 @@ export function NewProcessModal({
     !loadingTanques &&
     !loadingSensores &&
     !loadingHardware &&
+    !loadingSystemConfig &&
     !errorTanques &&
     !errorSensores &&
     !errorHardware &&
+    !errorSystemConfig &&
     !hasErrors &&
     form.tanques.every((tanque) => tanque.id_tanque.trim().length > 0 && tanque.id_sensor.trim().length > 0);
 
@@ -249,14 +290,29 @@ export function NewProcessModal({
     return null;
   }
 
-  function updateField(field: keyof ProcessoFormState, value: string): void {
+  function updateField(
+    field: 'nome_processo' | 'tempo_maximo' | 'quantidade_tanques' | 'modo_operacao_auxiliar',
+    value: string,
+  ): void {
     if (field === 'quantidade_tanques') {
-      const quantity = Math.min(Math.max(Number(value) || 1, 1), MAX_TANKS_PER_PROCESS);
+      const quantity = Math.min(Math.max(Number(value) || 1, 1), availableMaxTanks);
 
       setForm((currentForm) => ({
         ...currentForm,
         quantidade_tanques: String(quantity),
         tanques: resizeTankForms(currentForm.tanques, quantity),
+      }));
+      return;
+    }
+
+    if (field === 'modo_operacao_auxiliar') {
+      setForm((currentForm) => ({
+        ...currentForm,
+        modo_operacao_auxiliar: value as ProcessoFormState['modo_operacao_auxiliar'],
+        tanques:
+          value === 'MANUAL'
+            ? currentForm.tanques
+            : resizeTankForms(currentForm.tanques, currentForm.tanques.length),
       }));
       return;
     }
@@ -275,6 +331,27 @@ export function NewProcessModal({
         tanqueIndex === index ? { ...tanque, [field]: value } : tanque,
       ),
     }));
+  }
+
+  function updateTankPriority(index: number, value: string): void {
+    setForm((currentForm) => {
+      const previousPriority = currentForm.tanques[index]?.prioridade ?? '';
+
+      return {
+        ...currentForm,
+        tanques: currentForm.tanques.map((tanque, tanqueIndex) => {
+          if (tanqueIndex === index) {
+            return { ...tanque, prioridade: value };
+          }
+
+          if (tanque.prioridade === value) {
+            return { ...tanque, prioridade: previousPriority };
+          }
+
+          return tanque;
+        }),
+      };
+    });
   }
 
   function handleTanqueChange(index: number, value: string): void {
@@ -334,30 +411,72 @@ export function NewProcessModal({
             />
           </label>
           <label>
-            Tempo maximo
+            Tempo maximo (segundos)
             <input
               type="number"
               min="1"
+              step="1"
               value={form.tempo_maximo}
               onChange={(event) => updateField('tempo_maximo', event.target.value)}
-              placeholder="Minutos"
+              placeholder="Ex.: 900"
             />
             {submitted && errors.tempo_maximo ? <span>{errors.tempo_maximo}</span> : null}
+          </label>
+          <label>
+            Modo de operacao auxiliar
+            <select
+              value={form.modo_operacao_auxiliar}
+              onChange={(event) => updateField('modo_operacao_auxiliar', event.target.value)}
+              disabled={isSubmitting}
+            >
+              <option value="AUTOMATICO">Automatico</option>
+              <option value="ASSISTIDO">Assistido</option>
+              <option value="MANUAL">Manual</option>
+            </select>
+            {submitted && errors.modo_operacao_auxiliar ? (
+              <span>{errors.modo_operacao_auxiliar}</span>
+            ) : null}
+            <small className={styles.fieldHelp}>
+              {form.modo_operacao_auxiliar === 'AUTOMATICO'
+                ? 'A automacao gerencia a bomba auxiliar, as valvulas e a fila.'
+                : form.modo_operacao_auxiliar === 'ASSISTIDO'
+                  ? 'A automacao opera ate um tecnico assumir um lease temporario.'
+                  : 'A automacao apenas monitora e recomenda; o acionamento auxiliar e humano.'}
+            </small>
+          </label>
+          <label>
+            Encerramento do processo
+            <select
+              value={form.encerramento_automatico ? 'automatico' : 'manual'}
+              onChange={(event) => setForm((currentForm) => ({
+                ...currentForm,
+                encerramento_automatico: event.target.value === 'automatico',
+              }))}
+              disabled={isSubmitting}
+            >
+              <option value="automatico">Automatico</option>
+              <option value="manual">Com autorizacao manual</option>
+            </select>
           </label>
           <label>
             Quantidade de tanques
             <select
               value={form.quantidade_tanques}
               onChange={(event) => updateField('quantidade_tanques', event.target.value)}
-              disabled={isSubmitting}
+              disabled={isSubmitting || loadingSystemConfig || Boolean(errorSystemConfig)}
             >
-              {[1, 2, 3].map((quantity) => (
+              {Array.from({ length: availableMaxTanks }, (_, index) => index + 1).map((quantity) => (
                 <option key={quantity} value={quantity}>
                   {quantity} tanque{quantity > 1 ? 's' : ''}
                 </option>
               ))}
             </select>
             {submitted && errors.quantidade_tanques ? <span>{errors.quantidade_tanques}</span> : null}
+            {loadingSystemConfig ? <small>Carregando limite global...</small> : null}
+            {errorSystemConfig ? <span>{errorSystemConfig}</span> : null}
+            {!loadingSystemConfig && !errorSystemConfig ? (
+              <small>Limite global atual: {maxTanksPerProcess} tanque(s).</small>
+            ) : null}
           </label>
         </div>
 
@@ -419,13 +538,34 @@ export function NewProcessModal({
                     Vacuo alvo do tanque
                     <input
                       type="number"
-                      min="0"
+                      max="-0.001"
+                      step="0.001"
                       value={tanqueForm.vacuo_alvo_tanque}
                       onChange={(event) => updateTankField(index, 'vacuo_alvo_tanque', event.target.value)}
-                      placeholder="mbar"
+                      placeholder="Ex.: -80.000 kPa"
                     />
                     {submitted && tankError?.vacuo_alvo_tanque ? <span>{tankError.vacuo_alvo_tanque}</span> : null}
                   </label>
+
+                  {form.modo_operacao_auxiliar !== 'MANUAL' && form.tanques.length > 1 ? (
+                    <label>
+                      Prioridade auxiliar
+                      <select
+                        value={tanqueForm.prioridade}
+                        onChange={(event) => updateTankPriority(index, event.target.value)}
+                        disabled={isSubmitting}
+                      >
+                        {Array.from({ length: form.tanques.length }, (_, priorityIndex) => priorityIndex + 1).map(
+                          (priority) => (
+                            <option key={priority} value={priority}>
+                              {priority}{priority === form.tanques.length ? ' (maior)' : ''}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                      {submitted && tankError?.prioridade ? <span>{tankError.prioridade}</span> : null}
+                    </label>
+                  ) : null}
 
                   <label>
                     Sensor de vacuo
@@ -494,6 +634,11 @@ export function NewProcessModal({
         <p className={styles.note}>
           Cada tanque possui seu proprio vacuo alvo e sensor de vacuo. O processo nao usa vacuo
           alvo geral. As valvulas sao fixas por tanque e carregadas automaticamente do hardware.
+        </p>
+        <p className={styles.note}>
+          O modo selecionado controla apenas o subsistema auxiliar. O encerramento e configurado
+          separadamente, conforme o contrato da API. Em processos automaticos ou assistidos, o
+          maior numero de prioridade e atendido primeiro.
         </p>
 
         <footer>

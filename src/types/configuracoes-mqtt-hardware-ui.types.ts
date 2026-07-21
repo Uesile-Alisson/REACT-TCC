@@ -1,4 +1,8 @@
-import type { MqttHardwareConfigResponse, UpdateMqttConfigRequest } from './mqtt-hardware.types';
+import type {
+  MqttHardwareConfigResponse,
+  UpdateMqttConfigRequest,
+  UpdateMqttCredentialsRequest,
+} from './mqtt-hardware.types';
 
 export type MqttConfigFormState = {
   broker_url: string;
@@ -11,6 +15,8 @@ export type MqttConfigFormState = {
   topico_alarmes: string;
   topico_heartbeat: string;
   topico_acoplamentos: string;
+  topico_configuracoes: string;
+  topico_acks: string;
   reconexao_automatica: boolean;
   timeout_comunicacao: string;
   ativo: boolean;
@@ -23,9 +29,23 @@ export type MqttHardwarePermissions = {
   canEditMqttHardwareConfig: boolean;
   canRestartCommunication: boolean;
   canSyncHardware: boolean;
+  canTestConnection: boolean;
+  canReconnect: boolean;
+  canDisconnect: boolean;
+  canSendGlobalCommands: boolean;
+  canEmergencyStop: boolean;
 };
 
-export type MqttHardwareAction = 'restartCommunication' | 'syncHardware';
+export type MqttHardwareAction =
+  | 'restartCommunication'
+  | 'syncHardware'
+  | 'testConnection'
+  | 'reconnect'
+  | 'disconnect'
+  | 'turnOffAllPumps'
+  | 'openAllValves'
+  | 'closeAllValves'
+  | 'emergencyStop';
 
 export type MqttHardwareActionFeedback = {
   type: MqttHardwareAction;
@@ -33,8 +53,8 @@ export type MqttHardwareActionFeedback = {
 };
 
 export type MqttConfigFormPayloadResult = {
-  payload: UpdateMqttConfigRequest;
-  hasPasswordChange: boolean;
+  configPayload: UpdateMqttConfigRequest | null;
+  credentialsPayload: UpdateMqttCredentialsRequest | null;
 };
 
 export type MqttConfigFormSnapshot = {

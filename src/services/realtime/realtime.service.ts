@@ -18,6 +18,13 @@ import type {
   MqttConnectionStatusPayload,
   MqttErrorPayload,
   ProcessPrecheckResultPayload,
+  ProcessAuxiliaryStateUpdatedPayload,
+  ProcessDashboardUpdatedPayload,
+  ProcessEmergencyStopPayload,
+  ProcessGeneralClosureUpdatedPayload,
+  ProcessStatusChangedPayload,
+  ProcessTankClosureUpdatedPayload,
+  ProcessTankUpdatedPayload,
   RealtimeListener,
   SensorAcoplamentoPayload,
   SensorReadingPayload,
@@ -120,6 +127,48 @@ export function onProcessPrecheckResult(
   return onProcessosRealtimeEvent(PROCESSOS_EVENTS.PRECHECK_RESULT, listener);
 }
 
+export function onProcessStatusChanged(
+  listener: RealtimeListener<ProcessStatusChangedPayload>,
+): () => void {
+  return onProcessosRealtimeEvent(PROCESSOS_EVENTS.STATUS_CHANGED, listener);
+}
+
+export function onProcessEmergencyStop(
+  listener: RealtimeListener<ProcessEmergencyStopPayload>,
+): () => void {
+  return onProcessosRealtimeEvent(PROCESSOS_EVENTS.EMERGENCY_STOP, listener);
+}
+
+export function onProcessDashboardUpdated(
+  listener: RealtimeListener<ProcessDashboardUpdatedPayload>,
+): () => void {
+  return onProcessosRealtimeEvent(PROCESSOS_EVENTS.DASHBOARD_UPDATED, listener);
+}
+
+export function onProcessAuxiliaryStateUpdated(
+  listener: RealtimeListener<ProcessAuxiliaryStateUpdatedPayload>,
+): () => void {
+  return onProcessosRealtimeEvent(PROCESSOS_EVENTS.AUXILIARY_STATE_UPDATED, listener);
+}
+
+export function onProcessTankUpdated(
+  listener: RealtimeListener<ProcessTankUpdatedPayload>,
+): () => void {
+  return onProcessosRealtimeEvent(PROCESSOS_EVENTS.TANK_UPDATED, listener);
+}
+
+export function onProcessTankClosureUpdated(
+  listener: RealtimeListener<ProcessTankClosureUpdatedPayload>,
+): () => void {
+  return onProcessosRealtimeEvent(PROCESSOS_EVENTS.TANK_CLOSURE_UPDATED, listener);
+}
+
+export function onProcessGeneralClosureUpdated(
+  listener: RealtimeListener<ProcessGeneralClosureUpdatedPayload>,
+): () => void {
+  return onProcessosRealtimeEvent(PROCESSOS_EVENTS.GENERAL_CLOSURE_UPDATED, listener);
+}
+
 export const realtimeService = {
   onSocketConnect,
   onSocketDisconnect,
@@ -138,4 +187,11 @@ export const realtimeService = {
   onAlarmRecoveryAttempt,
   onSensorAcoplamentoUpdated,
   onProcessPrecheckResult,
+  onProcessStatusChanged,
+  onProcessEmergencyStop,
+  onProcessDashboardUpdated,
+  onProcessAuxiliaryStateUpdated,
+  onProcessTankUpdated,
+  onProcessTankClosureUpdated,
+  onProcessGeneralClosureUpdated,
 };

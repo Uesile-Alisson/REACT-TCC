@@ -7,6 +7,15 @@ import type {
   ValvulaHardware,
 } from '../../types';
 import type { ProcessoPrecheckResponse } from '../../types/processos.types';
+import type {
+  ProcessoAuxiliarState,
+  ProcessoDashboardReadingPoint,
+  ProcessoDashboardResponse,
+  ProcessoDashboardTank,
+  ProcessoEmergencyState,
+  ProcessoGeneralClosureState,
+  ProcessoTankClosureState,
+} from '../../types/processos.types';
 
 export type RealtimeConnectionState = {
   isConnected: boolean;
@@ -54,6 +63,8 @@ export type SensorReadingPayload = {
   id_tanque?: Id;
   id_sensor?: Id;
   valor_vacuo?: number;
+  unidade_medida?: string | null;
+  leitura_em?: DateString;
   registrado_em?: DateString;
   enviado_em?: DateString;
   [key: string]: unknown;
@@ -181,6 +192,67 @@ export type ProcessLifecyclePayload = {
 };
 
 export type ProcessPrecheckResultPayload = ProcessoPrecheckResponse;
+
+export type ProcessStatusChangedPayload = {
+  id_processo: Id;
+  status_processo: StatusProcesso;
+  previous_status?: StatusProcesso | null;
+  message?: string;
+  emitted_at: DateString;
+};
+
+export type ProcessDashboardUpdatedPayload = {
+  id_processo: Id;
+  dashboard: ProcessoDashboardResponse;
+  emitted_at: DateString;
+};
+
+export type ProcessAuxiliaryStateUpdatedPayload = {
+  id_processo: Id;
+  auxiliary_state: ProcessoAuxiliarState;
+  emitted_at: DateString;
+};
+
+export type ProcessTankUpdatedPayload = {
+  id_processo: Id;
+  id_processo_tanque: Id;
+  id_tanque: Id;
+  lifecycle_changed: boolean;
+  previous_status: string;
+  closure_changed: boolean;
+  previous_closure_status: string;
+  stagnation_changed: boolean;
+  previous_stagnation_status: string;
+  tank: Omit<ProcessoDashboardTank, 'leituras'>;
+  reading: ProcessoDashboardReadingPoint;
+  emitted_at: DateString;
+};
+
+export type ProcessTankClosureUpdatedPayload = {
+  id_processo: Id;
+  id_processo_tanque: Id;
+  id_tanque: Id;
+  previous_status: string;
+  closure: ProcessoTankClosureState;
+  message: string;
+  emitted_at: DateString;
+};
+
+export type ProcessGeneralClosureUpdatedPayload = {
+  id_processo: Id;
+  previous_status: string;
+  closure: ProcessoGeneralClosureState;
+  message: string;
+  emitted_at: DateString;
+};
+
+export type ProcessEmergencyStopPayload = {
+  id_processo: Id;
+  motivo?: string | null;
+  message: string;
+  parada_emergencia: ProcessoEmergencyState;
+  emitted_at: DateString;
+};
 
 export type AlarmRealtimePayload = {
   id_alarme?: Id;

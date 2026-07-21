@@ -12,6 +12,13 @@ import {
   type MqttConnectionStatusPayload,
   type MqttErrorPayload,
   type ProcessPrecheckResultPayload,
+  type ProcessAuxiliaryStateUpdatedPayload,
+  type ProcessDashboardUpdatedPayload,
+  type ProcessEmergencyStopPayload,
+  type ProcessGeneralClosureUpdatedPayload,
+  type ProcessStatusChangedPayload,
+  type ProcessTankClosureUpdatedPayload,
+  type ProcessTankUpdatedPayload,
   type SensorAcoplamentoPayload,
 } from '../../services/realtime';
 import { RealtimeContext, type RealtimeContextData } from './RealtimeContext';
@@ -36,6 +43,13 @@ const initialRealtimeState: RealtimeState = {
   lastAlarm: null,
   lastAcoplamento: null,
   lastPrecheckResult: null,
+  lastProcessStatus: null,
+  lastProcessEmergencyStop: null,
+  lastProcessDashboard: null,
+  lastProcessAuxiliaryState: null,
+  lastProcessTank: null,
+  lastProcessTankClosure: null,
+  lastProcessGeneralClosure: null,
   eventsCount: 0,
 };
 
@@ -157,6 +171,27 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
     const unsubscribePrecheck = realtimeService.onProcessPrecheckResult(
       (payload: ProcessPrecheckResultPayload) => updateRealtimePayload({ lastPrecheckResult: payload }),
     );
+    const unsubscribeProcessStatus = realtimeService.onProcessStatusChanged(
+      (payload: ProcessStatusChangedPayload) => updateRealtimePayload({ lastProcessStatus: payload }),
+    );
+    const unsubscribeProcessEmergency = realtimeService.onProcessEmergencyStop(
+      (payload: ProcessEmergencyStopPayload) => updateRealtimePayload({ lastProcessEmergencyStop: payload }),
+    );
+    const unsubscribeProcessDashboard = realtimeService.onProcessDashboardUpdated(
+      (payload: ProcessDashboardUpdatedPayload) => updateRealtimePayload({ lastProcessDashboard: payload }),
+    );
+    const unsubscribeProcessAuxiliary = realtimeService.onProcessAuxiliaryStateUpdated(
+      (payload: ProcessAuxiliaryStateUpdatedPayload) => updateRealtimePayload({ lastProcessAuxiliaryState: payload }),
+    );
+    const unsubscribeProcessTank = realtimeService.onProcessTankUpdated(
+      (payload: ProcessTankUpdatedPayload) => updateRealtimePayload({ lastProcessTank: payload }),
+    );
+    const unsubscribeProcessTankClosure = realtimeService.onProcessTankClosureUpdated(
+      (payload: ProcessTankClosureUpdatedPayload) => updateRealtimePayload({ lastProcessTankClosure: payload }),
+    );
+    const unsubscribeProcessGeneralClosure = realtimeService.onProcessGeneralClosureUpdated(
+      (payload: ProcessGeneralClosureUpdatedPayload) => updateRealtimePayload({ lastProcessGeneralClosure: payload }),
+    );
 
     queueMicrotask(connect);
 
@@ -173,6 +208,13 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       unsubscribeAlarmCreated();
       unsubscribeAcoplamento();
       unsubscribePrecheck();
+      unsubscribeProcessStatus();
+      unsubscribeProcessEmergency();
+      unsubscribeProcessDashboard();
+      unsubscribeProcessAuxiliary();
+      unsubscribeProcessTank();
+      unsubscribeProcessTankClosure();
+      unsubscribeProcessGeneralClosure();
       disconnectRealtime();
     };
   }, [accessToken, connect, disconnect, isAuthenticated, isLoading, updateRealtimePayload, user]);

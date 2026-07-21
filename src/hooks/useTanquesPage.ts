@@ -191,7 +191,7 @@ export function useTanquesPage(): UseTanquesPageResult {
       setSuccessMessage(null);
 
       try {
-        await createSensorConfiguracao(id_tanque, payload);
+        await createSensorConfiguracao(payload);
         setSuccessMessage('Sensor criado com sucesso.');
         await selectTanque(id_tanque);
         return true;

@@ -53,6 +53,13 @@ export function ConfiguracoesMqttHardwarePage() {
     clearActionFeedback,
     handleRestartCommunication,
     handleSyncHardware,
+    handleTestConnection,
+    handleReconnect,
+    handleDisconnect,
+    handleTurnOffAllPumps,
+    handleOpenAllValves,
+    handleCloseAllValves,
+    handleEmergencyStop,
   } = useHardwareActions();
   const canSave = permissions.canEditMqttHardwareConfig && isDirty && !isSaving;
   const canUseBackups = user?.nivel_acesso === 'ADMINISTRADOR';
@@ -126,7 +133,7 @@ export function ConfiguracoesMqttHardwarePage() {
       return;
     }
 
-    const successSave = await saveConfig(result.payload);
+    const successSave = await saveConfig(result.configPayload, result.credentialsPayload);
 
     if (successSave) {
       resetForm();
@@ -229,7 +236,7 @@ export function ConfiguracoesMqttHardwarePage() {
         restoreTypes={['MQTT', 'COMPLETO']}
         canUseBackups={canUseBackups}
         restoreTitle="Restaurar backup MQTT/Hardware"
-        postRestoreMessage="Configuracao MQTT restaurada. Teste a conexao ou reinicie a comunicacao para aplicar o estado operacional."
+        postRestoreMessage="Configuracao MQTT restaurada sem credenciais. Configure usuario e senha pela rota segura antes de testar ou reiniciar a comunicacao."
       />
 
       <section className={styles.statusGrid}>
@@ -260,6 +267,8 @@ export function ConfiguracoesMqttHardwarePage() {
           errors={errors}
           permissions={permissions}
           isSaving={isSaving}
+          credentialsConfigured={config?.credenciais_configuradas === true}
+          credentialsVerified={config?.credenciais_verificadas === true}
           onChange={updateField}
         />
 
@@ -279,6 +288,27 @@ export function ConfiguracoesMqttHardwarePage() {
               if (ok) {
                 void refresh();
               }
+            })}
+            onTestConnection={() => void handleTestConnection().then((ok) => {
+              if (ok) void refresh();
+            })}
+            onReconnect={() => void handleReconnect().then((ok) => {
+              if (ok) void refresh();
+            })}
+            onDisconnect={() => void handleDisconnect().then((ok) => {
+              if (ok) void refresh();
+            })}
+            onTurnOffAllPumps={() => void handleTurnOffAllPumps().then((ok) => {
+              if (ok) void refresh();
+            })}
+            onOpenAllValves={() => void handleOpenAllValves().then((ok) => {
+              if (ok) void refresh();
+            })}
+            onCloseAllValves={() => void handleCloseAllValves().then((ok) => {
+              if (ok) void refresh();
+            })}
+            onEmergencyStop={() => void handleEmergencyStop().then((ok) => {
+              if (ok) void refresh();
             })}
             onClearFeedback={clearActionFeedback}
           />

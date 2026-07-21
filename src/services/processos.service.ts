@@ -5,20 +5,31 @@ import type {
   InterromperProcessoRequest,
   ListProcessosQuery,
   ParadaEmergenciaProcessoRequest,
+  ProcessoActionResult,
+  ProcessoAuxiliarCommandRequest,
+  ProcessoAuxiliarLeaseRequest,
+  ProcessoAuxiliarMutationResponse,
+  ProcessoAuxiliarReleaseRequest,
+  ProcessoAuxiliarState,
+  ProcessoClosureRequest,
   ProcessoDashboardResponse,
   ProcessoEventListResponse,
+  ProcessoEmergencyActionResponse,
+  ProcessoGeneralClosureStartResponse,
+  ProcessoGeneralClosureState,
   ProcessoListResponse,
   ProcessoPrecheckResponse,
   ProcessoReadingListResponse,
   ProcessoReadingQuery,
   ProcessoResponse,
+  ProcessoTankClosureStartResponse,
   ProcessoValvulaAcaoResponse,
   ProcessoValvulaResumo,
   UpdateProcessoConfigRequest,
 } from '../types/processos.types';
 
-export async function createProcesso(payload: CreateProcessoRequest): Promise<ProcessoResponse> {
-  const { data } = await api.post<ProcessoResponse>('/processos', payload);
+export async function createProcesso(payload: CreateProcessoRequest): Promise<ProcessoActionResult> {
+  const { data } = await api.post<ProcessoActionResult>('/processos', payload);
 
   return data;
 }
@@ -47,29 +58,167 @@ export async function getProcessoDashboard(id: number): Promise<ProcessoDashboar
   return data;
 }
 
+export async function getProcessoGeneralClosure(id: number): Promise<ProcessoGeneralClosureState> {
+  const { data } = await api.get<ProcessoGeneralClosureState>(`/processos/${id}/encerramento`);
+
+  return data;
+}
+
+export async function getProcessoAuxiliaryState(id: number): Promise<ProcessoAuxiliarState> {
+  const { data } = await api.get<ProcessoAuxiliarState>(`/processos/${id}/auxiliar`);
+
+  return data;
+}
+
+export async function acquireAuxiliaryPumpControl(
+  id: number,
+  payload: ProcessoAuxiliarLeaseRequest,
+): Promise<ProcessoAuxiliarMutationResponse> {
+  const { data } = await api.post<ProcessoAuxiliarMutationResponse>(
+    `/processos/${id}/auxiliar/controle-bomba/assumir`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function releaseAuxiliaryPumpControl(
+  id: number,
+  payload: ProcessoAuxiliarReleaseRequest,
+): Promise<ProcessoAuxiliarMutationResponse> {
+  const { data } = await api.post<ProcessoAuxiliarMutationResponse>(
+    `/processos/${id}/auxiliar/controle-bomba/liberar`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function acquireAuxiliaryValveControl(
+  id: number,
+  idProcessoTanque: number,
+  payload: ProcessoAuxiliarLeaseRequest,
+): Promise<ProcessoAuxiliarMutationResponse> {
+  const { data } = await api.post<ProcessoAuxiliarMutationResponse>(
+    `/processos/${id}/tanques/${idProcessoTanque}/auxiliar/controle-valvula/assumir`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function releaseAuxiliaryValveControl(
+  id: number,
+  idProcessoTanque: number,
+  payload: ProcessoAuxiliarReleaseRequest,
+): Promise<ProcessoAuxiliarMutationResponse> {
+  const { data } = await api.post<ProcessoAuxiliarMutationResponse>(
+    `/processos/${id}/tanques/${idProcessoTanque}/auxiliar/controle-valvula/liberar`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function turnOnAuxiliaryPump(
+  id: number,
+  idProcessoTanque: number,
+  payload: ProcessoAuxiliarCommandRequest,
+): Promise<ProcessoAuxiliarMutationResponse> {
+  const { data } = await api.post<ProcessoAuxiliarMutationResponse>(
+    `/processos/${id}/tanques/${idProcessoTanque}/auxiliar/bomba/ligar`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function turnOffAuxiliaryPump(
+  id: number,
+  payload: ProcessoAuxiliarCommandRequest,
+): Promise<ProcessoAuxiliarMutationResponse> {
+  const { data } = await api.post<ProcessoAuxiliarMutationResponse>(
+    `/processos/${id}/auxiliar/bomba/desligar`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function openAuxiliaryValve(
+  id: number,
+  idProcessoTanque: number,
+  payload: ProcessoAuxiliarCommandRequest,
+): Promise<ProcessoAuxiliarMutationResponse> {
+  const { data } = await api.post<ProcessoAuxiliarMutationResponse>(
+    `/processos/${id}/tanques/${idProcessoTanque}/auxiliar/valvula/abrir`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function closeAuxiliaryValve(
+  id: number,
+  idProcessoTanque: number,
+  payload: ProcessoAuxiliarCommandRequest,
+): Promise<ProcessoAuxiliarMutationResponse> {
+  const { data } = await api.post<ProcessoAuxiliarMutationResponse>(
+    `/processos/${id}/tanques/${idProcessoTanque}/auxiliar/valvula/fechar`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function startProcessoTankClosure(
+  id: number,
+  idProcessoTanque: number,
+  payload: ProcessoClosureRequest,
+): Promise<ProcessoTankClosureStartResponse> {
+  const { data } = await api.post<ProcessoTankClosureStartResponse>(
+    `/processos/${id}/tanques/${idProcessoTanque}/encerramento/iniciar`,
+    payload,
+  );
+
+  return data;
+}
+
+export async function finalizeProcessoGeneralClosure(
+  id: number,
+  payload: ProcessoClosureRequest,
+): Promise<ProcessoGeneralClosureStartResponse> {
+  const { data } = await api.post<ProcessoGeneralClosureStartResponse>(
+    `/processos/${id}/encerramento/finalizar`,
+    payload,
+  );
+
+  return data;
+}
+
 export async function updateProcessoConfig(
   id: number,
   payload: UpdateProcessoConfigRequest,
-): Promise<ProcessoResponse> {
-  const { data } = await api.patch<ProcessoResponse>(`/processos/${id}/config`, payload);
+): Promise<ProcessoActionResult> {
+  const { data } = await api.patch<ProcessoActionResult>(`/processos/${id}/config`, payload);
 
   return data;
 }
 
-export async function startProcesso(id: number): Promise<ProcessoResponse> {
-  const { data } = await api.post<ProcessoResponse>(`/processos/${id}/iniciar`);
+export async function startProcesso(id: number): Promise<ProcessoActionResult> {
+  const { data } = await api.post<ProcessoActionResult>(`/processos/${id}/iniciar`);
 
   return data;
 }
 
-export async function pauseProcesso(id: number): Promise<ProcessoResponse> {
-  const { data } = await api.post<ProcessoResponse>(`/processos/${id}/pausar`);
+export async function pauseProcesso(id: number): Promise<ProcessoActionResult> {
+  const { data } = await api.post<ProcessoActionResult>(`/processos/${id}/pausar`);
 
   return data;
 }
 
-export async function resumeProcesso(id: number): Promise<ProcessoResponse> {
-  const { data } = await api.post<ProcessoResponse>(`/processos/${id}/retomar`);
+export async function resumeProcesso(id: number): Promise<ProcessoActionResult> {
+  const { data } = await api.post<ProcessoActionResult>(`/processos/${id}/retomar`);
 
   return data;
 }
@@ -77,8 +226,11 @@ export async function resumeProcesso(id: number): Promise<ProcessoResponse> {
 export async function finishProcesso(
   id: number,
   payload: FinalizarProcessoRequest,
-): Promise<ProcessoResponse> {
-  const { data } = await api.post<ProcessoResponse>(`/processos/${id}/finalizar`, payload);
+): Promise<ProcessoGeneralClosureStartResponse> {
+  const { data } = await api.post<ProcessoGeneralClosureStartResponse>(
+    `/processos/${id}/finalizar`,
+    payload,
+  );
 
   return data;
 }
@@ -86,8 +238,8 @@ export async function finishProcesso(
 export async function interruptProcesso(
   id: number,
   payload: InterromperProcessoRequest,
-): Promise<ProcessoResponse> {
-  const { data } = await api.post<ProcessoResponse>(`/processos/${id}/interromper`, payload);
+): Promise<ProcessoActionResult> {
+  const { data } = await api.post<ProcessoActionResult>(`/processos/${id}/interromper`, payload);
 
   return data;
 }
@@ -95,8 +247,8 @@ export async function interruptProcesso(
 export async function emergencyStopProcesso(
   id: number,
   payload: ParadaEmergenciaProcessoRequest,
-): Promise<ProcessoResponse> {
-  const { data } = await api.post<ProcessoResponse>(
+): Promise<ProcessoEmergencyActionResponse> {
+  const { data } = await api.post<ProcessoEmergencyActionResponse>(
     `/processos/${id}/parada-emergencia`,
     payload,
   );
@@ -209,6 +361,18 @@ export const processosService = {
   getActiveProcesso,
   getProcessoById,
   getProcessoDashboard,
+  getProcessoGeneralClosure,
+  getProcessoAuxiliaryState,
+  acquireAuxiliaryPumpControl,
+  releaseAuxiliaryPumpControl,
+  acquireAuxiliaryValveControl,
+  releaseAuxiliaryValveControl,
+  turnOnAuxiliaryPump,
+  turnOffAuxiliaryPump,
+  openAuxiliaryValve,
+  closeAuxiliaryValve,
+  startProcessoTankClosure,
+  finalizeProcessoGeneralClosure,
   updateProcessoConfig,
   startProcesso,
   pauseProcesso,

@@ -80,7 +80,3 @@ export function getShortHash(value?: string | null): string {
 
   return value.length > 16 ? `${value.slice(0, 12)}...${value.slice(-4)}` : value;
 }
-
-export function backupRequiresMqttPassword(type?: BackupType | string | null): boolean {
-  return type === 'MQTT' || type === 'COMPLETO';
-}

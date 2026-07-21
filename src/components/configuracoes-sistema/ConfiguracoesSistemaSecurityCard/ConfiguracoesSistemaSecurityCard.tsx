@@ -30,11 +30,12 @@ export function ConfiguracoesSistemaSecurityCard({
         <div>
           <input
             type="number"
+            max="-0.001"
             step="0.001"
             value={formState.limite_seguranca_vacuo}
             onChange={(event) => onChange('limite_seguranca_vacuo', event.target.value)}
             disabled={readOnly}
-            placeholder="Indisponivel"
+            placeholder="Ex.: -95.000"
           />
           <span>kPa</span>
         </div>

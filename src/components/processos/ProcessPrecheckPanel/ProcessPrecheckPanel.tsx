@@ -1,11 +1,14 @@
 import { motion } from 'framer-motion';
 import { AlertTriangle, Clock3, Play, RefreshCw, ShieldCheck, Wrench } from 'lucide-react';
+import { useState } from 'react';
 import type {
   ProcessoPrecheckGrupo,
   ProcessoPrecheckItem,
   ProcessoPrecheckResponse,
   ProcessoPrecheckStatus,
+  ProcessoValvulaAcaoResponse,
   ProcessoValvulaResumo,
+  ProcessoValvulaTesteSeguroDetalhes,
   StatusProcesso,
 } from '../../../types';
 import { formatProcessDate } from '../processos.utils';
@@ -21,6 +24,7 @@ type ResourceReference = {
 type ProcessPrecheckPanelProps = {
   precheck: ProcessoPrecheckResponse | null;
   valves: ProcessoValvulaResumo[];
+  valveTestResults: Record<number, ProcessoValvulaAcaoResponse>;
   tanks: ResourceReference[];
   sensors: ResourceReference[];
   processStatus?: StatusProcesso;
@@ -37,8 +41,7 @@ type ProcessPrecheckPanelProps = {
   onExecute: () => void;
   onStartProcess?: () => void;
   onValidateTank: (idTanque: number) => void;
-  onValidateSensor: (idSensor: number) => void;
-  onValidateValve: (idValvula: number) => void;
+  onCorrectiveAction: (item: ProcessoPrecheckItem) => void;
   onOpenValve: (idValvula: number) => void;
   onCloseValve: (idValvula: number) => void;
   onClearFeedback: () => void;
@@ -203,6 +206,14 @@ function getValveTypeLabel(valve: ProcessoValvulaResumo): string {
   return 'Linha nao classificada';
 }
 
+function getValveTestDetails(
+  result?: ProcessoValvulaAcaoResponse,
+): ProcessoValvulaTesteSeguroDetalhes | null {
+  return result && isRecord(result.detalhes)
+    ? result.detalhes as ProcessoValvulaTesteSeguroDetalhes
+    : null;
+}
+
 function StatusBadge({ status }: { status?: ProcessoPrecheckStatus | string | null }) {
   return <span className={`${styles.badge} ${getStatusTone(status)}`}>{getStatusLabel(status)}</span>;
 }
@@ -210,6 +221,7 @@ function StatusBadge({ status }: { status?: ProcessoPrecheckStatus | string | nu
 export function ProcessPrecheckPanel({
   precheck,
   valves,
+  valveTestResults,
   tanks,
   sensors,
   processStatus,
@@ -226,18 +238,17 @@ export function ProcessPrecheckPanel({
   onExecute,
   onStartProcess,
   onValidateTank,
-  onValidateSensor,
-  onValidateValve,
+  onCorrectiveAction,
   onOpenValve,
   onCloseValve,
   onClearFeedback,
 }: ProcessPrecheckPanelProps) {
+  const [pendingCorrectiveItem, setPendingCorrectiveItem] = useState<ProcessoPrecheckItem | null>(null);
   const expired = isPrecheckExpired(precheck);
   const blockingFailures =
-    precheck?.falhas_bloqueantes?.filter((failure) => isMeaningfulValue(failure.mensagem)) ?? [];
-  const warnings = precheck?.avisos?.map((item) => item.mensagem).filter(isMeaningfulValue) ?? [];
-  const recommendations =
-    precheck?.recomendacoes?.map((item) => item.mensagem).filter(isMeaningfulValue) ?? [];
+    precheck?.falhas_bloqueantes?.filter(isMeaningfulValue) ?? [];
+  const warnings = precheck?.avisos?.filter(isMeaningfulValue) ?? [];
+  const recommendations = precheck?.recomendacoes?.filter(isMeaningfulValue) ?? [];
   const hasBlockingFailures = blockingFailures.length > 0;
   const hasNotices = warnings.length > 0 || recommendations.length > 0;
   const canOpenCloseValves = processStatus === 'EM_EXECUCAO';
@@ -248,6 +259,27 @@ export function ProcessPrecheckPanel({
       canStartProcess &&
       onStartProcess,
   );
+
+  function handleCorrectiveAction(item: ProcessoPrecheckItem): void {
+    if (
+      item.acao_corretiva?.requer_confirmacao &&
+      item.acao_corretiva.codigo === 'TESTAR_ESTADO_SEGURO_VALVULA'
+    ) {
+      setPendingCorrectiveItem(item);
+      return;
+    }
+
+    onCorrectiveAction(item);
+  }
+
+  function confirmCorrectiveAction(): void {
+    if (!pendingCorrectiveItem) {
+      return;
+    }
+
+    onCorrectiveAction(pendingCorrectiveItem);
+    setPendingCorrectiveItem(null);
+  }
 
   return (
     <motion.section
@@ -367,8 +399,8 @@ export function ProcessPrecheckPanel({
                 <strong>Falhas bloqueantes</strong>
                 <ul>
                   {blockingFailures.map((failure, index) => (
-                    <li key={`${formatDisplayValue(failure.codigo ?? failure.mensagem)}-${index}`}>
-                      {formatDisplayValue(failure.mensagem)}
+                    <li key={`${failure}-${index}`}>
+                      {failure}
                     </li>
                   ))}
                 </ul>
@@ -396,6 +428,35 @@ export function ProcessPrecheckPanel({
                         {item.evidencia ? <small>Evidencia: {formatDisplayValue(item.evidencia)}</small> : null}
                         {formatDetails(item.detalhes) ? <small>{formatDetails(item.detalhes)}</small> : null}
                         {item.timestamp ? <small>{formatProcessDate(item.timestamp)}</small> : null}
+                        {precheck.bloqueado &&
+                        item.status !== 'APROVADO' &&
+                        item.status !== 'IGNORADO' &&
+                        item.acao_corretiva ? (
+                          <div className={styles.correctiveAction}>
+                            <div>
+                              <strong>{item.acao_corretiva.titulo}</strong>
+                              <small>
+                                {item.acao_corretiva.metodo && item.acao_corretiva.endpoint
+                                  ? `${item.acao_corretiva.metodo} ${item.acao_corretiva.endpoint}`
+                                  : 'Orientacao tecnica sem chamada automatica'}
+                              </small>
+                              {!item.acao_corretiva.disponivel && item.acao_corretiva.motivo_indisponibilidade ? (
+                                <small className={styles.unavailableReason}>
+                                  {item.acao_corretiva.motivo_indisponibilidade}
+                                </small>
+                              ) : null}
+                            </div>
+                            <button
+                              type="button"
+                              disabled={!item.acao_corretiva.disponivel || Boolean(loadingAction)}
+                              onClick={() => handleCorrectiveAction(item)}
+                            >
+                              {loadingAction === `corrective-${item.acao_corretiva.codigo}-${item.id_recurso}`
+                                ? 'Executando'
+                                : item.acao_corretiva.titulo}
+                            </button>
+                          </div>
+                        ) : null}
                       </div>
                       <div className={styles.itemMeta}>
                         <StatusBadge status={item.status} />
@@ -426,9 +487,7 @@ export function ProcessPrecheckPanel({
           emptyText="Nenhum sensor retornado pelo checklist."
           resources={sensors}
           loadingAction={loadingAction}
-          actionPrefix="sensor"
-          buttonLabel="Validar"
-          onAction={onValidateSensor}
+          description="Calibracao, ativacao, liberacao e diagnostico aparecem acima somente quando a pre-checagem retornar uma acao corretiva bloqueante."
         />
       </section>
 
@@ -444,8 +503,9 @@ export function ProcessPrecheckPanel({
         {valves.length > 0 ? (
           <div className={styles.valveList}>
             {valves.map((valve) => {
-              const canValidate = valve.pode_validar !== false;
               const canCommand = canOpenCloseValves && valve.pode_abrir_fechar !== false;
+              const testResult = valveTestResults[valve.id_valvula];
+              const testDetails = getValveTestDetails(testResult);
 
               return (
                 <article key={valve.id_valvula}>
@@ -456,24 +516,67 @@ export function ProcessPrecheckPanel({
                     <small>Tanque {getValveRelation(valve.tanque_codigo_hardware ?? valve.id_tanque, valve.tanque)}</small>
                     <small>Bomba {getValveRelation(valve.bomba_codigo_hardware ?? valve.id_bomba, valve.bomba)}</small>
                     <small>
-                      Estado fisico:{' '}
+                      Estado logico informado pelo controlador:{' '}
                       {typeof valve.aberta === 'boolean' ? (valve.aberta ? 'Aberta' : 'Fechada') : 'Sem status'} /
                       {' '}
                       {typeof valve.disponivel === 'boolean'
                         ? valve.disponivel ? 'Disponivel' : 'Indisponivel'
                         : 'Sem status'}
                     </small>
+                    <small>Nao existe feedback mecanico dedicado para confirmar a posicao fisica.</small>
                     <small>Ultimo acionamento: {formatProcessDate(valve.ultimo_acionamento)}</small>
+                    {testResult ? (
+                      <section className={styles.valveTestResult}>
+                        <header>
+                          <strong>Ultimo teste seguro global</strong>
+                          <StatusBadge status={testResult.status} />
+                        </header>
+                        <p>{testResult.mensagem}</p>
+                        {testResult.evidencia ? <small>Evidencia: {testResult.evidencia}</small> : null}
+                        <dl>
+                          <div>
+                            <dt>Snapshot novo</dt>
+                            <dd>{testDetails?.snapshot_recebido === true ? 'Recebido' : 'Nao confirmado'}</dd>
+                          </div>
+                          <div>
+                            <dt>Estado logico seguro</dt>
+                            <dd>{testDetails?.estado_controlador_confirmado === true ? 'Confirmado' : 'Nao confirmado'}</dd>
+                          </div>
+                          <div>
+                            <dt>Feedback mecanico</dt>
+                            <dd>Nao disponivel</dd>
+                          </div>
+                        </dl>
+                        {testDetails?.motivo_nao_confirmacao ? (
+                          <small className={styles.unavailableReason}>{testDetails.motivo_nao_confirmacao}</small>
+                        ) : null}
+                        {testDetails?.command_results?.length ? (
+                          <details>
+                            <summary>Comandos confirmados ({testDetails.command_results.length})</summary>
+                            <ul>
+                              {testDetails.command_results.map((command) => (
+                                <li key={command.correlation_id}>
+                                  {command.comando}: {command.acknowledged ? 'ACK recebido' : 'ACK nao recebido'}
+                                </li>
+                              ))}
+                            </ul>
+                          </details>
+                        ) : null}
+                        {testDetails?.command_failures?.length ? (
+                          <details open>
+                            <summary>Falhas de comando ({testDetails.command_failures.length})</summary>
+                            <ul>
+                              {testDetails.command_failures.map((failure, index) => (
+                                <li key={`${failure.comando}-${index}`}>{failure.comando}: {failure.message}</li>
+                              ))}
+                            </ul>
+                          </details>
+                        ) : null}
+                      </section>
+                    ) : null}
                   </div>
                   <div className={styles.valveStatus}>
                     <StatusBadge status={String(valve.status_atual ?? valve.status_valvula ?? 'PENDENTE')} />
-                    <button
-                      type="button"
-                      disabled={!canValidate || Boolean(loadingAction)}
-                      onClick={() => onValidateValve(valve.id_valvula)}
-                    >
-                      {loadingAction === `valve-validate-${valve.id_valvula}` ? 'Validando' : 'Validar'}
-                    </button>
                     <button
                       type="button"
                       disabled={!canCommand || Boolean(loadingAction)}
@@ -499,6 +602,31 @@ export function ProcessPrecheckPanel({
           <p className={styles.emptyInline}>Nenhuma valvula vinculada foi retornada pelo endpoint do processo.</p>
         )}
       </section>
+
+      {pendingCorrectiveItem?.acao_corretiva ? (
+        <div className={styles.confirmOverlay} role="presentation">
+          <section
+            className={styles.confirmDialog}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="safe-valve-test-title"
+          >
+            <AlertTriangle size={21} aria-hidden="true" />
+            <h3 id="safe-valve-test-title">Executar preparacao segura global?</h3>
+            <p>
+              Este teste nao valida apenas uma valvula: desliga todas as bombas, fecha todas as
+              valvulas, aguarda ACK e exige uma telemetria nova e coerente do ESP32. Ele somente
+              confirma o estado logico do controlador, sem feedback mecanico dedicado.
+            </p>
+            <div>
+              <button type="button" onClick={() => setPendingCorrectiveItem(null)}>Cancelar</button>
+              <button className={styles.primaryButton} type="button" onClick={confirmCorrectiveAction}>
+                Executar teste seguro
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </motion.section>
   );
 }
@@ -528,18 +656,21 @@ function ResourceCard({
   actionPrefix,
   buttonLabel,
   onAction,
+  description,
 }: {
   title: string;
   emptyText: string;
   resources: ResourceReference[];
   loadingAction: string | null;
-  actionPrefix: 'tank' | 'sensor';
-  buttonLabel: string;
-  onAction: (id: number) => void;
+  actionPrefix?: 'tank';
+  buttonLabel?: string;
+  onAction?: (id: number) => void;
+  description?: string;
 }) {
   return (
     <article className={styles.resourceCard}>
       <h3>{title}</h3>
+      {description ? <p className={styles.resourceDescription}>{description}</p> : null}
       {resources.length > 0 ? (
         <ul>
           {resources.map((resource) => (
@@ -551,13 +682,15 @@ function ResourceCard({
               </div>
               <div className={styles.itemMeta}>
                 <StatusBadge status={resource.status} />
-                <button
-                  type="button"
-                  disabled={Boolean(loadingAction)}
-                  onClick={() => onAction(resource.id)}
-                >
-                  {loadingAction === `${actionPrefix}-${resource.id}` ? 'Validando' : buttonLabel}
-                </button>
+                {onAction && actionPrefix && buttonLabel ? (
+                  <button
+                    type="button"
+                    disabled={Boolean(loadingAction)}
+                    onClick={() => onAction(resource.id)}
+                  >
+                    {loadingAction === `${actionPrefix}-${resource.id}` ? 'Validando' : buttonLabel}
+                  </button>
+                ) : null}
               </div>
             </li>
           ))}

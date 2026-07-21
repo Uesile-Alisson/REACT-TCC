@@ -148,8 +148,7 @@ export function ConfiguracoesSistemaPage() {
         <section className={styles.emptyState} role="status">
           <strong>Nenhuma configuracao carregada pela API.</strong>
           <span>
-            Campos internos confirmados no backend: vacuo_padrao,
-            limite_seguranca_vacuo, tolerancia_vacuo_percentual e status_geral_sistema.
+            Verifique a API e as permissoes para carregar os parametros operacionais globais.
           </span>
         </section>
       ) : null}

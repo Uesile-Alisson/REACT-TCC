@@ -58,7 +58,7 @@ export function TanqueDetailPanel({
         </div>
         <div>
           <dt>Vacuo padrao</dt>
-          <dd>{tanque.vacuo_padrao.toLocaleString('pt-BR')}</dd>
+          <dd>{tanque.vacuo_padrao.toLocaleString('pt-BR')} kPa manometrico</dd>
         </div>
         <div>
           <dt>Atualizado em</dt>

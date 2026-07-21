@@ -12,6 +12,8 @@ const topicRows: Array<{ key: keyof MqttHardwareConfigResponse; label: string }>
   { key: 'topico_alarmes', label: 'Alarmes' },
   { key: 'topico_heartbeat', label: 'Heartbeat' },
   { key: 'topico_acoplamentos', label: 'Acoplamentos' },
+  { key: 'topico_configuracoes', label: 'Configuracoes' },
+  { key: 'topico_acks', label: 'ACKs' },
 ];
 
 export function MqttTopicsPanel({ config }: MqttTopicsPanelProps) {

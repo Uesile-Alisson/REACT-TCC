@@ -53,6 +53,19 @@
   opacity: 0.48;
 }
 
+.actions .emergency {
+  border-color: rgba(255, 78, 101, 0.38);
+  background: rgba(255, 78, 101, 0.12);
+  color: #ffadb8;
+}
+
+.safetyNote {
+  margin: 0;
+  color: #8ba7c4;
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
 .errorState,
 .successState {
   display: grid;

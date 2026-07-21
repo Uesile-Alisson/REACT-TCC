@@ -6,12 +6,13 @@ import {
   getPrechecagem,
   listarValvulasProcesso,
   validarAcoplamentoTanque,
-  validarSensorProcesso,
   validarValvulaProcesso,
 } from '../services/processos.service';
 import type {
+  ProcessoPrecheckCorrectiveAction,
   ProcessoPrecheckItem,
   ProcessoPrecheckResponse,
+  ProcessoValvulaAcaoResponse,
   ProcessoValvulaResumo,
 } from '../types';
 import { getAuthErrorMessage } from '../utils/authErrors';
@@ -21,10 +22,14 @@ type PrecheckAction =
   | 'refresh'
   | 'execute'
   | `tank-${number}`
-  | `sensor-${number}`
-  | `valve-validate-${number}`
+  | `corrective-${string}-${number}`
   | `valve-open-${number}`
   | `valve-close-${number}`;
+
+export type SensorCorrectiveContext = {
+  idSensor: number;
+  action: ProcessoPrecheckCorrectiveAction;
+};
 
 type ResourceReference = {
   id: number;
@@ -38,6 +43,8 @@ type UseProcessPrecheckResult = {
   valves: ProcessoValvulaResumo[];
   tanks: ResourceReference[];
   sensors: ResourceReference[];
+  valveTestResults: Record<number, ProcessoValvulaAcaoResponse>;
+  sensorCorrectiveContext: SensorCorrectiveContext | null;
   isLoading: boolean;
   loadingAction: PrecheckAction | null;
   error: string | null;
@@ -48,8 +55,9 @@ type UseProcessPrecheckResult = {
   refreshPrecheck: () => Promise<void>;
   executePrecheck: () => Promise<void>;
   validateTankCoupling: (idTanque: number) => Promise<void>;
-  validateSensor: (idSensor: number) => Promise<void>;
-  validateValve: (idValvula: number) => Promise<void>;
+  runCorrectiveAction: (item: ProcessoPrecheckItem) => Promise<void>;
+  closeSensorCorrectiveFlow: () => void;
+  reexecuteAfterSensorMutation: () => Promise<void>;
   openValve: (idValvula: number) => Promise<void>;
   closeValve: (idValvula: number) => Promise<void>;
 };
@@ -71,6 +79,50 @@ function normalizeValves(response: ProcessoValvulaResumo[] | unknown): ProcessoV
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function getCorrectiveResourceId(item: ProcessoPrecheckItem): number | null {
+  const parsed = typeof item.id_recurso === 'number' ? item.id_recurso : Number(item.id_recurso);
+
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function isSensorCorrectiveAction(action: ProcessoPrecheckCorrectiveAction): boolean {
+  return [
+    'CALIBRAR_SENSOR',
+    'CONTINUAR_CALIBRACAO_SENSOR',
+    'LIBERAR_SENSOR',
+    'ATIVAR_SENSOR',
+    'AGUARDAR_TELEMETRIA_SENSOR',
+    'DIAGNOSTICAR_SENSOR',
+  ].includes(action.codigo);
+}
+
+function hasExpectedCorrectiveContract(
+  idProcesso: number,
+  idRecurso: number,
+  action: ProcessoPrecheckCorrectiveAction,
+): boolean {
+  const sensorBase = `/configuracoes/sensores/${idRecurso}`;
+  const contracts: Record<ProcessoPrecheckCorrectiveAction['codigo'], {
+    method: ProcessoPrecheckCorrectiveAction['metodo'];
+    endpoint: string | null;
+  }> = {
+    CALIBRAR_SENSOR: { method: 'POST', endpoint: `${sensorBase}/calibracao/iniciar` },
+    CONTINUAR_CALIBRACAO_SENSOR: { method: 'POST', endpoint: `${sensorBase}/calibracao/finalizar` },
+    LIBERAR_SENSOR: { method: 'PATCH', endpoint: `${sensorBase}/ativar` },
+    ATIVAR_SENSOR: { method: 'PATCH', endpoint: `${sensorBase}/ativar` },
+    AGUARDAR_TELEMETRIA_SENSOR: { method: 'GET', endpoint: sensorBase },
+    DIAGNOSTICAR_SENSOR: { method: 'GET', endpoint: sensorBase },
+    TESTAR_ESTADO_SEGURO_VALVULA: {
+      method: 'POST',
+      endpoint: `/processos/${idProcesso}/valvulas/${idRecurso}/validar`,
+    },
+    REVISAR_CONFIGURACAO_VALVULA: { method: null, endpoint: null },
+  };
+  const expected = contracts[action.codigo];
+
+  return action.metodo === expected.method && action.endpoint === expected.endpoint;
 }
 
 function getNumericDetail(item: ProcessoPrecheckItem, keys: string[]): number | null {
@@ -143,6 +195,8 @@ export function useProcessPrecheck(idProcesso?: number | null): UseProcessPreche
   const { lastPrecheckResult } = useRealtime();
   const [precheck, setPrecheck] = useState<ProcessoPrecheckResponse | null>(null);
   const [valves, setValves] = useState<ProcessoValvulaResumo[]>([]);
+  const [valveTestResults, setValveTestResults] = useState<Record<number, ProcessoValvulaAcaoResponse>>({});
+  const [sensorCorrectiveContext, setSensorCorrectiveContext] = useState<SensorCorrectiveContext | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingAction, setLoadingAction] = useState<PrecheckAction | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -242,25 +296,72 @@ export function useProcessPrecheck(idProcesso?: number | null): UseProcessPreche
     [idProcesso, runAndRefresh],
   );
 
-  const validateSensor = useCallback(
-    (idSensor: number) =>
-      runAndRefresh(
-        `sensor-${idSensor}`,
-        () => validarSensorProcesso(idProcesso ?? 0, idSensor),
-        `Validacao do sensor #${idSensor} concluida.`,
-      ),
-    [idProcesso, runAndRefresh],
-  );
+  const runCorrectiveAction = useCallback(async (item: ProcessoPrecheckItem): Promise<void> => {
+    const action = item.acao_corretiva;
+    const idRecurso = getCorrectiveResourceId(item);
 
-  const validateValve = useCallback(
-    (idValvula: number) =>
-      runAndRefresh(
-        `valve-validate-${idValvula}`,
-        () => validarValvulaProcesso(idProcesso ?? 0, idValvula),
-        `Validacao da valvula #${idValvula} concluida.`,
-      ),
-    [idProcesso, runAndRefresh],
-  );
+    if (!idProcesso || !action || !idRecurso) {
+      setError('A acao corretiva nao possui processo ou recurso valido.');
+      return;
+    }
+
+    if (!action.disponivel) {
+      setError(action.motivo_indisponibilidade ?? 'Acao corretiva indisponivel.');
+      return;
+    }
+
+    if (!hasExpectedCorrectiveContract(idProcesso, idRecurso, action)) {
+      setError('A API retornou um contrato de acao corretiva inesperado. A chamada foi bloqueada por seguranca.');
+      return;
+    }
+
+    if (isSensorCorrectiveAction(action)) {
+      setSensorCorrectiveContext({ idSensor: idRecurso, action });
+      setError(null);
+
+      if (
+        action.reexecutar_prechecagem &&
+        (action.codigo === 'DIAGNOSTICAR_SENSOR' || action.codigo === 'AGUARDAR_TELEMETRIA_SENSOR')
+      ) {
+        await executePrecheck();
+      }
+      return;
+    }
+
+    if (action.codigo !== 'TESTAR_ESTADO_SEGURO_VALVULA') {
+      setError(action.motivo_indisponibilidade ?? 'Acao corretiva sem executor seguro no frontend.');
+      return;
+    }
+
+    setLoadingAction(`corrective-${action.codigo}-${idRecurso}`);
+    setError(null);
+    setFeedback(null);
+
+    try {
+      const result = await validarValvulaProcesso(idProcesso, idRecurso);
+      setValveTestResults((current) => ({ ...current, [idRecurso]: result }));
+      const nextPrecheck = action.reexecutar_prechecagem
+        ? await executarPrechecagem(idProcesso)
+        : await getPrechecagem(idProcesso);
+      setPrecheck(normalizePrecheck(nextPrecheck));
+      await loadValves();
+      setFeedback(
+        `Teste seguro da valvula #${idRecurso}: ${result.status}. ${result.mensagem}`,
+      );
+    } catch (actionError: unknown) {
+      setError(getAuthErrorMessage(actionError));
+    } finally {
+      setLoadingAction(null);
+    }
+  }, [executePrecheck, idProcesso, loadValves]);
+
+  const closeSensorCorrectiveFlow = useCallback(() => {
+    setSensorCorrectiveContext(null);
+  }, []);
+
+  const reexecuteAfterSensorMutation = useCallback(async (): Promise<void> => {
+    await executePrecheck();
+  }, [executePrecheck]);
 
   const openValve = useCallback(
     (idValvula: number) =>
@@ -300,6 +401,8 @@ export function useProcessPrecheck(idProcesso?: number | null): UseProcessPreche
 
         setPrecheck(null);
         setValves([]);
+        setValveTestResults({});
+        setSensorCorrectiveContext(null);
         setError(null);
         setIsLoading(false);
       }, 0);
@@ -319,6 +422,9 @@ export function useProcessPrecheck(idProcesso?: number | null): UseProcessPreche
 
       setIsLoading(true);
       setError(null);
+      setFeedback(null);
+      setValveTestResults({});
+      setSensorCorrectiveContext(null);
 
       void Promise.allSettled([getPrechecagem(idProcesso), listarValvulasProcesso(idProcesso)])
         .then(([precheckResult, valvesResult]) => {
@@ -389,6 +495,8 @@ export function useProcessPrecheck(idProcesso?: number | null): UseProcessPreche
     valves,
     tanks,
     sensors,
+    valveTestResults,
+    sensorCorrectiveContext,
     isLoading,
     loadingAction,
     error,
@@ -399,8 +507,9 @@ export function useProcessPrecheck(idProcesso?: number | null): UseProcessPreche
     refreshPrecheck,
     executePrecheck,
     validateTankCoupling,
-    validateSensor,
-    validateValve,
+    runCorrectiveAction,
+    closeSensorCorrectiveFlow,
+    reexecuteAfterSensorMutation,
     openValve,
     closeValve,
   };

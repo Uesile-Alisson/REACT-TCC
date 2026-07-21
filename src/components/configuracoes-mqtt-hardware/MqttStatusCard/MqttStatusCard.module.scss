@@ -102,6 +102,35 @@
   flex: 0 0 auto;
 }
 
+.failure,
+.blockers {
+  display: grid;
+  gap: 6px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.failure {
+  border: 1px solid rgba(255, 78, 101, 0.24);
+  background: rgba(255, 78, 101, 0.08);
+  color: #ffadb8;
+}
+
+.blockers {
+  border: 1px solid rgba(255, 176, 64, 0.24);
+  background: rgba(255, 176, 64, 0.08);
+  color: #ffd191;
+}
+
+.blockers ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+}
+
 @media (max-width: 640px) {
   .card header,
   .grid {

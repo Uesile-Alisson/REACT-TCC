@@ -10,8 +10,133 @@
   align-items: start;
 }
 
+.advanced {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid rgba(122, 185, 244, 0.16);
+  border-radius: 8px;
+  background: rgba(7, 16, 28, 0.9);
+}
+
+.advanced header p {
+  margin: 0 0 6px;
+  color: #5bc8ff;
+  font-size: 0.68rem;
+  font-weight: 820;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.advanced h2,
+.advanced h3,
+.advanced p {
+  margin: 0;
+}
+
+.advanced h2 {
+  color: #f5f9ff;
+  font-size: 1.05rem;
+}
+
+.advancedGroups {
+  display: grid;
+  gap: 14px;
+}
+
+.advancedGroup {
+  display: grid;
+  gap: 13px;
+  padding: 15px;
+  border: 1px solid rgba(122, 185, 244, 0.12);
+  border-radius: 8px;
+  background: rgba(3, 10, 18, 0.48);
+}
+
+.groupHeading {
+  display: grid;
+  gap: 5px;
+}
+
+.groupHeading h3 {
+  color: #dcecff;
+  font-size: 0.9rem;
+}
+
+.groupHeading p {
+  color: #8ba7c4;
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fields label {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+  color: #8ba7c4;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.fields input,
+.fields select {
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid rgba(122, 185, 244, 0.18);
+  border-radius: 7px;
+  background: rgba(3, 10, 18, 0.78);
+  color: #f5f9ff;
+}
+
+.fields strong {
+  color: #ffadb8;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+:global(html[data-theme="light"]) .advanced {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+:global(html[data-theme="light"]) .advanced h2,
+:global(html[data-theme="light"]) .groupHeading h3 {
+  color: var(--color-text);
+}
+
+:global(html[data-theme="light"]) .advancedGroup {
+  border-color: var(--color-border);
+  background: var(--color-surface-muted);
+}
+
+:global(html[data-theme="light"]) .fields input,
+:global(html[data-theme="light"]) .fields select {
+  border-color: var(--color-border-strong);
+  background: var(--color-input-bg);
+  color: var(--color-text);
+}
+
 @media (max-width: 1080px) {
   .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .fields {
     grid-template-columns: 1fr;
   }
 }

@@ -54,7 +54,7 @@ export function ProcessActionsBar({
       {permissions.canFinishProcess(status) ? (
         <button type="button" onClick={() => onAction('finish', process)} disabled={Boolean(loadingAction)}>
           <CheckCircle2 size={15} aria-hidden="true" />
-          {loadingAction === 'finish' ? 'Finalizando' : 'Finalizar'}
+          {loadingAction === 'finish' ? 'Solicitando' : 'Iniciar encerramento'}
         </button>
       ) : null}
 
@@ -73,7 +73,7 @@ export function ProcessActionsBar({
           disabled={Boolean(loadingAction)}
         >
           <AlertTriangle size={15} aria-hidden="true" />
-          {loadingAction === 'emergency-stop' ? 'Enviando' : 'Parada emergencia'}
+          {loadingAction === 'emergency-stop' ? 'Registrando' : 'Parada emergencia'}
         </button>
       ) : null}
     </div>

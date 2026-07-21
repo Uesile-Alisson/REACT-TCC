@@ -31,7 +31,7 @@ export function ProcessMetricsCards({
     {
       icon: Gauge,
       label: 'Vacuo alvo / atual',
-      value: `${formatProcessNumber(process?.vacuo_alvo, 'mbar')} / ${formatProcessNumber(lastReading?.valor_vacuo ?? finalVacuum ?? averageVacuum, 'mbar')}`,
+      value: `${formatProcessNumber(process?.vacuo_alvo, 'kPa')} / ${formatProcessNumber(lastReading?.valor_vacuo ?? finalVacuum ?? averageVacuum, lastReading?.unidade_medida ?? 'kPa')}`,
     },
     { icon: Workflow, label: 'Tanques / sensores', value: `${tankCount ?? 'n/i'} / ${sensorCount ?? 'n/i'}` },
     {

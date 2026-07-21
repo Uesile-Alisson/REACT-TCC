@@ -59,7 +59,6 @@ export type CreateBackupRequest = {
 export type RestoreBackupRequest = {
   confirmar_restauracao: true;
   motivo?: string;
-  nova_senha_mqtt?: string;
 };
 
 export type BackupFiltersState = {

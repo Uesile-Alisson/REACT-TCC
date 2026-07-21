@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { normalizeApiError } from '../api/api-error';
 import { listSensoresVacuoByTanque } from '../services/configuracoes-sensores.service';
+import { getConfiguracoesSistema } from '../services/configuracoes-sistema.service';
 import { listTanquesConfiguracao } from '../services/configuracoes-tanques.service';
 import { getMqttHardwareStatus } from '../services/mqtt-hardware.service';
 import type {
@@ -22,12 +23,15 @@ type UseProcessoConfiguracaoOptionsResult = {
   loadingTanques: boolean;
   loadingSensores: boolean;
   loadingHardware: boolean;
+  loadingSystemConfig: boolean;
   loadingSensoresByTanque: Record<number, boolean>;
   errorTanques: string | null;
   errorSensores: string | null;
   errorHardware: string | null;
+  errorSystemConfig: string | null;
   errorSensoresByTanque: Record<number, string | null>;
   valvulasByTanque: ValvulasPorTanque;
+  maxTanksPerProcess: number | null;
   selectedTanqueId: number | null;
   setSelectedTanqueId: (id_tanque: number | null) => void;
   reloadTanques: () => Promise<void>;
@@ -88,6 +92,11 @@ function getHardwareOptionsErrorMessage(error: unknown): string {
   return apiError.message || 'Nao foi possivel carregar valvulas vinculadas ao hardware.';
 }
 
+function getSystemConfigErrorMessage(error: unknown): string {
+  const apiError = normalizeApiError(error);
+  return apiError.message || 'Nao foi possivel carregar o limite global de tanques.';
+}
+
 function buildTanqueOption(tanque: TanqueConfigResponse): ProcessoTanqueOption {
   const codigoHardware = normalizeTanqueHardwareCode(
     tanque.codigo_hardware ?? tanque.tanque_codigo_hardware ?? tanque.id_tanque,
@@ -128,10 +137,13 @@ export function useProcessoConfiguracaoOptions(
   const [loadingTanques, setLoadingTanques] = useState<boolean>(false);
   const [loadingSensores, setLoadingSensores] = useState<boolean>(false);
   const [loadingHardware, setLoadingHardware] = useState<boolean>(false);
+  const [loadingSystemConfig, setLoadingSystemConfig] = useState<boolean>(false);
   const [loadingSensoresByTanque, setLoadingSensoresByTanque] = useState<Record<number, boolean>>({});
   const [errorTanques, setErrorTanques] = useState<string | null>(null);
   const [errorSensores, setErrorSensores] = useState<string | null>(null);
   const [errorHardware, setErrorHardware] = useState<string | null>(null);
+  const [errorSystemConfig, setErrorSystemConfig] = useState<string | null>(null);
+  const [maxTanksPerProcess, setMaxTanksPerProcess] = useState<number | null>(null);
   const [errorSensoresByTanque, setErrorSensoresByTanque] = useState<Record<number, string | null>>({});
   const [valvulasByTanque, setValvulasByTanque] = useState<ValvulasPorTanque>(() =>
     groupValvulasByTanque([]),
@@ -150,10 +162,12 @@ export function useProcessoConfiguracaoOptions(
   const reloadTanques = useCallback(async (): Promise<void> => {
     setLoadingTanques(true);
     setLoadingHardware(true);
+    setLoadingSystemConfig(true);
     setErrorTanques(null);
     setErrorHardware(null);
+    setErrorSystemConfig(null);
 
-    const [tanquesResult, hardwareResult] = await Promise.allSettled([
+    const [tanquesResult, hardwareResult, systemConfigResult] = await Promise.allSettled([
       listTanquesConfiguracao({
         page: 1,
         limit: 100,
@@ -162,6 +176,7 @@ export function useProcessoConfiguracaoOptions(
         order_direction: 'asc',
       }),
       getMqttHardwareStatus(),
+      getConfiguracoesSistema(),
     ]);
 
     if (tanquesResult.status === 'fulfilled') {
@@ -178,8 +193,24 @@ export function useProcessoConfiguracaoOptions(
       setErrorHardware(getHardwareOptionsErrorMessage(hardwareResult.reason));
     }
 
+    if (
+      systemConfigResult.status === 'fulfilled' &&
+      Number.isInteger(systemConfigResult.value.quantidade_maxima_tanques) &&
+      systemConfigResult.value.quantidade_maxima_tanques > 0
+    ) {
+      setMaxTanksPerProcess(systemConfigResult.value.quantidade_maxima_tanques);
+    } else {
+      setMaxTanksPerProcess(null);
+      setErrorSystemConfig(
+        systemConfigResult.status === 'rejected'
+          ? getSystemConfigErrorMessage(systemConfigResult.reason)
+          : 'A API retornou uma quantidade maxima de tanques invalida.',
+      );
+    }
+
     setLoadingTanques(false);
     setLoadingHardware(false);
+    setLoadingSystemConfig(false);
   }, []);
 
   useEffect(() => {
@@ -233,12 +264,15 @@ export function useProcessoConfiguracaoOptions(
     loadingTanques,
     loadingSensores,
     loadingHardware,
+    loadingSystemConfig,
     loadingSensoresByTanque,
     errorTanques,
     errorSensores,
     errorHardware,
+    errorSystemConfig,
     errorSensoresByTanque,
     valvulasByTanque,
+    maxTanksPerProcess,
     selectedTanqueId,
     setSelectedTanqueId,
     reloadTanques,

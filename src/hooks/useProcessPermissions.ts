@@ -33,6 +33,8 @@ export function useProcessPermissions(): ProcessosPermissions {
       canInterruptProcess: (status?: StatusProcesso) => canUseTechnicalActions && isTerminableStatus(status),
       canFinishProcess: (status?: StatusProcesso) => canUseTechnicalActions && isTerminableStatus(status),
       canEmergencyStop: (status?: StatusProcesso) => isTerminableStatus(status),
+      canControlAuxiliary: canUseTechnicalActions,
+      canStartClosures: canUseTechnicalActions,
       canViewProcessDetails: Boolean(role),
     }),
     [canUseTechnicalActions, role],

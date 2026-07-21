@@ -3,6 +3,7 @@ import type {
   StatusProcesso,
 } from './common.types';
 import type {
+  ModoOperacaoAuxiliar,
   ProcessoEventResponse,
   ProcessoReadingResponse,
   ProcessoResponse,
@@ -24,6 +25,7 @@ export type ProcessoActionState = {
 
 export type ProcessoTanqueFormState = {
   id_tanque: string;
+  prioridade: string;
   vacuo_alvo_tanque: string;
   id_sensor: string;
   observacoes_sensor: string;
@@ -33,6 +35,8 @@ export type ProcessoFormState = {
   nome_processo: string;
   tempo_maximo: string;
   quantidade_tanques: string;
+  modo_operacao_auxiliar: ModoOperacaoAuxiliar;
+  encerramento_automatico: boolean;
   tanques: ProcessoTanqueFormState[];
 };
 
@@ -42,7 +46,13 @@ export type ProcessoTanqueFormErrors = Partial<
 >;
 
 export type ProcessoFormErrors = Partial<
-  Record<'nome_processo' | 'tempo_maximo' | 'quantidade_tanques', string>
+  Record<
+    | 'nome_processo'
+    | 'tempo_maximo'
+    | 'quantidade_tanques'
+    | 'modo_operacao_auxiliar',
+    string
+  >
 > & {
   tanques?: ProcessoTanqueFormErrors[];
 };
@@ -87,6 +97,8 @@ export type ProcessosPermissions = {
   canInterruptProcess: (status?: StatusProcesso) => boolean;
   canFinishProcess: (status?: StatusProcesso) => boolean;
   canEmergencyStop: (status?: StatusProcesso) => boolean;
+  canControlAuxiliary: boolean;
+  canStartClosures: boolean;
   canViewProcessDetails: boolean;
 };
 

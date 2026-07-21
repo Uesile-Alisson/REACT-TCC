@@ -63,9 +63,9 @@ export function ProcessDetailPanel({
           {readings.length > 0 ? (
             <ul>
               {readings.map((reading) => (
-                <li key={reading.id_leitura_sensor ?? `${reading.registrado_em}-${reading.valor_vacuo}`}>
-                  <strong>{formatProcessNumber(reading.valor_vacuo, 'mbar')}</strong>
-                  <span>{formatProcessDate(reading.registrado_em)}</span>
+                <li key={reading.id_leitura_sensor ?? `${reading.leitura_em ?? reading.registrado_em}-${reading.valor_vacuo}`}>
+                  <strong>{formatProcessNumber(reading.valor_vacuo, reading.unidade_medida ?? 'kPa')}</strong>
+                  <span>{formatProcessDate(reading.leitura_em ?? reading.registrado_em)}</span>
                 </li>
               ))}
             </ul>
@@ -96,9 +96,24 @@ export function ProcessDetailPanel({
         <article>
           <h3>
             <Activity size={16} aria-hidden="true" />
-            Status tecnico
+            Configuracao operacional
           </h3>
-          <p>Detalhes adicionais dependem dos campos opcionais retornados pela API.</p>
+          <ul>
+            <li>
+              <strong>Modo auxiliar</strong>
+              <span>{process.modo_operacao_auxiliar ?? 'Nao informado'}</span>
+            </li>
+            <li>
+              <strong>Encerramento</strong>
+              <span>
+                {typeof process.encerramento_automatico === 'boolean'
+                  ? process.encerramento_automatico
+                    ? 'Automatico'
+                    : 'Com autorizacao manual'
+                  : 'Nao informado'}
+              </span>
+            </li>
+          </ul>
         </article>
       </div>
     </section>
