@@ -1,27 +1,57 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { ALL_ROLES, ADMIN_ROLES, TECHNICAL_ROLES } from '../config/navigation';
-import { AppShell } from '../layouts/AppShell';
 import { FirstAccessPage } from '../pages/auth/FirstAccessPage';
 import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
-import { AlarmesPage } from '../pages/alarmes/AlarmesPage';
-import { BackupsPage } from '../pages/configuracoes/BackupsPage';
-import { BombasPage } from '../pages/configuracoes/BombasPage';
-import { ConfiguracoesMqttHardwarePage } from '../pages/configuracoes/ConfiguracoesMqttHardwarePage';
-import { ConfiguracoesSistemaPage } from '../pages/configuracoes/ConfiguracoesSistemaPage';
-import { TanquesPage } from '../pages/configuracoes/TanquesPage';
-import { DashboardPage } from '../pages/dashboard/DashboardPage';
-import { HistoricoPage } from '../pages/historico/HistoricoPage';
 import { AccessDeniedPage } from '../pages/AccessDenied';
 import { NotFoundPage } from '../pages/NotFound';
-import { ProcessosPage } from '../pages/processos/ProcessosPage';
-import { RelatoriosPage } from '../pages/relatorios/RelatoriosPage';
-import { UsuariosPage } from '../pages/usuarios/UsuariosPage';
 import { useAuth } from '../hooks/useAuth';
 import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PublicRoute';
 import { RoleGuard } from './RoleGuard';
+
+const AppShell = lazy(() =>
+  import('../layouts/AppShell').then((module) => ({ default: module.AppShell })),
+);
+const AlarmesPage = lazy(() =>
+  import('../pages/alarmes/AlarmesPage').then((module) => ({ default: module.AlarmesPage })),
+);
+const BackupsPage = lazy(() =>
+  import('../pages/configuracoes/BackupsPage').then((module) => ({ default: module.BackupsPage })),
+);
+const BombasPage = lazy(() =>
+  import('../pages/configuracoes/BombasPage').then((module) => ({ default: module.BombasPage })),
+);
+const ConfiguracoesMqttHardwarePage = lazy(() =>
+  import('../pages/configuracoes/ConfiguracoesMqttHardwarePage').then((module) => ({
+    default: module.ConfiguracoesMqttHardwarePage,
+  })),
+);
+const ConfiguracoesSistemaPage = lazy(() =>
+  import('../pages/configuracoes/ConfiguracoesSistemaPage').then((module) => ({
+    default: module.ConfiguracoesSistemaPage,
+  })),
+);
+const TanquesPage = lazy(() =>
+  import('../pages/configuracoes/TanquesPage').then((module) => ({ default: module.TanquesPage })),
+);
+const DashboardPage = lazy(() =>
+  import('../pages/dashboard/DashboardPage').then((module) => ({ default: module.DashboardPage })),
+);
+const HistoricoPage = lazy(() =>
+  import('../pages/historico/HistoricoPage').then((module) => ({ default: module.HistoricoPage })),
+);
+const ProcessosPage = lazy(() =>
+  import('../pages/processos/ProcessosPage').then((module) => ({ default: module.ProcessosPage })),
+);
+const RelatoriosPage = lazy(() =>
+  import('../pages/relatorios/RelatoriosPage').then((module) => ({ default: module.RelatoriosPage })),
+);
+const UsuariosPage = lazy(() =>
+  import('../pages/usuarios/UsuariosPage').then((module) => ({ default: module.UsuariosPage })),
+);
 
 function AppRedirect() {
   const { isAuthenticated, isFirstAccess, isLoading } = useAuth();
@@ -39,7 +69,8 @@ function AppRedirect() {
 
 export function AppRoutes() {
   return (
-    <Routes>
+    <Suspense fallback={<div role="status">Carregando interface...</div>}>
+      <Routes>
       <Route path="/" element={<AppRedirect />} />
 
       <Route element={<PublicRoute />}>
@@ -138,6 +169,7 @@ export function AppRoutes() {
       </Route>
 
       <Route path="*" element={<AppRedirect />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }
